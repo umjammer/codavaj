@@ -273,7 +273,7 @@ public class ParserUtils extends AbstractLogger {
              and then the constant itself
             <TR>
               <A/>
-              <TD>public� static� final� java.lang.String</TD>
+              <TD>public† static† final† java.lang.String</TD>
               <TD>
                 <A href="org/codavaj/process/antrunner/AntRunner.html#PROPERTY_ANTRUNNER_TARGET">PROPERTY_ANTRUNNER_TARGET</A>
               </TD>
@@ -603,11 +603,11 @@ public class ParserUtils extends AbstractLogger {
 
         /* javadoc pre 1.5
         <TR>
-        <TD> �
+        <TD> †
           <A href="../../../../org/codavaj/javadoc/input/DefaultInterface.html">DefaultInterface</A>[]
         </TD>
         <TD>
-          <A href="../../../../org/codavaj/javadoc/input/ClassWithFields.html#defintarray_">defintarray_</A>  �����������
+          <A href="../../../../org/codavaj/javadoc/input/ClassWithFields.html#defintarray_">defintarray_</A>  †††††††††††
         </TD>
         </TR>
          */
@@ -700,10 +700,10 @@ public class ParserUtils extends AbstractLogger {
 
         /* Javadoc pre 1.5
         <TR>
-        <TD> �</TD>
+        <TD> †</TD>
         <TD>
           <A href="../../../../org/codavaj/javadoc/input/ClassWithConstructors.html#ClassWithConstructors(org.codavaj.javadoc.input.ArrayReturnClass)">ClassWithConstructors</A>(
-          <A href="../../../../org/codavaj/javadoc/input/ArrayReturnClass.html">ArrayReturnClass</A>�p1) �����������
+          <A href="../../../../org/codavaj/javadoc/input/ArrayReturnClass.html">ArrayReturnClass</A>†p1) †††††††††††
         </TD>
         </TR>
          */
@@ -946,13 +946,13 @@ public class ParserUtils extends AbstractLogger {
 
         /* Javadoc pre 1.5
         <TR>
-        <TD> �
+        <TD> †
           <A href="../../../java/lang/String.html">String</A>[]
         </TD>
         <TD>
           <A href="../../../org/w3c/dom/Element.html#getAttributeNS(java.lang.String, java.lang.String)">getAttributeNS</A>(
-          <A href="../../../java/lang/String.html">String</A>�namespaceURI,
-          <A href="../../../java/lang/String.html">String</A>�localName) ���������� Retrieves an attribute value by local name and namespace URI.
+          <A href="../../../java/lang/String.html">String</A>†namespaceURI,
+          <A href="../../../java/lang/String.html">String</A>†localName) †††††††††† Retrieves an attribute value by local name and namespace URI.
         </TD>
         </TR>
          */
@@ -982,7 +982,7 @@ public class ParserUtils extends AbstractLogger {
               </TABLE>
             </TD>
             <TD>
-              <A href="../../../../org/codavaj/javadoc/input/KillerGenericsStuff.html#max(java.util.Collection)">max</A>(java.util.Collection< ? extends T>� coll) ���������� Returns the maximum element of the given collection, according to the
+              <A href="../../../../org/codavaj/javadoc/input/KillerGenericsStuff.html#max(java.util.Collection)">max</A>(java.util.Collection< ? extends T>† coll) †††††††††† Returns the maximum element of the given collection, according to the
               <I>natural ordering</I> of its elements.
             </TD>
           </TR>
@@ -1038,14 +1038,14 @@ public class ParserUtils extends AbstractLogger {
     <TABLE>
       <TR>Required Element Summary</TR>
       <TR>
-        <TD> �
+        <TD> †
           <A href="../../../../org/codavaj/javadoc/input/AnnotationDefault.html">AnnotationDefault</A>
         </TD>
         <TD>
-          <A href="../../../../org/codavaj/javadoc/input/AnnotationParameterized.html#annotParam()">annotParam</A>  �����������
+          <A href="../../../../org/codavaj/javadoc/input/AnnotationParameterized.html#annotParam()">annotParam</A>  †††††††††††
         </TD>
       </TR>...
-    </TABLE>  �
+    </TABLE>  †
          */
 
            String methodXpath = "//TR[contains(parent::TABLE/TR,'Required Element Summary')][position()>1]";
