@@ -122,7 +122,7 @@ public class WriterUtils {
         w.write(LINEFEED);
     }
 
-    protected static void printComment(List commentText, Writer w,
+    protected static void printComment(List<?> commentText, Writer w,
         int indentation) throws IOException {
         if ((commentText == null) || (commentText.size() == 0)) {
             return;
@@ -255,7 +255,7 @@ public class WriterUtils {
         w.write("(");
 
         for (int pi = 0; pi < m.getParameterList().size(); pi++) {
-            Parameter p = (Parameter) m.getParameterList().get(pi);
+            Parameter p = m.getParameterList().get(pi);
 
             if (pi != 0) {
                 w.write(", ");
@@ -282,7 +282,7 @@ public class WriterUtils {
         w.write(")");
 
         for (int thr = 0; thr < m.getThrowsList().size(); thr++) {
-            String throwsName = (String) m.getThrowsList().get(thr);
+            String throwsName = m.getThrowsList().get(thr);
 
             if (thr == 0) {
                 w.write(" throws ");
@@ -412,7 +412,7 @@ public class WriterUtils {
                     w.write(", ");
                 }
 
-                w.write(getSourceTypeName((String) t.getImplementsList().get(i)));
+                w.write(getSourceTypeName(t.getImplementsList().get(i)));
             }
         }
 
@@ -421,7 +421,7 @@ public class WriterUtils {
         indentation += 4;
 
         for (int i = 0; (t.getEnumConstList() != null) && (i < t.getEnumConstList().size()); i++) {
-		    EnumConst ec = (EnumConst) t.getEnumConstList().get(i);
+		    EnumConst ec = t.getEnumConstList().get(i);
 		    printEnumConst(ec, w, indentation, i == t.getEnumConstList().size()-1);
 		    printLineFeed(w);
         }
@@ -429,7 +429,7 @@ public class WriterUtils {
         for (int i = 0;
                 (t.getFieldList() != null) && (i < t.getFieldList().size());
                 i++) {
-            Field f = (Field) t.getFieldList().get(i);
+            Field f = t.getFieldList().get(i);
             printField(f, w, indentation);
             printLineFeed(w);
         }
@@ -437,7 +437,7 @@ public class WriterUtils {
         for (int i = 0;
                 (t.getConstructorList() != null)
                 && (i < t.getConstructorList().size()); i++) {
-            Method m = (Method) t.getConstructorList().get(i);
+            Method m = t.getConstructorList().get(i);
             printMethod(t, m, w, true, indentation);
             printLineFeed(w);
         }
@@ -445,7 +445,7 @@ public class WriterUtils {
         for (int i = 0;
                 (t.getMethodList() != null) && (i < t.getMethodList().size());
                 i++) {
-            Method m = (Method) t.getMethodList().get(i);
+            Method m = t.getMethodList().get(i);
             // Enums have a special case where valueOf() and values() appear
             // in the JavaDocs but will generate a compiler error if you
             // override them because they're static methods.
@@ -458,7 +458,7 @@ public class WriterUtils {
         for (int i = 0;
                 (t.getInnerTypeList() != null)
                 && (i < t.getInnerTypeList().size()); i++) {
-            Type innertype = (Type) t.getInnerTypeList().get(i);
+            Type innertype = t.getInnerTypeList().get(i);
             print(innertype, w, indentation);
         }
 

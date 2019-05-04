@@ -102,7 +102,7 @@ public class ParserUtils extends AbstractLogger {
      *
      * @throws Exception DOCUMENT ME!
      */
-    public List determineComment(Element enclosingNode)
+    public List<String> determineComment(Element enclosingNode)
         throws Exception {
         if (enclosingNode == null) {
             return null;
@@ -112,8 +112,8 @@ public class ParserUtils extends AbstractLogger {
          a field comment
          a method comment
          */
-        List allNodes = enclosingNode.content();
-        List commentText = new ArrayList();
+        List<?> allNodes = enclosingNode.content();
+        List<String> commentText = new ArrayList<>();
 
         for (int i = 0; (allNodes != null) && (i < allNodes.size()); i++) {
             Node node = (Node) allNodes.get(i);
@@ -158,7 +158,7 @@ public class ParserUtils extends AbstractLogger {
          a field comment
          a method comment
          */
-        List allNodes = enclosingNode.content();
+        List<?> allNodes = enclosingNode.content();
         String defaultText="";
 
         for (int i = 0; (allNodes != null) && (i < allNodes.size()); i++) {
@@ -190,7 +190,7 @@ public class ParserUtils extends AbstractLogger {
      * 
      * @throws Exception DOCUMENT ME!
      */
-    public void determineClassComment(Type type, Document typeXml, List externalLinks )
+    public void determineClassComment(Type type, Document typeXml, List<?> externalLinks )
         throws Exception {
         /*
          a class comment
@@ -206,11 +206,11 @@ public class ParserUtils extends AbstractLogger {
         </P>
         <HR/>
          */
-        List allNodes = typeXml.getRootElement().content();
+        List<?> allNodes = typeXml.getRootElement().content();
 
         // H2 indicates class descriptor 
         boolean parseOn = false;
-        List commentText = new ArrayList();
+        List<String> commentText = new ArrayList<>();
 
         for (int i = 0; (allNodes != null) && (i < allNodes.size()); i++) {
             Node node = (Node) allNodes.get(i);
@@ -260,8 +260,8 @@ public class ParserUtils extends AbstractLogger {
      * @param lenient whether to warn when type not found
      */
     public void determineConstants(Document allconstants,
-        TypeFactory typeFactory, List externalLinks, boolean lenient) {
-        List constantList = allconstants.selectNodes(
+        TypeFactory typeFactory, List<?> externalLinks, boolean lenient) {
+        List<?> constantList = allconstants.selectNodes(
                 "//P/TABLE/TR[position() != 1]");
 
         for (int i = 0; (constantList != null) && (i < constantList.size());
@@ -274,7 +274,7 @@ public class ParserUtils extends AbstractLogger {
              and then the constant itself
             <TR>
               <A/>
-              <TD>public  static  final  java.lang.String</TD>
+              <TD>publicï¿½ staticï¿½ finalï¿½ java.lang.String</TD>
               <TD>
                 <A href="org/codavaj/process/antrunner/AntRunner.html#PROPERTY_ANTRUNNER_TARGET">PROPERTY_ANTRUNNER_TARGET</A>
               </TD>
@@ -387,7 +387,7 @@ public class ParserUtils extends AbstractLogger {
      *
      * @throws Exception DOCUMENT ME!
      */
-    public void determineDetails(Type type, Document typeXml, List externalLinks )
+    public void determineDetails(Type type, Document typeXml, List<?> externalLinks )
         throws Exception {
         /*
          an example method
@@ -398,7 +398,7 @@ public class ParserUtils extends AbstractLogger {
         <H3>PROPERTY_ANTRUNNER_FILENAME</H3> public static final java.lang.String PROPERTY_ANTRUNNER_FILENAME
         <DL>...
          */
-        List allNodes = typeXml.getRootElement().content();
+        List<?> allNodes = typeXml.getRootElement().content();
 
         // H3 indicates method or field names, the following text up to the next NON 'A' element 
         // belongs to the summary
@@ -460,7 +460,7 @@ public class ParserUtils extends AbstractLogger {
 
                         text = text.substring(0, text.indexOf("("));
 
-                        List params = determineMethodParameterList(methodParams);
+                        List<Parameter> params = determineMethodParameterList(methodParams);
                         Method m = type.lookupMethodByName(name, params);
 
                         if (m == null) {
@@ -492,7 +492,7 @@ public class ParserUtils extends AbstractLogger {
                             if(ec != null) {
                                 ec.setComment(determineComment(commentNode));
                             } else {
-                                Method m = type.lookupMethodByName(name, new ArrayList()); // annotation elements have no params
+                                Method m = type.lookupMethodByName(name, new ArrayList<Parameter>()); // annotation elements have no params
                                 
                                 if ( m != null ) {
                                 	extractMethodModifiers(m, text);
@@ -512,26 +512,26 @@ public class ParserUtils extends AbstractLogger {
         }
     }
 
-    private List determineMethodParameterList(String methodParams)
+    private List<Parameter> determineMethodParameterList(String methodParams)
         throws Exception {
-        List params = new ArrayList();
+        List<Parameter> params = new ArrayList<>();
         
-        List words = tokenizeWordListWithTypeParameters(methodParams, ",");
-        Iterator it = words.iterator();
+        List<String> words = tokenizeWordListWithTypeParameters(methodParams, ",");
+        Iterator<String> it = words.iterator();
         while(it.hasNext()) {
-            Parameter p = determineParameter((String)it.next(), true);
+            Parameter p = determineParameter(it.next(), true);
             params.add(p);
         }
         
         return(params);
     }
 
-    private List tokenizeWordListWithTypeParameters(String text, String delimeters)
+    private List<String> tokenizeWordListWithTypeParameters(String text, String delimeters)
     {
         int inTypeParamStackCount = 0;
         String currentWord = "";
         
-        List words = new ArrayList();
+        List<String> words = new ArrayList<>();
         
         // iterate character by character to see when we're in a type
         // parameter and when we're not
@@ -563,27 +563,27 @@ public class ParserUtils extends AbstractLogger {
 
     private void extractMethodModifiers(Method m, String text)
         throws Exception {
-        List words = tokenizeWordListWithTypeParameters(text, " \t\n\r\f");
-        Iterator it = words.iterator();
+        List<String> words = tokenizeWordListWithTypeParameters(text, " \t\n\r\f");
+        Iterator<String> it = words.iterator();
         while(it.hasNext()) {
-            m.assignModifier((String)it.next());
+            m.assignModifier(it.next());
         }
     }
 
     private void determineThrowsList(String throwsParams, Method m) {
-        List words = tokenizeWordListWithTypeParameters(throwsParams, " ,\t\n\r\f");
-        Iterator it = words.iterator();
+        List<String> words = tokenizeWordListWithTypeParameters(throwsParams, " ,\t\n\r\f");
+        Iterator<String> it = words.iterator();
         while(it.hasNext()) {
-            m.addThrows((String)it.next());
+            m.addThrows(it.next());
         }
     }
 
     private void extractFieldModifiers(Field f, String text)
         throws Exception {
-        List words = tokenizeWordListWithTypeParameters(text, " \t\n\r\f");
-        Iterator it = words.iterator();
+        List<String> words = tokenizeWordListWithTypeParameters(text, " \t\n\r\f");
+        Iterator<String> it = words.iterator();
         while(it.hasNext()) {
-            f.assignModifier((String)it.next());
+            f.assignModifier(it.next());
         }
     }
 
@@ -596,7 +596,7 @@ public class ParserUtils extends AbstractLogger {
      * 
      * @throws Exception DOCUMENT ME!
      */
-    public void determineFields(Type type, Document typeXml, List externalLinks )
+    public void determineFields(Type type, Document typeXml, List<?> externalLinks )
         throws Exception {
         // get the method details out of the Field Summary table
         // this information is missing the modifier info which is only
@@ -604,11 +604,11 @@ public class ParserUtils extends AbstractLogger {
 
         /* javadoc pre 1.5
         <TR>
-        <TD>  
+        <TD> ï¿½
           <A href="../../../../org/codavaj/javadoc/input/DefaultInterface.html">DefaultInterface</A>[]
         </TD>
         <TD>
-          <A href="../../../../org/codavaj/javadoc/input/ClassWithFields.html#defintarray_">defintarray_</A>             
+          <A href="../../../../org/codavaj/javadoc/input/ClassWithFields.html#defintarray_">defintarray_</A>  ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
         </TD>
         </TR>
          */
@@ -624,7 +624,7 @@ public class ParserUtils extends AbstractLogger {
 		</TR>
     	 */
     	String fieldsXpath = "//TR[contains(parent::TABLE/TR[1], 'Field Summary')][position()>1]";
-        List fieldList = typeXml.selectNodes( fieldsXpath );
+        List<?> fieldList = typeXml.selectNodes( fieldsXpath );
 
         for (int i = 0; (fieldList != null) && (i < fieldList.size()); i++) {
             Field field = type.createField();
@@ -664,10 +664,10 @@ public class ParserUtils extends AbstractLogger {
      * 
      * @throws Exception DOCUMENT ME!
      */
-    public void determineEnumConsts(Type type, Document typeXml, List externalLinks )
+    public void determineEnumConsts(Type type, Document typeXml, List<?> externalLinks )
         throws Exception {
     	String enumConstsXpath = "//TR[contains(parent::TABLE/TR[1], 'Enum Constant Summary')][position()>1]";
-        List enumConstList = typeXml.selectNodes( enumConstsXpath );
+        List<?> enumConstList = typeXml.selectNodes( enumConstsXpath );
 
         for (int i = 0; (enumConstList != null) && (i < enumConstList.size()); i++) {
             EnumConst enumConst = type.createEnumConst();
@@ -693,7 +693,7 @@ public class ParserUtils extends AbstractLogger {
      *
      * @throws Exception DOCUMENT ME!
      */
-    public void determineConstructors(Type type, Document typeXml, List externalLinks)
+    public void determineConstructors(Type type, Document typeXml, List<?> externalLinks)
         throws Exception {
         // get the constructor details out of the Constructor Summary table
         // the first table field pertains to the "return type" which is always blank
@@ -701,10 +701,10 @@ public class ParserUtils extends AbstractLogger {
 
         /* Javadoc pre 1.5
         <TR>
-        <TD>  </TD>
+        <TD> ï¿½</TD>
         <TD>
           <A href="../../../../org/codavaj/javadoc/input/ClassWithConstructors.html#ClassWithConstructors(org.codavaj.javadoc.input.ArrayReturnClass)">ClassWithConstructors</A>(
-          <A href="../../../../org/codavaj/javadoc/input/ArrayReturnClass.html">ArrayReturnClass</A> p1)            
+          <A href="../../../../org/codavaj/javadoc/input/ArrayReturnClass.html">ArrayReturnClass</A>ï¿½p1) ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
         </TD>
         </TR>
          */
@@ -718,7 +718,7 @@ public class ParserUtils extends AbstractLogger {
 		</TR>
     	 */
    		String constructorsXpath = "//TR[contains(parent::TABLE/TR,'Constructor Summary')][position()>1]";
-        List methodList = typeXml.selectNodes( constructorsXpath );
+        List<?> methodList = typeXml.selectNodes( constructorsXpath );
 
         for (int i = 0; (methodList != null) && (i < methodList.size()); i++) {
             Method method = type.createConstructor();
@@ -735,12 +735,12 @@ public class ParserUtils extends AbstractLogger {
                         "TD[position()=1]");
             }
 
-            List paramlistNodes = paramlistNode.content();
+            List<?> paramlistNodes = paramlistNode.content();
             determineMethodParameters(method, paramlistNodes, externalLinks );
         }
     }
 
-    private void determineMethodParameters(Method method, List paramlistNodes, List externalLinks )
+    private void determineMethodParameters(Method method, List<?> paramlistNodes, List<?> externalLinks )
         throws Exception {
         Element methodNameElement = (Element) paramlistNodes.get(0); // link in the same file
         method.setName(methodNameElement.getText());
@@ -789,9 +789,9 @@ public class ParserUtils extends AbstractLogger {
         }
 
         // now we parse "type name" comma separated pairs from the result
-        List params = determineMethodParameterList(methodParams);
+        List<Parameter> params = determineMethodParameterList(methodParams);
         for(int i = 0; i < params.size(); i++) {
-            method.addParameter((Parameter)params.get(i));
+            method.addParameter(params.get(i));
         }
     }
 
@@ -812,10 +812,10 @@ public class ParserUtils extends AbstractLogger {
         }
 
         try {
-            List words = tokenizeWordListWithTypeParameters(parameterText, " \t\n\r\f");
-            Iterator it = words.iterator();
+            List<String> words = tokenizeWordListWithTypeParameters(parameterText, " \t\n\r\f");
+            Iterator<String> it = words.iterator();
             while(it.hasNext()) {
-                String word = (String)it.next();
+                String word = it.next();
                 
                 if (Modifiable.isModifier(word)) {
                     // skip modifiers
@@ -830,7 +830,7 @@ public class ParserUtils extends AbstractLogger {
 
                 if (parseName && it.hasNext()) {
                     // name comes after the type
-                    String name = (String)it.next();
+                    String name = it.next();
                     p.setName(name);
                 }
             }
@@ -862,10 +862,10 @@ public class ParserUtils extends AbstractLogger {
 	    }
 	
 	    try {
-	        List words = tokenizeWordListWithTypeParameters(parameterText, " \t\n\r\f");
-	        Iterator it = words.iterator();
+	        List<String> words = tokenizeWordListWithTypeParameters(parameterText, " \t\n\r\f");
+	        Iterator<String> it = words.iterator();
 	        while(it.hasNext()) {
-	            String word = (String)it.next();
+	            String word = it.next();
 	            
 	            if (Modifiable.isModifier(word)) {
 	                // skip modifiers
@@ -893,8 +893,8 @@ public class ParserUtils extends AbstractLogger {
      *
      * @return plain text to be parsed.
      */
-    private String convertNodesToString(Element contentElement, List externalLinks ) {
-        List returnparamNodes = contentElement.content();
+    private String convertNodesToString(Element contentElement, List<?> externalLinks ) {
+        List<?> returnparamNodes = contentElement.content();
 
         String text = "";
 
@@ -934,7 +934,7 @@ public class ParserUtils extends AbstractLogger {
      *
      * @throws Exception DOCUMENT ME!
      */
-    public void determineMethods(Type type, Document typeXml, List externalLinks )
+    public void determineMethods(Type type, Document typeXml, List<?> externalLinks )
         throws Exception {
         // get the method details out of the Method Summary table
         // this information is missing the throws info which is only
@@ -947,13 +947,13 @@ public class ParserUtils extends AbstractLogger {
 
         /* Javadoc pre 1.5
         <TR>
-        <TD>  
+        <TD> ï¿½
           <A href="../../../java/lang/String.html">String</A>[]
         </TD>
         <TD>
           <A href="../../../org/w3c/dom/Element.html#getAttributeNS(java.lang.String, java.lang.String)">getAttributeNS</A>(
-          <A href="../../../java/lang/String.html">String</A> namespaceURI,
-          <A href="../../../java/lang/String.html">String</A> localName)            Retrieves an attribute value by local name and namespace URI.
+          <A href="../../../java/lang/String.html">String</A>ï¿½namespaceURI,
+          <A href="../../../java/lang/String.html">String</A>ï¿½localName) ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ Retrieves an attribute value by local name and namespace URI.
         </TD>
         </TR>
          */
@@ -983,14 +983,14 @@ public class ParserUtils extends AbstractLogger {
 	          </TABLE> 
 	        </TD>  
 	        <TD>
-	          <A href="../../../../org/codavaj/javadoc/input/KillerGenericsStuff.html#max(java.util.Collection)">max</A>(java.util.Collection< ? extends T>  coll)            Returns the maximum element of the given collection, according to the 
+	          <A href="../../../../org/codavaj/javadoc/input/KillerGenericsStuff.html#max(java.util.Collection)">max</A>(java.util.Collection< ? extends T>ï¿½ coll) ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ Returns the maximum element of the given collection, according to the 
 	          <I>natural ordering</I> of its elements.
 	        </TD> 
 	      </TR>  
     	 */
     	
    		String methodXpath = "//TR[contains(parent::TABLE/TR,'Method Summary')][position()>1]";
-        List methodList = typeXml.selectNodes( methodXpath );
+        List<?> methodList = typeXml.selectNodes( methodXpath );
 
         for (int i = 0; (methodList != null) && (i < methodList.size()); i++) {
             Method method = type.createMethod();
@@ -1017,7 +1017,7 @@ public class ParserUtils extends AbstractLogger {
                     "TD[position()=2]");
 
             //if ( paramlistNode == null ) continue; // no method
-            List paramlistNodes = paramlistNode.content();
+            List<?> paramlistNodes = paramlistNode.content();
 
             determineMethodParameters(method, paramlistNodes, externalLinks);
         }
@@ -1032,25 +1032,25 @@ public class ParserUtils extends AbstractLogger {
      *
      * @throws Exception DOCUMENT ME!
      */
-    public void determineElements(Type type, Document typeXml, List externalLinks )
+    public void determineElements(Type type, Document typeXml, List<?> externalLinks )
         throws Exception {
 
         /* Javadoc 1.6
     <TABLE> 
       <TR>Required Element Summary</TR>  
       <TR> 
-        <TD>  
+        <TD> ï¿½
           <A href="../../../../org/codavaj/javadoc/input/AnnotationDefault.html">AnnotationDefault</A>
         </TD>  
         <TD>
-          <A href="../../../../org/codavaj/javadoc/input/AnnotationParameterized.html#annotParam()">annotParam</A>             
+          <A href="../../../../org/codavaj/javadoc/input/AnnotationParameterized.html#annotParam()">annotParam</A>  ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
         </TD> 
       </TR>...  
-    </TABLE>     
+    </TABLE>  ï¿½  
     	 */
     	
    		String methodXpath = "//TR[contains(parent::TABLE/TR,'Required Element Summary')][position()>1]";
-        List methodList = typeXml.selectNodes( methodXpath );
+        List<?> methodList = typeXml.selectNodes( methodXpath );
 
         for (int i = 0; (methodList != null) && (i < methodList.size()); i++) {
             Method method = type.createMethod();
@@ -1124,7 +1124,7 @@ public class ParserUtils extends AbstractLogger {
      * @return a classname corresponding to a relative javadoc link.
      * @throws Exception if an absolute link is not resolved in the external links
      */
-    public String javadocLinkToTypename(String link, List externalLinks) throws UnresolvedExternalLinkException {
+    public String javadocLinkToTypename(String link, List<?> externalLinks) throws UnresolvedExternalLinkException {
         if ( link == null ) return null;
         if ( link.startsWith("http:") || link.startsWith("https:")) {
             // external link - try to resolve any java.sun.com external links
@@ -1171,10 +1171,10 @@ public class ParserUtils extends AbstractLogger {
      *
      * @return a list of fully qualified classnames.
      */
-    public List getAllFqTypenames(Document alltypesXml) {
-        List classes = alltypesXml.selectNodes(
+    public List<String> getAllFqTypenames(Document alltypesXml) {
+        List<?> classes = alltypesXml.selectNodes(
                 "//A[@target='classFrame']/@href");
-        List result = new ArrayList();
+        List<String> result = new ArrayList<>();
 
         for (int i = 0; i < classes.size(); i++) {
             String file = ((Node) classes.get(i)).getText();
@@ -1271,7 +1271,7 @@ public class ParserUtils extends AbstractLogger {
      * @param typeXml DOM of the type.
      * @param externalLinks list of externaly linked javadoc references.
      */
-    public void extendedType(Type t, Document typeXml, List externalLinks ) {
+    public void extendedType(Type t, Document typeXml, List<?> externalLinks ) {
         /* If the extended type is part of the javadoc, then it is referenced by a link
          "//DT[starts-with(normalize-space(text()),'extends')]/descendant::A/@href"
         <DL>
@@ -1293,7 +1293,7 @@ public class ParserUtils extends AbstractLogger {
         </DL>
         */
 
-        List extendedTypeDTs = typeXml.selectNodes(
+        List<?> extendedTypeDTs = typeXml.selectNodes(
                 "//DT[starts-with(normalize-space(text()),'extends')]");
         // there should only be one
         if(extendedTypeDTs != null && extendedTypeDTs.size() > 1) {
@@ -1323,7 +1323,7 @@ public class ParserUtils extends AbstractLogger {
      * @param type DOCUMENT ME!
      * @param typeXml DOCUMENT ME!
      */
-    public void determineTypeModifiers(Type type, Document typeXml, List externalLinks) {
+    public void determineTypeModifiers(Type type, Document typeXml, List<?> externalLinks) {
         // "//DT[parent::DL/preceding-sibling::H2 and not(contains(.,'All')) and not(contains(.,'Enclosing')) and not(contains(.,'Direct'))]"
 
         /*
@@ -1406,7 +1406,7 @@ public class ParserUtils extends AbstractLogger {
      * @param typeXml DOCUMENT ME!
      * @param externalLinks list of externaly linked javadoc references.
      */
-    public void determineImplementsList(Type t, Document typeXml, List externalLinks) {
+    public void determineImplementsList(Type t, Document typeXml, List<?> externalLinks) {
         /*
         "//DT[starts-with(normalize-space(text()),'implements')]/descendant::A/@href"
         <DT>implements java.lang.Runnable,
@@ -1417,7 +1417,7 @@ public class ParserUtils extends AbstractLogger {
         */
         String extension = t.isInterface() ? "extends" : "implements";
 
-        List implementsTypeDTs = typeXml.selectNodes(
+        List<?> implementsTypeDTs = typeXml.selectNodes(
                 "//DT[starts-with(normalize-space(text()),'" + extension
                 + "')]");
         for (int i = 0; (implementsTypeDTs != null) && (i < implementsTypeDTs.size());
@@ -1430,10 +1430,10 @@ public class ParserUtils extends AbstractLogger {
                 combinedText = combinedText.trim();
 
                 if (!"".equals(combinedText)) {
-                    List words = tokenizeWordListWithTypeParameters(combinedText, " ,\t\n\r\f");
-                    Iterator it = words.iterator();
+                    List<String> words = tokenizeWordListWithTypeParameters(combinedText, " ,\t\n\r\f");
+                    Iterator<String> it = words.iterator();
                     while(it.hasNext()) {
-                        String typeName = (String)it.next();
+                        String typeName = it.next();
         
                         //debug ( "token: " + typeName);
                         t.addImplementsType(typeName);

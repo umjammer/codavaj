@@ -34,8 +34,8 @@ import java.util.zip.ZipEntry;
  */
 public class TypeFactory extends AbstractLogger {
     
-    private Map types = new HashMap();
-    private Map packages = new HashMap();
+    private Map<String, Type> types = new HashMap<>();
+    private Map<String, Package> packages = new HashMap<>();
     
     /**
      * Creates a new TypeFactory object.
@@ -49,7 +49,7 @@ public class TypeFactory extends AbstractLogger {
         while( !Package.defaultPackageName.equals(pckg.getName())) {
             String parentName = pckg.getParentPackageName();
             
-            Package parentPckg = (Package)packages.get(parentName);
+            Package parentPckg = packages.get(parentName);
             if ( parentPckg == null ) {
                 parentPckg = new Package( parentName );
                 packages.put(parentPckg.getName(), parentPckg);
@@ -63,7 +63,7 @@ public class TypeFactory extends AbstractLogger {
     }
     private Package linkPackage( Type type ) {
         // link the type to it's package and vice versa
-        Package pckg = (Package)packages.get(type.getPackageName());
+        Package pckg = packages.get(type.getPackageName());
         if ( pckg == null ) {
             pckg = new Package( type.getPackageName());
             packages.put(pckg.getName(), pckg);
@@ -88,7 +88,7 @@ public class TypeFactory extends AbstractLogger {
      * @see Type#getTypeName()
      */
     public synchronized Type createType(String typename) {
-        Type type = (Type) types.get(typename);
+        Type type = types.get(typename);
 
         if (type == null) {
             type = new Type();
@@ -118,7 +118,7 @@ public class TypeFactory extends AbstractLogger {
      * @see Type#getTypeName()
      */
     public Type lookupType(String typeName) {
-        return (Type) types.get(typeName);
+        return types.get(typeName);
     }
 
     /**
@@ -127,8 +127,8 @@ public class TypeFactory extends AbstractLogger {
      *
      * @return the list of all Types.
      */
-    public List getTypes() {
-        return new ArrayList(types.values());
+    public List<Type> getTypes() {
+        return new ArrayList<>(types.values());
     }
 
     /**
@@ -137,8 +137,8 @@ public class TypeFactory extends AbstractLogger {
      * 
      * @return the list of all Packages.
      */
-    public List getPackages() {
-        return new ArrayList(packages.values());
+    public List<Package> getPackages() {
+        return new ArrayList<>(packages.values());
     }
     
     /**
@@ -146,7 +146,7 @@ public class TypeFactory extends AbstractLogger {
      * @return the default Package
      */
     public Package getDefaultPackage() {
-        return (Package)packages.get(Package.defaultPackageName);
+        return packages.get(Package.defaultPackageName);
     }
     
     /**
@@ -156,14 +156,14 @@ public class TypeFactory extends AbstractLogger {
     public void link() {
         // need to go through each type, determine if it is an inner type and
         // if it is, add it to it's outer type
-        List allTypes = getTypes();
+        List<Type> allTypes = getTypes();
 
         for (int i = 0; (allTypes != null) && (i < allTypes.size()); i++) {
-            Type type = (Type) allTypes.get(i);
+            Type type = allTypes.get(i);
 
             if (type.getEnclosingType() != null) {
                 // lookup the enclosing type
-                Type enclosingType = (Type) types.get(type.getEnclosingType());
+                Type enclosingType = types.get(type.getEnclosingType());
 
                 if (enclosingType != null) {
                     enclosingType.addInnerType(type);
@@ -193,7 +193,7 @@ public class TypeFactory extends AbstractLogger {
         
         SingleJarClassLoader cl = new SingleJarClassLoader(jar);
         
-        Enumeration jarentries = jar.entries();
+        Enumeration<?> jarentries = jar.entries();
         while ( jarentries.hasMoreElements() ) {
             ZipEntry entry = (ZipEntry)jarentries.nextElement();
             String filename = entry.getName();
@@ -205,7 +205,7 @@ public class TypeFactory extends AbstractLogger {
             
             try {
                 classname = classname.substring(0, classname.indexOf(".class"));
-                Class c = cl.loadClass(classname);
+                Class<?> c = cl.loadClass(classname);
                 if ( c.getDeclaringClass() != null ) {
                     // inner class - skip
                     continue;

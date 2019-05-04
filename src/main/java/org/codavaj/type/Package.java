@@ -29,8 +29,8 @@ public class Package {
     static final String defaultPackageName = "";
     private String name;
     private Package parentPackage;
-    private Map types = new HashMap();
-    private Map packages = new HashMap();
+    private Map<String, Type> types = new HashMap<>();
+    private Map<String, Package> packages = new HashMap<>();
 
     Package(String packagename) {
         name = packagename;
@@ -51,8 +51,8 @@ public class Package {
      *
      * @return all Types in the Package.
      */
-    public List getTypes() {
-        return new ArrayList(types.values());
+    public List<Type> getTypes() {
+        return new ArrayList<>(types.values());
     }
 
     /**
@@ -60,8 +60,8 @@ public class Package {
      *
      * @return all sub Packages.
      */
-    public List getPackages() {
-        return new ArrayList(packages.values());
+    public List<Package> getPackages() {
+        return new ArrayList<>(packages.values());
     }
 
     void addType(Type type) {

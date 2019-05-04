@@ -93,8 +93,8 @@ public class Wget extends AbstractProcess {
             WebConversation wc = new WebConversation();
 
             // stack to hold URL's which need fetching
-            Stack got = new Stack();
-            Stack fetch = new Stack();
+            Stack<String> got = new Stack<>();
+            Stack<String> fetch = new Stack<>();
 
             fetch.push(CONST_INDEX_HTML);
             fetch.push(CONST_INDEX_ALL_HTML);
@@ -111,9 +111,9 @@ public class Wget extends AbstractProcess {
         return;
     }
 
-    private void getPage(WebConversation wc, Stack got, Stack fetch)
+    private void getPage(WebConversation wc, Stack<String> got, Stack<String> fetch)
         throws Exception {
-        String relativePath = (String) fetch.pop();
+        String relativePath = fetch.pop();
         got.push(relativePath);
 
         String url = rootUrl + relativePath;
@@ -202,7 +202,7 @@ public class Wget extends AbstractProcess {
         throw new ProcessException("Failed to retrieve " + url, lastException);
     }
 
-    private void addRelativeUrl(String url, String link, Stack got, Stack fetch) {
+    private void addRelativeUrl(String url, String link, Stack<String> got, Stack<String> fetch) {
         String relativeUrl = linkUtil.relativeUrl(rootUrl, url, link);
 
         if (relativeUrl == null) {

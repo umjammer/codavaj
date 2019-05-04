@@ -35,7 +35,7 @@ public class ReflectionUtils {
      *
      * @return DOCUMENT ME!
      */
-    public static Type getType(Class clazz) {
+    public static Type getType(Class<?> clazz) {
         Type t = new Type();
         t.setTypeName(getTypeName(clazz.getName()));
         setModifiers(t, clazz.getModifiers());
@@ -53,7 +53,7 @@ public class ReflectionUtils {
             }
         }
 
-        Class[] implementsList = clazz.getInterfaces();
+        Class<?>[] implementsList = clazz.getInterfaces();
 
         for (int i = 0;
                 (implementsList != null) && (i < implementsList.length); i++) {
@@ -76,7 +76,7 @@ public class ReflectionUtils {
             getMethod(t, methods[i]);
         }
 
-        java.lang.reflect.Constructor[] constructors = clazz
+        java.lang.reflect.Constructor<?>[] constructors = clazz
             .getDeclaredConstructors();
 
         for (int i = 0; (constructors != null) && (i < constructors.length);
@@ -84,7 +84,7 @@ public class ReflectionUtils {
             getConstructor(t, constructors[i]);
         }
 
-        Class[] innerclasses = clazz.getDeclaredClasses();
+        Class<?>[] innerclasses = clazz.getDeclaredClasses();
 
         for (int i = 0; (innerclasses != null) && (i < innerclasses.length);
                 i++) {
@@ -106,7 +106,7 @@ public class ReflectionUtils {
         f.setName(reflectField.getName());
         setModifiers(f, reflectField.getModifiers());
 
-        Class returnType = reflectField.getType();
+        Class<?> returnType = reflectField.getType();
 
         if (isArray(returnType.getName())) {
             f.setArray(true);
@@ -126,7 +126,7 @@ public class ReflectionUtils {
     }
 
     private static void getConstructor(Type t,
-        java.lang.reflect.Constructor reflectConstructor) {
+        java.lang.reflect.Constructor<?> reflectConstructor) {
         Method m = t.createConstructor();
 
         m.setName(reflectConstructor.getName());
@@ -154,7 +154,7 @@ public class ReflectionUtils {
      *
      * @return the Parameter representing the reflection parameter.
      */
-    private static Parameter getParameter(Class parameter, String name) {
+    private static Parameter getParameter(Class<?> parameter, String name) {
         Parameter p = new Parameter();
 
         if (isArray(parameter.getName())) {
@@ -177,9 +177,9 @@ public class ReflectionUtils {
      * @param throwslist the reflection throws classes.
      * @param m the method to add the throws classes to.
      */
-    private static void setThrowsList(Class[] throwslist, Method m) {
+    private static void setThrowsList(Class<?>[] throwslist, Method m) {
         for (int i = 0; (throwslist != null) && (i < throwslist.length); i++) {
-            Class throwsclass = throwslist[i];
+            Class<?> throwsclass = throwslist[i];
             m.addThrows(throwsclass.getName());
         }
     }
@@ -190,7 +190,7 @@ public class ReflectionUtils {
      * @param parameters the reflection parameters
      * @param m the method to add the parameters to.
      */
-    private static void setMethodParameters(Class[] parameters, Method m) {
+    private static void setMethodParameters(Class<?>[] parameters, Method m) {
         for (int i = 0; (parameters != null) && (i < parameters.length); i++) {
             m.addParameter(getParameter(parameters[i], "p" + i));
         }

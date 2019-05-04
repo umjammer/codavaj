@@ -28,7 +28,7 @@ import java.util.List;
  * DOCUMENT ME!
  */
 public abstract class AbstractProcess extends AbstractLogger implements Process {
-    protected List listeners = new LinkedList();
+    protected List<ProgressListener> listeners = new LinkedList<>();
 
     /**
      * Creates a new AbstractProcess object.
@@ -56,10 +56,10 @@ public abstract class AbstractProcess extends AbstractLogger implements Process 
     }
 
     protected void notifyListeners(ProgressEvent event) {
-        Iterator it = listeners.iterator();
+        Iterator<ProgressListener> it = listeners.iterator();
 
         while (it.hasNext()) {
-            ProgressListener l = (ProgressListener) it.next();
+            ProgressListener l = it.next();
             l.notify(event);
         }
     }

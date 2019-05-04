@@ -37,8 +37,8 @@ public class SearchAlgorithm extends AbstractLogger {
 	private boolean matchAll( Package javadocPackage, Package jarPackage ) {
 		// a package matches another if all it's subpackages can be made to 
 		// match the other too.
-		List jarsubPackages = jarPackage.getPackages();
-		List docsubPackages = javadocPackage.getPackages();
+		List<?> jarsubPackages = jarPackage.getPackages();
+		List<?> docsubPackages = javadocPackage.getPackages();
 		
 		boolean matchesAllSubPackages = true;
 		for( int i = 0; i < docsubPackages.size(); i++ ) {
@@ -54,7 +54,7 @@ public class SearchAlgorithm extends AbstractLogger {
 		return matchesAllSubPackages;
 	}
 	
-	private boolean matchAny( Package javadocPackage, List jarPackages ) {
+	private boolean matchAny( Package javadocPackage, List<?> jarPackages ) {
 		for( int i=0; i < jarPackages.size(); i++ ) {
 			Package jarPackage = (Package)jarPackages.get(i);
 			

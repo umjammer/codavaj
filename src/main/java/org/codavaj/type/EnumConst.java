@@ -1,5 +1,5 @@
 /*
- *   Copyright 2005 Peter Klauser
+ *   Copyright 2009 Peter Klauser
  *
  *   Licensed under the Apache License, Version 2.0 (the "License");
  *   you may not use this file except in compliance with the License.
@@ -21,12 +21,14 @@ import java.util.List;
 
 /**
  * DOCUMENT ME!
+ * 
+ * Contributed by Brian Koehmstedt.
  */
-public class Field extends Parameter {
-    private Object value; // if we know the constant value
-    private List comment = null;
+public class EnumConst {
+    private List<?> comment = null;
+    private String name;
 
-    Field() {
+    EnumConst() {
         super();
     }
 
@@ -35,25 +37,7 @@ public class Field extends Parameter {
      *
      * @return DOCUMENT ME!
      */
-    public Object getValue() {
-        return value;
-    }
-
-    /**
-     * DOCUMENT ME!
-     *
-     * @param value DOCUMENT ME!
-     */
-    public void setValue(Object value) {
-        this.value = value;
-    }
-
-    /**
-     * DOCUMENT ME!
-     *
-     * @return DOCUMENT ME!
-     */
-    public List getComment() {
+    public List<?> getComment() {
         return comment;
     }
 
@@ -62,7 +46,26 @@ public class Field extends Parameter {
      *
      * @param comment DOCUMENT ME!
      */
-    public void setComment(List comment) {
+    public void setComment(List<?> comment) {
         this.comment = comment;
     }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @return DOCUMENT ME!
+     */
+    public String getName() {
+        return name;
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param name DOCUMENT ME!
+     */
+    public void setName(String name) {
+        this.name = name;
+    }
+
 }

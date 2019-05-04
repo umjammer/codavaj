@@ -68,7 +68,7 @@ public class SrcWriter extends AbstractProcess {
             throw new ProcessException("" + srcDir + " must be a directory.");
         }
 
-        List alltypes = typeFactory.getTypes();
+        List<?> alltypes = typeFactory.getTypes();
 
         for (int i = 0; (alltypes != null) && (i < alltypes.size()); i++) {
             Type type = (Type) alltypes.get(i);

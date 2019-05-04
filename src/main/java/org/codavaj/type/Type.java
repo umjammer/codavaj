@@ -25,13 +25,13 @@ import java.util.List;
  */
 public class Type extends Modifiable {
     private String superType = null;
-    private List implementsList = new ArrayList();
-    private List methodList = new ArrayList();
-    private List fieldList = new ArrayList();
-    private List enumConstList = new ArrayList();
-    private List constructorList = new ArrayList();
-    private List comment = null;
-    private List innerTypeList = new ArrayList();
+    private List<String> implementsList = new ArrayList<>();
+    private List<Method> methodList = new ArrayList<>();
+    private List<Field> fieldList = new ArrayList<>();
+    private List<EnumConst> enumConstList = new ArrayList<>();
+    private List<Method> constructorList = new ArrayList<>();
+    private List<?> comment = null;
+    private List<Type> innerTypeList = new ArrayList<>();
     private String typeName;
     private String typeParameters; // generics
     private Package pckg;
@@ -142,7 +142,7 @@ public class Type extends Modifiable {
      *
      * @return DOCUMENT ME!
      */
-    public List getImplementsList() {
+    public List<String> getImplementsList() {
         return implementsList;
     }
 
@@ -160,7 +160,7 @@ public class Type extends Modifiable {
      *
      * @return DOCUMENT ME!
      */
-    public List getMethodList() {
+    public List<Method> getMethodList() {
         return methodList;
     }
 
@@ -188,7 +188,7 @@ public class Type extends Modifiable {
      *
      * @return DOCUMENT ME!
      */
-    public List getFieldList() {
+    public List<Field> getFieldList() {
         return fieldList;
     }
 
@@ -209,7 +209,7 @@ public class Type extends Modifiable {
      *
      * @return DOCUMENT ME!
      */
-    public List getEnumConstList() {
+    public List<EnumConst> getEnumConstList() {
         return enumConstList;
     }
 
@@ -230,7 +230,7 @@ public class Type extends Modifiable {
      *
      * @return DOCUMENT ME!
      */
-    public List getConstructorList() {
+    public List<Method> getConstructorList() {
         return constructorList;
     }
 
@@ -251,7 +251,7 @@ public class Type extends Modifiable {
      *
      * @return DOCUMENT ME!
      */
-    public List getComment() {
+    public List<?> getComment() {
         return comment;
     }
 
@@ -260,7 +260,7 @@ public class Type extends Modifiable {
      *
      * @param typeComment DOCUMENT ME!
      */
-    public void setComment(List typeComment) {
+    public void setComment(List<?> typeComment) {
         this.comment = typeComment;
     }
 
@@ -283,7 +283,7 @@ public class Type extends Modifiable {
     public Field lookupFieldByName(String name) {
         for (int i = 0;
                 (getFieldList() != null) && (i < getFieldList().size()); i++) {
-            Field f = (Field) getFieldList().get(i);
+            Field f = getFieldList().get(i);
 
             if (name.equals(f.getName())) {
                 return f;
@@ -303,7 +303,7 @@ public class Type extends Modifiable {
     public EnumConst lookupEnumConstByName(String name) {
         for (int i = 0;
                 (getEnumConstList() != null) && (i < getEnumConstList().size()); i++) {
-            EnumConst ec = (EnumConst) getEnumConstList().get(i);
+            EnumConst ec = getEnumConstList().get(i);
 
             if (name.equals(ec.getName())) {
                 return ec;
@@ -320,11 +320,11 @@ public class Type extends Modifiable {
      *
      * @return a method if found, otherwise null.
      */
-    public Method lookupConstructor(List params) {
+    public Method lookupConstructor(List<?> params) {
         for (int i = 0;
                 (getConstructorList() != null)
                 && (i < getConstructorList().size()); i++) {
-            Method m = (Method) getConstructorList().get(i);
+            Method m = getConstructorList().get(i);
 
             if (m.getParameterList().size() != params.size()) {
                 continue;
@@ -333,7 +333,7 @@ public class Type extends Modifiable {
             boolean matchedAll = true;
 
             for (int j = 0; j < params.size(); j++) {
-                Parameter p1 = (Parameter) m.getParameterList().get(j);
+                Parameter p1 = m.getParameterList().get(j);
                 Parameter p2 = (Parameter) params.get(j);
 
                 if (!p1.getType().equals(p2.getType())) {
@@ -359,11 +359,11 @@ public class Type extends Modifiable {
      *
      * @return a method if found, otherwise null.
      */
-    public Method lookupMethodByName(String name, List params) {
+    public Method lookupMethodByName(String name, List<?> params) {
         for (int i = 0;
                 (getMethodList() != null) && (i < getMethodList().size());
                 i++) {
-            Method m = (Method) getMethodList().get(i);
+            Method m = getMethodList().get(i);
 
             if (name.equals(m.getName())) {
                 if (m.getParameterList().size() != params.size()) {
@@ -373,7 +373,7 @@ public class Type extends Modifiable {
                 boolean matchedAll = true;
 
                 for (int j = 0; j < params.size(); j++) {
-                    Parameter p1 = (Parameter) m.getParameterList().get(j);
+                    Parameter p1 = m.getParameterList().get(j);
                     Parameter p2 = (Parameter) params.get(j);
 
                     if (!p1.getType().equals(p2.getType())) {
@@ -397,7 +397,7 @@ public class Type extends Modifiable {
      *
      * @return DOCUMENT ME!
      */
-    public List getInnerTypeList() {
+    public List<Type> getInnerTypeList() {
         return innerTypeList;
     }
 

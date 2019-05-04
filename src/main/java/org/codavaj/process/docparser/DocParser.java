@@ -49,7 +49,7 @@ public class DocParser extends AbstractProcess {
      *  javadocClassName used by Tests to parse single classes instead of all docs
      */
     private String javadocClassName; 
-    private List externalLinks;
+    private List<?> externalLinks;
     private ParserUtils parserUtil = new ParserUtils();
     private TypeFactory typeFactory = new TypeFactory();
 
@@ -83,7 +83,7 @@ public class DocParser extends AbstractProcess {
                 + "allclasses-frame.html";
             Document allclasses = parserUtil.loadFileAsDom(allclassesfilename);
 
-            List classes = parserUtil.getAllFqTypenames(allclasses);
+            List<?> classes = parserUtil.getAllFqTypenames(allclasses);
 
             for (int i = 0; i < classes.size(); i++) {
                 String typeName = (String) classes.get(i);
@@ -99,7 +99,7 @@ public class DocParser extends AbstractProcess {
 
         // now the typeFactory is loaded with the type names
         // we must go through each in turn
-        List alltypes = typeFactory.getTypes();
+        List<?> alltypes = typeFactory.getTypes();
 
         for (int i = 0; (alltypes != null) && (i < alltypes.size()); i++) {
             Type type = (Type) alltypes.get(i);
@@ -182,7 +182,7 @@ public class DocParser extends AbstractProcess {
      *
      * @return the list of configured exteral references.
      */
-    public List getExternalLinks() {
+    public List<?> getExternalLinks() {
         return externalLinks;
     }
 
@@ -192,7 +192,7 @@ public class DocParser extends AbstractProcess {
      *
      * @param externalLinks the external references list.
      */
-    public void setExternalLinks(List externalLinks) {
+    public void setExternalLinks(List<?> externalLinks) {
         this.externalLinks = externalLinks;
     }
 

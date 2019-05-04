@@ -27,8 +27,8 @@ public class Method extends Modifiable {
     private String name;
     private String typeParameters; // generics, see http://java.sun.com/docs/books/jls/third_edition/html/classes.html#8.4.1
     private Parameter returnParameter; // ignore name
-    private List<Parameter> parameterList = new ArrayList<Parameter>();
-    private List<String> throwsList = new ArrayList<String>();
+    private List<Parameter> parameterList = new ArrayList<>();
+    private List<String> throwsList = new ArrayList<>();
     private List<String> comment = null;
     private String defaultValue = null;
     
@@ -75,7 +75,7 @@ public class Method extends Modifiable {
      *
      * @return DOCUMENT ME!
      */
-    public List getParameterList() {
+    public List<Parameter> getParameterList() {
         return parameterList;
     }
 
@@ -111,7 +111,7 @@ public class Method extends Modifiable {
      *
      * @return DOCUMENT ME!
      */
-    public List getThrowsList() {
+    public List<String> getThrowsList() {
         return throwsList;
     }
 
@@ -129,7 +129,7 @@ public class Method extends Modifiable {
      *
      * @return DOCUMENT ME!
      */
-    public List getComment() {
+    public List<String> getComment() {
         return comment;
     }
 
@@ -138,7 +138,7 @@ public class Method extends Modifiable {
      *
      * @param comment DOCUMENT ME!
      */
-    public void setComment(List comment) {
+    public void setComment(List<String> comment) {
         this.comment = comment;
     }
 

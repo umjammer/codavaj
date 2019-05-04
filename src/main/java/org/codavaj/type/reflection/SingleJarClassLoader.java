@@ -20,7 +20,7 @@ public class SingleJarClassLoader extends ClassLoader {
         this.jarFile = jarFile;
     }
 
-    protected Class findClass(String name) throws ClassNotFoundException {
+    protected Class<?> findClass(String name) throws ClassNotFoundException {
         System.out.println("findclass: " + name);
 
         byte[] b = loadClassData(name);

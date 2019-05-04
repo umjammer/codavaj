@@ -45,7 +45,7 @@ public class Main {
      * @return a TypeFactory handle on the resulting api
      * @throws Exception any problem.
      */
-    public static TypeFactory analyze( String javadocdir, List externalLinks ) throws Exception {
+    public static TypeFactory analyze( String javadocdir, List<String> externalLinks ) throws Exception {
         ProcessMonitor pm = new Main().new ProcessMonitor();
         
         DocParser dp = new DocParser();
@@ -77,7 +77,7 @@ public class Main {
         String output = args[2];
         
         // all subsequent arguments become external javadoc URL references
-        List externalLinks = new ArrayList();
+        List<String> externalLinks = new ArrayList<>();
         for( int i = 3; i < args.length; i++) {
             externalLinks.add(args[i]);
         }

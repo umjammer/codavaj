@@ -8,8 +8,8 @@ import org.codavaj.type.Package;
 
 public class SearchContext {
 
-	private Map types = new HashMap();
-	private Map packages = new HashMap();
+	private Map<String, Type> types = new HashMap<>();
+	private Map<String, Package> packages = new HashMap<>();
 
 	public void setMap( Package javadocPackage, Package jarPackage ) {
 		if ( packages.containsKey(jarPackage.getName())) {
@@ -30,22 +30,22 @@ public class SearchContext {
 	}
 	
 	public Package getMap( Package jarPackage ) {
-		return (Package)packages.get(jarPackage.getName());
+		return packages.get(jarPackage.getName());
 	}
 	
 	public Type getMap( Type jarType ) {
-		return (Type)types.get(jarType.getTypeName());
+		return types.get(jarType.getTypeName());
 	}
 	
 	public void removeMap( Type javadocType, Type jarType ) {
 		types.remove(jarType.getTypeName());
 	}
 	
-	public Map getPackageMap() {
+	public Map<String, Package> getPackageMap() {
 		return packages;
 	}
 	
-	public Map getTypeMap() {
+	public Map<String, Type> getTypeMap() {
 		return types;
 	}
 }
