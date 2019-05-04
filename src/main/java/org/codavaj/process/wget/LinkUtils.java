@@ -18,7 +18,6 @@ package org.codavaj.process.wget;
 
 import org.codavaj.AbstractLogger;
 
-
 /**
  * A utility set for working with URL's from javadocs.
  */
@@ -86,7 +85,7 @@ public class LinkUtils extends AbstractLogger {
         //basename :                e.html
         // (a)link : http://a/b/c/d/e.html -> d/e.html
         // (b)link : http://a/b/c/d
-        //    link : f/g 
+        //    link : f/g
         //         : ./f/g
         //         : ../../f/g -> http://a/b/c/d/e/../../f/g
         if (link.startsWith(URL_SEPARATOR)) {

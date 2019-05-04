@@ -21,16 +21,15 @@ import org.codavaj.ProcessException;
 import org.codavaj.process.AbstractProcess;
 import org.codavaj.type.TypeFactory;
 
-
 /**
  * DOCUMENT ME!
  */
 public class Search extends AbstractProcess {
 
-	private TypeFactory javadocTypeFactory;
-	private TypeFactory jarTypeFactory;
-	private SearchContext searchResult;
-	
+    private TypeFactory javadocTypeFactory;
+    private TypeFactory jarTypeFactory;
+    private SearchContext searchResult;
+
     /**
      * Creates a new Search object.
      */
@@ -44,35 +43,35 @@ public class Search extends AbstractProcess {
      */
     public void process() throws ProcessException {
         try {
-        	searchResult = new SearchContext();
-        	SearchAlgorithm algorithm = new SearchAlgorithm( javadocTypeFactory, jarTypeFactory, searchResult);
-        	algorithm.search();
-        	
-        	// the ctx holds the result!
+            searchResult = new SearchContext();
+            SearchAlgorithm algorithm = new SearchAlgorithm( javadocTypeFactory, jarTypeFactory, searchResult);
+            algorithm.search();
+
+            // the ctx holds the result!
         } catch ( Exception e ) {
             warning( "Search failed!", e );
             throw new ProcessException(e);
         }
     }
 
-	public TypeFactory getJarTypeFactory() {
-		return jarTypeFactory;
-	}
+    public TypeFactory getJarTypeFactory() {
+        return jarTypeFactory;
+    }
 
-	public void setJarTypeFactory(TypeFactory jarTypeFactory) {
-		this.jarTypeFactory = jarTypeFactory;
-	}
+    public void setJarTypeFactory(TypeFactory jarTypeFactory) {
+        this.jarTypeFactory = jarTypeFactory;
+    }
 
-	public TypeFactory getJavadocTypeFactory() {
-		return javadocTypeFactory;
-	}
+    public TypeFactory getJavadocTypeFactory() {
+        return javadocTypeFactory;
+    }
 
-	public void setJavadocTypeFactory(TypeFactory javadocTypeFactory) {
-		this.javadocTypeFactory = javadocTypeFactory;
-	}
+    public void setJavadocTypeFactory(TypeFactory javadocTypeFactory) {
+        this.javadocTypeFactory = javadocTypeFactory;
+    }
 
-	public SearchContext getSearchResult() {
-		return searchResult;
-	}
-    
+    public SearchContext getSearchResult() {
+        return searchResult;
+    }
+
 }

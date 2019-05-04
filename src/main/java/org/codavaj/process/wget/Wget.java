@@ -36,7 +36,6 @@ import java.io.InputStream;
 
 import java.util.Stack;
 
-
 /**
  * DOCUMENT ME!
  */
@@ -46,10 +45,10 @@ public class Wget extends AbstractProcess {
     private static final String CONST_INDEX_ALL_HTML = "index-all.html";
     private static final String CONST_CONSTANTS_HTML = "constant-values.html";
     private static final String CONST_SERIALIZED_FORM_HTML = "serialized-form.html";
-    
+
     private static final String HTTP_SRC_ATTRIBUTE = "src";
     private static final String HTML_CONTENT = "text/html";
-    
+
     private String rootUrl;
     private String javadocDirName;
     private boolean overwriteFiles = false;
@@ -210,7 +209,7 @@ public class Wget extends AbstractProcess {
         }
 
         if (got.contains(relativeUrl)) {
-            // link will be retrieved 
+            // link will be retrieved
             debug("skipping fetched link " + relativeUrl);
         } else if (fetch.contains(relativeUrl)) {
             debug("skipping planned link " + relativeUrl);

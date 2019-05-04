@@ -30,7 +30,6 @@ import java.io.Writer;
 
 import java.util.List;
 
-
 /**
  * DOCUMENT ME!
  */
@@ -39,9 +38,9 @@ public class WriterUtils {
     public static final String LABEL_CLASS = "class";
     public static final String LABEL_INTERFACE = "interface";
     public static final String LABEL_ENUM = "enum";
-    
+
     private static String LINEFEED = System.getProperty("line.separator");
-    
+
     /**
      * Formatted representation of the Type.
      *
@@ -151,9 +150,9 @@ public class WriterUtils {
         printModifiers(f, w);
         w.write(getSourceTypeName(f.getType()));
         if ( f.getTypeArgumentList() != null ) {
-        	w.write(getSourceTypeName(f.getTypeArgumentList()));
+            w.write(getSourceTypeName(f.getTypeArgumentList()));
         }
-        
+
         for (int degree = 0; f.isArray() && (degree < f.getDegree());
                 degree++) {
             w.write("[]");
@@ -179,13 +178,13 @@ public class WriterUtils {
         throws IOException {
         printComment(ec.getComment(), w, indentation);
         printIndentation(indentation, w);
-        
+
         w.write(ec.getName());
 
         w.write(isLast ? ";" : ",");
         printLineFeed(w);
     }
-    
+
     protected static void printInitialValue(String type, Writer w) throws IOException {
         if ("boolean".equals(type)) {
             w.write("false");
@@ -207,7 +206,7 @@ public class WriterUtils {
             w.write("null");
         }
     }
-    
+
     protected static void print(Object value, Writer w)
         throws IOException {
         if (value instanceof String) {
@@ -232,13 +231,13 @@ public class WriterUtils {
         printIndentation(indentation, w);
         printModifiers(m, w);
         if ( m.getTypeParameters() != null) {
-        	w.write(getSourceTypeName(m.getTypeParameters()));
-        	w.write(" ");
+            w.write(getSourceTypeName(m.getTypeParameters()));
+            w.write(" ");
         }
-        
+
         if (!isConstructor) {
             w.write(getSourceTypeName(m.getReturnParameter().getType()));
-            
+
             for (int degree = 0;
                     m.getReturnParameter().isArray()
                     && (degree < m.getReturnParameter().getDegree());
@@ -263,9 +262,9 @@ public class WriterUtils {
 
             w.write(getSourceTypeName(p.getType()));
             if ( p.getTypeArgumentList() != null ) {
-            	w.write(getSourceTypeName(p.getTypeArgumentList()));
+                w.write(getSourceTypeName(p.getTypeArgumentList()));
             }
-            
+
             for (int degree = 0; p.isArray() && (degree < p.getDegree());
                     degree++) {
                 w.write("[]");
@@ -273,9 +272,9 @@ public class WriterUtils {
 
             w.write(" ");
             if ( p.getName() != null ) {
-            	// jd1.4 java.rmi.activation.ActivationGroup_Stub has some classes
-            	// without parameter name in the list of parameters for some methods.
-            	w.write(p.getName());
+                // jd1.4 java.rmi.activation.ActivationGroup_Stub has some classes
+                // without parameter name in the list of parameters for some methods.
+                w.write(p.getName());
             }
         }
 
@@ -294,10 +293,10 @@ public class WriterUtils {
         }
 
         if (m.getDefaultValue() != null ) {
-        	w.write(" default ");
-        	w.write(m.getDefaultValue());
+            w.write(" default ");
+            w.write(m.getDefaultValue());
         }
-        
+
         if (m.isAbstract()) {
             w.write(";");
             printLineFeed(w);
@@ -360,7 +359,7 @@ public class WriterUtils {
     protected static String getSourceTypeName( String name ) {
         return name.replace('$', '.');
     }
-    
+
     protected static void print(Type t, Writer w, int indentation)
         throws IOException {
         if (t.getEnclosingType() == null) {
@@ -375,7 +374,7 @@ public class WriterUtils {
         printModifiers(t, w);
 
         if (t.isAnnotation()) {
-        	w.write("@");
+            w.write("@");
             w.write(LABEL_INTERFACE);
             w.write(" ");
         } else if (t.isInterface()) {
@@ -391,7 +390,7 @@ public class WriterUtils {
 
         w.write(t.getShortName());
         if ( t.getTypeParameters() != null ) {
-        	w.write(getSourceTypeName(t.getTypeParameters()));
+            w.write(getSourceTypeName(t.getTypeParameters()));
         }
 
         if (t.getSuperType() != null && !"java.lang.Object".equals(t.getSuperType()) && !(t.isEnum() && t.getSuperType().startsWith("java.lang.Enum"))) {
@@ -421,9 +420,9 @@ public class WriterUtils {
         indentation += 4;
 
         for (int i = 0; (t.getEnumConstList() != null) && (i < t.getEnumConstList().size()); i++) {
-		    EnumConst ec = t.getEnumConstList().get(i);
-		    printEnumConst(ec, w, indentation, i == t.getEnumConstList().size()-1);
-		    printLineFeed(w);
+            EnumConst ec = t.getEnumConstList().get(i);
+            printEnumConst(ec, w, indentation, i == t.getEnumConstList().size()-1);
+            printLineFeed(w);
         }
 
         for (int i = 0;

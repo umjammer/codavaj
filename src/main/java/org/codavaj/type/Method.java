@@ -19,7 +19,6 @@ package org.codavaj.type;
 import java.util.ArrayList;
 import java.util.List;
 
-
 /**
  * DOCUMENT ME!
  */
@@ -31,7 +30,7 @@ public class Method extends Modifiable {
     private List<String> throwsList = new ArrayList<>();
     private List<String> comment = null;
     private String defaultValue = null;
-    
+
     public String toString() {
         StringBuilder sb = new StringBuilder();
         sb.append(returnParameter);
@@ -142,31 +141,31 @@ public class Method extends Modifiable {
         this.comment = comment;
     }
 
-	/**
-	 * @return the defaultValue
-	 */
-	public String getDefaultValue() {
-		return defaultValue;
-	}
+    /**
+     * @return the defaultValue
+     */
+    public String getDefaultValue() {
+        return defaultValue;
+    }
 
-	/**
-	 * @param defaultValue the defaultValue to set
-	 */
-	public void setDefaultValue(String defaultValue) {
-		this.defaultValue = defaultValue;
-	}
+    /**
+     * @param defaultValue the defaultValue to set
+     */
+    public void setDefaultValue(String defaultValue) {
+        this.defaultValue = defaultValue;
+    }
 
-	/**
-	 * @return the typeParameters
-	 */
-	public String getTypeParameters() {
-		return typeParameters;
-	}
+    /**
+     * @return the typeParameters
+     */
+    public String getTypeParameters() {
+        return typeParameters;
+    }
 
-	/**
-	 * @param typeParameters the typeParameters to set
-	 */
-	public void setTypeParameters(String typeParameters) {
-		this.typeParameters = typeParameters;
-	}
+    /**
+     * @param typeParameters the typeParameters to set
+     */
+    public void setTypeParameters(String typeParameters) {
+        this.typeParameters = typeParameters;
+    }
 }

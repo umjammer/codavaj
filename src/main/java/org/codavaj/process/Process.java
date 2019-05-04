@@ -18,7 +18,6 @@ package org.codavaj.process;
 
 import org.codavaj.ProcessException;
 
-
 /**
  * DOCUMENT ME!
  *

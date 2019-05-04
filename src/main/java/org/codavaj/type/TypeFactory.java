@@ -28,15 +28,14 @@ import java.util.Map;
 import java.util.jar.JarFile;
 import java.util.zip.ZipEntry;
 
-
 /**
  * A container for Types.
  */
 public class TypeFactory extends AbstractLogger {
-    
+
     private Map<String, Type> types = new HashMap<>();
     private Map<String, Package> packages = new HashMap<>();
-    
+
     /**
      * Creates a new TypeFactory object.
      */
@@ -48,7 +47,7 @@ public class TypeFactory extends AbstractLogger {
         // link packages to themselves heirarchicaly
         while( !Package.defaultPackageName.equals(pckg.getName())) {
             String parentName = pckg.getParentPackageName();
-            
+
             Package parentPckg = packages.get(parentName);
             if ( parentPckg == null ) {
                 parentPckg = new Package( parentName );
@@ -56,7 +55,7 @@ public class TypeFactory extends AbstractLogger {
             }
             parentPckg.addPackage(pckg);
             pckg.setParentPackage(parentPckg);
-            
+
             // go up the heirarchy to the default package - adding it.
             pckg = parentPckg;
         }
@@ -70,11 +69,11 @@ public class TypeFactory extends AbstractLogger {
         }
         type.setPackage(pckg);
         pckg.addType(type);
-        
+
         linkPackage( pckg );
         return pckg;
     }
-    
+
     /**
      * Create a Type given it's name in the TypeFactory. The Type name
      * should use '.' for the package separator and '$' for inner class
@@ -84,7 +83,7 @@ public class TypeFactory extends AbstractLogger {
      * @param typename fully qualified type name - a.b.c.D$E
      *
      * @return a Type with the given fully qualified name.
-     * 
+     *
      * @see Type#getTypeName()
      */
     public synchronized Type createType(String typename) {
@@ -94,7 +93,7 @@ public class TypeFactory extends AbstractLogger {
             type = new Type();
             type.setTypeName(typename);
             types.put(typename, type);
-            
+
             linkPackage( type );
         }
 
@@ -107,14 +106,14 @@ public class TypeFactory extends AbstractLogger {
             linkPackage(t);
         }
     }
-    
+
     /**
      * Lookup a Type given it's fully qualified Type name.
      *
      * @param typeName the fully qualified Type name.
      *
      * @return a Type with the given fully qualified name, or null if not found.
-     * 
+     *
      * @see Type#getTypeName()
      */
     public Type lookupType(String typeName) {
@@ -134,13 +133,13 @@ public class TypeFactory extends AbstractLogger {
     /**
      * Return the list of all Packages in the container. The Packages are not
      * sorted in any way.
-     * 
+     *
      * @return the list of all Packages.
      */
     public List<Package> getPackages() {
         return new ArrayList<>(packages.values());
     }
-    
+
     /**
      * Return the default Package ( Package.getName returns "" )
      * @return the default Package
@@ -148,7 +147,7 @@ public class TypeFactory extends AbstractLogger {
     public Package getDefaultPackage() {
         return packages.get(Package.defaultPackageName);
     }
-    
+
     /**
      * Link inner types to their enclosing type. Set extends type to
      * java.lang.Object if there isn't one.
@@ -180,29 +179,28 @@ public class TypeFactory extends AbstractLogger {
             }
         }
     }
-    
-    
+
     /**
      * Load the class contents of a Jar file into a TypeFactory.
-     * 
+     *
      * @param jar the Jar file to load.
      * @return the class contents of a Jar file as a TypeFactory.
      */
     public static TypeFactory getInstance( JarFile jar ) {
         TypeFactory tf = new TypeFactory();
-        
+
         SingleJarClassLoader cl = new SingleJarClassLoader(jar);
-        
+
         Enumeration<?> jarentries = jar.entries();
         while ( jarentries.hasMoreElements() ) {
             ZipEntry entry = (ZipEntry)jarentries.nextElement();
             String filename = entry.getName();
-            
+
             String classname = filename.replace('/','.');
             if ( classname.indexOf(".class") == -1 ) {
                 continue; // not a .class file
             }
-            
+
             try {
                 classname = classname.substring(0, classname.indexOf(".class"));
                 Class<?> c = cl.loadClass(classname);
@@ -212,7 +210,7 @@ public class TypeFactory extends AbstractLogger {
                 }
                 Type clazz = ReflectionUtils.getType(c);
                 tf.addType(clazz);
-                
+
             } catch ( ClassNotFoundException e ) {
                 tf.warning("TypeFactory class not found!",e);
             } catch ( NoClassDefFoundError ncdfe ) {
@@ -222,5 +220,5 @@ public class TypeFactory extends AbstractLogger {
         tf.link();
         return tf;
     }
-    
+
 }

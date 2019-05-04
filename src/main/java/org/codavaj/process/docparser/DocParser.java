@@ -31,24 +31,23 @@ import java.io.File;
 
 import java.util.List;
 
-
 /**
  * Read an entire javadoc file tree and construct a reflection-like
  * representation of all it's constituent parts ( Classes, Interfaces ... ) in
  * a TypeFactory.
  */
 public class DocParser extends AbstractProcess {
-	
-	/**
-	 * directory to find javadoc root.
-	 */
+
+    /**
+     * directory to find javadoc root.
+     */
     private String javadocDirName;
     private boolean debugFlag;
-    
+
     /**
      *  javadocClassName used by Tests to parse single classes instead of all docs
      */
-    private String javadocClassName; 
+    private String javadocClassName;
     private List<?> externalLinks;
     private ParserUtils parserUtil = new ParserUtils();
     private TypeFactory typeFactory = new TypeFactory();
@@ -88,7 +87,7 @@ public class DocParser extends AbstractProcess {
             for (int i = 0; i < classes.size(); i++) {
                 String typeName = (String) classes.get(i);
                 if ( getJavadocClassName() == null || getJavadocClassName().equals(typeName)) {
-                	typeFactory.createType(typeName);
+                    typeFactory.createType(typeName);
                 }
             }
         } catch (Exception e) {
@@ -125,7 +124,7 @@ public class DocParser extends AbstractProcess {
                         + " is neither class, interface, enum or annotation.");
                 }
                 if ( isDebugFlag()) {
-                	info( parserUtil.prettyPrint(typeXml) );
+                    info( parserUtil.prettyPrint(typeXml) );
                 }
 
                 parserUtil.determineImplementsList(type, typeXml, externalLinks);
@@ -133,7 +132,7 @@ public class DocParser extends AbstractProcess {
                 parserUtil.determineTypeModifiers(type, typeXml, externalLinks);
 
                 parserUtil.determineElements(type, typeXml, externalLinks);
-                
+
                 parserUtil.determineMethods(type, typeXml, externalLinks);
 
                 parserUtil.determineFields(type, typeXml, externalLinks);
@@ -214,31 +213,31 @@ public class DocParser extends AbstractProcess {
         this.javadocDirName = javadocDirName;
     }
 
-	/**
-	 * @return the javadocClassName
-	 */
-	public String getJavadocClassName() {
-		return javadocClassName;
-	}
+    /**
+     * @return the javadocClassName
+     */
+    public String getJavadocClassName() {
+        return javadocClassName;
+    }
 
-	/**
-	 * @param javadocClassName the javadocClassName to set
-	 */
-	public void setJavadocClassName(String javadocClassName) {
-		this.javadocClassName = javadocClassName;
-	}
+    /**
+     * @param javadocClassName the javadocClassName to set
+     */
+    public void setJavadocClassName(String javadocClassName) {
+        this.javadocClassName = javadocClassName;
+    }
 
-	/**
-	 * @return the debugFlag
-	 */
-	public boolean isDebugFlag() {
-		return debugFlag;
-	}
+    /**
+     * @return the debugFlag
+     */
+    public boolean isDebugFlag() {
+        return debugFlag;
+    }
 
-	/**
-	 * @param debugFlag the debugFlag to set
-	 */
-	public void setDebugFlag(boolean debugFlag) {
-		this.debugFlag = debugFlag;
-	}
+    /**
+     * @param debugFlag the debugFlag to set
+     */
+    public void setDebugFlag(boolean debugFlag) {
+        this.debugFlag = debugFlag;
+    }
 }

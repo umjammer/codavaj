@@ -23,7 +23,6 @@ import org.codavaj.type.Modifiable;
 import org.codavaj.type.Parameter;
 import org.codavaj.type.Type;
 
-
 /**
  * DOCUMENT ME!
  */
@@ -41,15 +40,15 @@ public class ReflectionUtils {
         setModifiers(t, clazz.getModifiers());
 
         if ( clazz.isAnnotation() ) {
-        	t.setInterface(false);
-        	t.setAnnotation(true);
+            t.setInterface(false);
+            t.setAnnotation(true);
         }
-        
+
         if (clazz.getSuperclass() != null) {
             t.setSuperType(getTypeName(clazz.getSuperclass().getName()));
-            
+
             if ( "java.lang.Enum".equals(t.getSuperType())) {
-            	t.setEnum(true);
+                t.setEnum(true);
             }
         }
 
@@ -63,11 +62,11 @@ public class ReflectionUtils {
         java.lang.reflect.Field[] fields = clazz.getDeclaredFields();
 
         for (int i = 0; (fields != null) && (i < fields.length); i++) {
-        	if ( t.isEnum() && t.getTypeName().equals(fields[i].getType().getName())){
-        		getEnum(t, fields[i]);
-        	} else {
-        		getField(t, fields[i]);
-        	}
+            if ( t.isEnum() && t.getTypeName().equals(fields[i].getType().getName())){
+                getEnum(t, fields[i]);
+            } else {
+                getField(t, fields[i]);
+            }
         }
 
         java.lang.reflect.Method[] methods = clazz.getDeclaredMethods();

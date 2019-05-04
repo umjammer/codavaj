@@ -115,17 +115,17 @@ public class Parameter extends Modifiable {
         this.degree = degree;
     }
 
-	/**
-	 * @return the typeArgumentList
-	 */
-	public String getTypeArgumentList() {
-		return typeArgumentList;
-	}
+    /**
+     * @return the typeArgumentList
+     */
+    public String getTypeArgumentList() {
+        return typeArgumentList;
+    }
 
-	/**
-	 * @param typeArgumentList the typeArgumentList to set
-	 */
-	public void setTypeArgumentList(String typeArgumentList) {
-		this.typeArgumentList = typeArgumentList;
-	}
+    /**
+     * @param typeArgumentList the typeArgumentList to set
+     */
+    public void setTypeArgumentList(String typeArgumentList) {
+        this.typeArgumentList = typeArgumentList;
+    }
 }

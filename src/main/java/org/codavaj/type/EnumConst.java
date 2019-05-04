@@ -18,10 +18,9 @@ package org.codavaj.type;
 
 import java.util.List;
 
-
 /**
  * DOCUMENT ME!
- * 
+ *
  * Contributed by Brian Koehmstedt.
  */
 public class EnumConst {

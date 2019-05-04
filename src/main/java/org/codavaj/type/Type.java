@@ -19,9 +19,8 @@ package org.codavaj.type;
 import java.util.ArrayList;
 import java.util.List;
 
-
 /**
- * A reflection-like representation of java.lang.Class. 
+ * A reflection-like representation of java.lang.Class.
  */
 public class Type extends Modifiable {
     private String superType = null;
@@ -35,7 +34,7 @@ public class Type extends Modifiable {
     private String typeName;
     private String typeParameters; // generics
     private Package pckg;
-    
+
     /**
      * Creates a new Type object.
      */
@@ -64,7 +63,7 @@ public class Type extends Modifiable {
 
     /**
      * Return the type name without package information, - a.b.c.D becomes D.
-     * Inner classes are named without their enclosing type names - a.b.c.D$E 
+     * Inner classes are named without their enclosing type names - a.b.c.D$E
      * gives E.
      *
      * @return the type name without package information
@@ -409,17 +408,17 @@ public class Type extends Modifiable {
         this.pckg = pckg;
     }
 
-	/**
-	 * @return the typeParameters
-	 */
-	public String getTypeParameters() {
-		return typeParameters;
-	}
+    /**
+     * @return the typeParameters
+     */
+    public String getTypeParameters() {
+        return typeParameters;
+    }
 
-	/**
-	 * @param typeParameters the typeParameters to set
-	 */
-	public void setTypeParameters(String typeParameters) {
-		this.typeParameters = typeParameters;
-	}
+    /**
+     * @param typeParameters the typeParameters to set
+     */
+    public void setTypeParameters(String typeParameters) {
+        this.typeParameters = typeParameters;
+    }
 }

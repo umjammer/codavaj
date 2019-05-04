@@ -26,7 +26,6 @@ import org.codavaj.process.srcwriter.SrcWriter;
 import org.codavaj.process.wget.Wget;
 import org.codavaj.type.TypeFactory;
 
-
 /**
  * DOCUMENT ME!
  */
@@ -36,18 +35,18 @@ public class Main {
 
     /**
      * Derive a reflection-like API from a javadoc source tree. Resolve any type names
-     * to external javadoc links. External links to Sun's JDK javadoc apis are 
-     * automatically resolved ( i.e. http://java.sun.com/j2se/X/docs/api/ ) 
-     * 
+     * to external javadoc links. External links to Sun's JDK javadoc apis are
+     * automatically resolved ( i.e. http://java.sun.com/j2se/X/docs/api/ )
+     *
      * @param javadocdir the javadoc tree root
      * @param externalLinks a list of 'http://..' strings representing external javadoc refs.
-     * 
+     *
      * @return a TypeFactory handle on the resulting api
      * @throws Exception any problem.
      */
     public static TypeFactory analyze( String javadocdir, List<String> externalLinks ) throws Exception {
         ProcessMonitor pm = new Main().new ProcessMonitor();
-        
+
         DocParser dp = new DocParser();
         dp.setJavadocDirName(javadocdir);
         dp.setExternalLinks(externalLinks);
@@ -56,7 +55,7 @@ public class Main {
 
         return dp.getTypeFactory();
     }
-    
+
     /**
      * DOCUMENT ME!
      *
@@ -75,13 +74,13 @@ public class Main {
         String cmd = args[0];
         String input = args[1];
         String output = args[2];
-        
+
         // all subsequent arguments become external javadoc URL references
         List<String> externalLinks = new ArrayList<>();
         for( int i = 3; i < args.length; i++) {
             externalLinks.add(args[i]);
         }
-        
+
         ProcessMonitor pm = new Main().new ProcessMonitor();
 
         if ("wget".equals(cmd)) {

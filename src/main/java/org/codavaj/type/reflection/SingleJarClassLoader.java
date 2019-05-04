@@ -7,7 +7,6 @@ import java.io.InputStream;
 import java.util.jar.JarFile;
 import java.util.zip.ZipEntry;
 
-
 public class SingleJarClassLoader extends ClassLoader {
     JarFile jarFile = null;
 

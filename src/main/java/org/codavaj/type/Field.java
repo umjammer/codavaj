@@ -18,7 +18,6 @@ package org.codavaj.type;
 
 import java.util.List;
 
-
 /**
  * DOCUMENT ME!
  */
