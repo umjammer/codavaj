@@ -16,13 +16,14 @@
 
 package org.codavaj.process.loader;
 
-import org.codavaj.ProcessException;
+import java.io.File;
+import java.util.jar.JarFile;
 
+import org.codavaj.ProcessException;
 import org.codavaj.process.AbstractProcess;
 import org.codavaj.type.TypeFactory;
 
-import java.io.File;
-import java.util.jar.JarFile;
+import static org.codavaj.Logger.warning;
 
 /**
  * Load the complete contents of a Jar file into a TypeFactory.

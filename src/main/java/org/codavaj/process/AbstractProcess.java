@@ -16,17 +16,16 @@
 
 package org.codavaj.process;
 
-import org.codavaj.AbstractLogger;
-import org.codavaj.ProcessException;
-
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 
+import org.codavaj.ProcessException;
+
 /**
  * DOCUMENT ME!
  */
-public abstract class AbstractProcess extends AbstractLogger implements Process {
+public abstract class AbstractProcess implements Process {
     protected List<ProgressListener> listeners = new LinkedList<>();
 
     /**

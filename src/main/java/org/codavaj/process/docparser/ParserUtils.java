@@ -16,42 +16,45 @@
 
 package org.codavaj.process.docparser;
 
-import org.codavaj.AbstractLogger;
+import java.io.ByteArrayOutputStream;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.StringReader;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Locale;
+import java.util.ResourceBundle;
+import java.util.StringTokenizer;
+import java.util.function.Consumer;
+import java.util.function.Function;
 
-import org.codavaj.type.Field;
+import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
+
 import org.codavaj.type.EnumConst;
+import org.codavaj.type.Field;
 import org.codavaj.type.Method;
 import org.codavaj.type.Modifiable;
 import org.codavaj.type.Parameter;
 import org.codavaj.type.Type;
 import org.codavaj.type.TypeFactory;
-
 import org.dom4j.Document;
 import org.dom4j.DocumentException;
 import org.dom4j.Element;
 import org.dom4j.Node;
-
 import org.dom4j.io.DOMReader;
 import org.dom4j.io.OutputFormat;
 import org.dom4j.io.XMLWriter;
 
-import org.xml.sax.InputSource;
-import org.xml.sax.SAXException;
-
-import java.io.ByteArrayOutputStream;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.StringReader;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.StringTokenizer;
-import java.util.Iterator;
+import static com.rainerhahnekamp.sneakythrow.Sneaky.sneaked;
+import static org.codavaj.Logger.info;
+import static org.codavaj.Logger.warning;
 
 /**
  * DOCUMENT ME!
  */
-public class ParserUtils extends AbstractLogger {
+public class ParserUtils {
     /**
      * Creates a new ParserUtils object.
      */

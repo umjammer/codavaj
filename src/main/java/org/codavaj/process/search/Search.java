@@ -17,9 +17,10 @@
 package org.codavaj.process.search;
 
 import org.codavaj.ProcessException;
-
 import org.codavaj.process.AbstractProcess;
 import org.codavaj.type.TypeFactory;
+
+import static org.codavaj.Logger.warning;
 
 /**
  * DOCUMENT ME!

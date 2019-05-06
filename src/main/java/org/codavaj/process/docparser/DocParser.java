@@ -16,20 +16,19 @@
 
 package org.codavaj.process.docparser;
 
+import java.io.File;
+import java.util.List;
+
 import org.codavaj.Main;
 import org.codavaj.ProcessException;
-
 import org.codavaj.process.AbstractProcess;
 import org.codavaj.process.ProgressEvent;
-
 import org.codavaj.type.Type;
 import org.codavaj.type.TypeFactory;
-
 import org.dom4j.Document;
 
-import java.io.File;
-
-import java.util.List;
+import static org.codavaj.Logger.error;
+import static org.codavaj.Logger.info;
 
 /**
  * Read an entire javadoc file tree and construct a reflection-like

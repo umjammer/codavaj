@@ -16,10 +16,6 @@
 
 package org.codavaj.type;
 
-import org.codavaj.AbstractLogger;
-import org.codavaj.type.reflection.ReflectionUtils;
-import org.codavaj.type.reflection.SingleJarClassLoader;
-
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.HashMap;
@@ -28,10 +24,15 @@ import java.util.Map;
 import java.util.jar.JarFile;
 import java.util.zip.ZipEntry;
 
+import org.codavaj.type.reflection.ReflectionUtils;
+import org.codavaj.type.reflection.SingleJarClassLoader;
+
+import static org.codavaj.Logger.warning;
+
 /**
  * A container for Types.
  */
-public class TypeFactory extends AbstractLogger {
+public class TypeFactory {
 
     private Map<String, Type> types = new HashMap<>();
     private Map<String, Package> packages = new HashMap<>();
@@ -212,9 +213,9 @@ public class TypeFactory extends AbstractLogger {
                 tf.addType(clazz);
 
             } catch ( ClassNotFoundException e ) {
-                tf.warning("TypeFactory class not found!",e);
+                warning("TypeFactory class not found!",e);
             } catch ( NoClassDefFoundError ncdfe ) {
-                tf.warning("TypeFactory no class definition found!", ncdfe);
+                warning("TypeFactory no class definition found!", ncdfe);
             }
         }
         tf.link();

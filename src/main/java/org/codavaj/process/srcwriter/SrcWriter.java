@@ -16,22 +16,21 @@
 
 package org.codavaj.process.srcwriter;
 
-import org.codavaj.Main;
-import org.codavaj.MissingParameterException;
-import org.codavaj.ProcessException;
-
-import org.codavaj.process.AbstractProcess;
-import org.codavaj.process.ProgressEvent;
-
-import org.codavaj.type.Type;
-import org.codavaj.type.TypeFactory;
-
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-
 import java.util.List;
+
+import org.codavaj.Main;
+import org.codavaj.MissingParameterException;
+import org.codavaj.ProcessException;
+import org.codavaj.process.AbstractProcess;
+import org.codavaj.process.ProgressEvent;
+import org.codavaj.type.Type;
+import org.codavaj.type.TypeFactory;
+
+import static org.codavaj.Logger.error;
 
 /**
  * DOCUMENT ME!

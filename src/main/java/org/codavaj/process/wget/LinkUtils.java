@@ -16,12 +16,14 @@
 
 package org.codavaj.process.wget;
 
-import org.codavaj.AbstractLogger;
+import static org.codavaj.Logger.debug;
+import static org.codavaj.Logger.info;
+import static org.codavaj.Logger.warning;
 
 /**
  * A utility set for working with URL's from javadocs.
  */
-public class LinkUtils extends AbstractLogger {
+public class LinkUtils {
     /** Separator in URL's within javadocs. */
     protected static final String URL_SEPARATOR = "/";
 
