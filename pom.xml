@@ -19,8 +19,8 @@
         <version>3.1.0</version>
         <configuration>
           <sourcepath>src/test/java</sourcepath>
-          <debug>true</debug>
-          <verbose>true</verbose>
+          <debug>false</debug>
+          <verbose>false</verbose>
         </configuration>
       </plugin>
       <plugin>

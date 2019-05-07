@@ -1,6 +1,6 @@
 # CODAVAJ - ( javadoc in reverse ) README
 
-## Online
+## Download
 
 to download an entire javadoc tree for further processing use:
 
@@ -14,7 +14,7 @@ i.e.
 codavaj.cmd wget http://jumpi.sourceforge.net/javadoc/j2se tmp/jumpi/javadoc
 ```
 
-## Offline
+## Convert
 
 to convert local javadoc tree into java source ( external references to Sun's 
 standard javadocs are automatically resolved 

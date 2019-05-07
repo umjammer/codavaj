@@ -45,7 +45,7 @@ public class Main {
      * @throws Exception any problem.
      */
     public static TypeFactory analyze( String javadocdir, List<String> externalLinks ) throws Exception {
-        ProcessMonitor pm = new Main().new ProcessMonitor();
+        ProcessMonitor pm = new ProcessMonitor();
 
         DocParser dp = new DocParser();
         dp.setJavadocDirName(javadocdir);
@@ -81,7 +81,7 @@ public class Main {
             externalLinks.add(args[i]);
         }
 
-        ProcessMonitor pm = new Main().new ProcessMonitor();
+        ProcessMonitor pm = new ProcessMonitor();
 
         if ("wget".equals(cmd)) {
             Wget wget = new Wget();
@@ -110,9 +110,9 @@ public class Main {
         }
     }
 
-    class ProcessMonitor implements ProgressListener {
+    static class ProcessMonitor implements ProgressListener {
         public void notify(ProgressEvent event) {
-            System.out.println(event);
+            System.err.println(event);
         }
     }
 
