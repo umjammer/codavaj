@@ -48,17 +48,16 @@ import org.dom4j.io.OutputFormat;
 import org.dom4j.io.XMLWriter;
 
 import static com.rainerhahnekamp.sneakythrow.Sneaky.sneaked;
-import static org.codavaj.Logger.info;
 import static org.codavaj.Logger.warning;
 
 /**
- * DOCUMENT ME!
+ * for ~ 1.6.x
  */
 public class ParserUtils {
     /**
      * Creates a new ParserUtils object.
      */
-    public ParserUtils() {
+    protected ParserUtils() {
     }
 
     /**
@@ -142,7 +141,7 @@ public class ParserUtils {
     }
 
     /**
-     * DOCUMENT ME!
+     * a field or a method comment
      *
      * @param enclosingNode DOCUMENT ME!
      *
@@ -170,8 +169,8 @@ public class ParserUtils {
                     && "DL".equals(node.getName())) {
                 String commentLine = node.valueOf("normalize-space(.)");
 
-                if ( commentLine.indexOf("Default:") != -1 ) {
-                    defaultText += commentLine.substring(commentLine.indexOf("Default:")+8);
+                if (commentLine.indexOf(rb.getString("token.default") + ":") != -1) {
+                    defaultText += commentLine.substring(commentLine.indexOf(rb.getString("token.default") + ":") + 8);
                 }
             }
 
@@ -263,9 +262,14 @@ public class ParserUtils {
      */
     public void determineConstants(Document allconstants,
         TypeFactory typeFactory, List<?> externalLinks, boolean lenient) {
-        List<?> constantList = allconstants.selectNodes(
-                "//P/TABLE/TR[position() != 1]");
+        String xpath = "//P/TABLE/TR[position() != 1]";
+        determineConstants(xpath, allconstants, typeFactory, externalLinks, lenient);
+    }
 
+    /** constants */
+    protected void determineConstants(String xpath, Document allconstants, TypeFactory typeFactory, List<?> externalLinks, boolean lenient) {
+        List<?> constantList = allconstants.selectNodes(xpath);
+//System.err.println(constantList.size());
         for (int i = 0; (constantList != null) && (i < constantList.size());
                 i++) {
             Node constantNode = (Node) constantList.get(i);
@@ -307,6 +311,7 @@ public class ParserUtils {
                 continue;
             }
 
+//System.err.println(constantValue);
             field.setValue(determineConstantValue(field.getType(), constantValue));
         }
     }
@@ -400,121 +405,170 @@ public class ParserUtils {
         <H3>PROPERTY_ANTRUNNER_FILENAME</H3> public static final java.lang.String PROPERTY_ANTRUNNER_FILENAME
         <DL>...
          */
-        List<?> allNodes = typeXml.getRootElement().content();
 
         // H3 indicates method or field names, the following text up to the next NON 'A' element
         // belongs to the summary
+        List<?> allNodes = typeXml.getRootElement().content();
+        determineDetails(allNodes, externalLinks, c -> {
+                if (!c.parseOn && (c.node.getNodeType() == Node.ELEMENT_NODE)
+                        && "H3".equals(c.node.getName())) {
+                    // H3 starts the parsing off
+                    c.parseOn = true;
+                    c.name = c.node.getText().trim();
+                    c.text = "";
+
+                    return true;
+                } else {
+                    return false;
+                }
+            },
+            sneaked(c -> {
+                // finished
+                Element commentNode = c.node.getName().equals("DL")
+                    ? (Element) c.node : null;
+
+                c.parseOn = false;
+
+                if ((c.text.indexOf("(") != -1) && (c.text.indexOf(")") != -1)
+                        && (c.text.indexOf(")") >= c.text.indexOf("("))) {
+                    determineMethodDetails(type, c.text, c.name, commentNode);
+                } else {
+                    // Could be either a field, enum constant, or element detail
+                    determineFieldDetails(type, c.text, c.name, commentNode);
+                }
+
+                c.text = "";
+                c.name = "";
+            }));
+    }
+
+    /** */
+    protected static class Context {
+        /** umm... */
+        boolean parseDone = false;
         boolean parseOn = false;
         String name = "";
         String text = "";
+        Node node;
+    }
+
+    /**
+     * Creates method signature, html tags are removed.
+     *
+     * @param allNodes
+     * @param externalLinks
+     * @param starter 
+     * @param ender
+     */
+    protected void determineDetails(List<?> allNodes, List<?> externalLinks, Function<Context, Boolean> starter, Consumer<Context> ender) {
+        Context c = new Context();
 
         for (int i = 0; (allNodes != null) && (i < allNodes.size()); i++) {
-            Node node = (Node) allNodes.get(i);
+//System.err.println("i: " + i + "/" + allNodes.size());
+            c.node = (Node) allNodes.get(i);
 
-            if (!parseOn && (node.getNodeType() == Node.ELEMENT_NODE)
-                    && "H3".equals(node.getName())) {
-                // H3 starts the parsing off
-                parseOn = true;
-                name = node.getText().trim();
-                text = "";
-
+            if (starter.apply(c)) {
                 continue;
             }
 
-            if (parseOn) {
-                if (node.getNodeType() == Node.TEXT_NODE) {
-                    text += node.getStringValue();
-                } else if ((node.getNodeType() == Node.ELEMENT_NODE) && "A".equals(node.getName()) && node.getText().length() > 1 && node.valueOf("@href").indexOf(node.getText()) != -1) {
-                    text += javadocLinkToTypename(node.valueOf("@href"), externalLinks);
-                } else if ((node.getNodeType() == Node.ELEMENT_NODE) && "A".equals(node.getName())) {
-                    text += convertNodesToString((Element)node, externalLinks);
-                } else if (node.getNodeType() == Node.COMMENT_NODE) {
+            if (c.parseOn) {
+//System.err.println(c.node);
+                if (c.node.getNodeType() == Node.TEXT_NODE) {
+                    c.text += c.node.getStringValue();
+                } else if ((c.node.getNodeType() == Node.ELEMENT_NODE) && "A".equals(c.node.getName()) && c.node.getText().length() > 1 && c.node.valueOf("@href").indexOf(c.node.getText()) != -1) {
+                    c.text += javadocLinkToTypename(c.node.valueOf("@href"), externalLinks);
+                } else if ((c.node.getNodeType() == Node.ELEMENT_NODE) && "A".equals(c.node.getName())) {
+                    c.text += convertNodesToString((Element) c.node, externalLinks);
+                } else if (c.node.getNodeType() == Node.COMMENT_NODE) {
                     continue;
-                } else if (node.getNodeType() == Node.ENTITY_REFERENCE_NODE) {
-                    if(node.getStringValue().equals("&lt;"))
-                      text += "<";
-                    else if(node.getStringValue().equals("&gt;"))
-                      text += ">";
-                    else if(node.getStringValue().equals("&nbsp;"))
-                      text += " ";
-                    else
-                      continue;
-                } else if (node.getNodeType() == Node.ELEMENT_NODE) {
-                    // finished
-                    Element commentNode = node.getName().equals("DL")
-                        ? (Element) node : null;
-
-                    parseOn = false;
-
-                    if ((text.indexOf("(") != -1) && (text.indexOf(")") != -1)
-                            && (text.indexOf(")") >= text.indexOf("("))) {
-                        String methodParams = text.substring(text.indexOf("(")
-                                + 1, text.indexOf(")"));
-
-                        // the throws text comes after the 'throws' text
-                        String throwsParams = "";
-
-                        if (text.indexOf("throws", text.lastIndexOf(")")) != -1) {
-                            throwsParams = text.substring(text.indexOf(
-                                        "throws", text.lastIndexOf(")"))
-                                    + "throws".length());
-                        }
-
-                        text = text.substring(0, text.indexOf("("));
-
-                        List<Parameter> params = determineMethodParameterList(methodParams);
-                        Method m = type.lookupMethodByName(name, params);
-
-                        if (m == null) {
-                            // try looking up constructors
-                            m = type.lookupConstructor(params);
-                        }
-
-                        if (m != null) {
-                            extractMethodModifiers(m, text);
-
-                            //parse the throws list and assign the found exceptions to the method
-                            determineThrowsList(throwsParams, m);
-                            m.setComment(determineComment(commentNode));
-                        } else {
-                            warning(
-                                "failed to find method or constructor with name "
-                                + name + " in type " + type.getTypeName());
-                        }
+                } else if (c.node.getNodeType() == Node.ENTITY_REFERENCE_NODE) {
+                    if (c.node.getStringValue().equals("&lt;")) {
+                        c.text += "<";
+                    } else if (c.node.getStringValue().equals("&gt;")) {
+                        c.text += ">";
+                    } else if (c.node.getStringValue().equals("&nbsp;")) {
+                        c.text += " ";
                     } else {
-                        // Could be either a field, enum constant, or element detail
-                        Field f = type.lookupFieldByName(name);
-
-                        if (f != null) {
-                            extractFieldModifiers(f, text);
-                            f.setComment(determineComment(commentNode));
-                        } else {
-                            EnumConst ec = type.lookupEnumConstByName(name);
-
-                            if(ec != null) {
-                                ec.setComment(determineComment(commentNode));
-                            } else {
-                                Method m = type.lookupMethodByName(name, new ArrayList<Parameter>()); // annotation elements have no params
-
-                                if ( m != null ) {
-                                    extractMethodModifiers(m, text);
-                                    m.setComment(determineComment(commentNode));
-                                    m.setDefaultValue(determineDefault(commentNode));
-                                } else {
-                                    warning("No field, enum constant, or annotation element with name " + name + " in type " + type.getTypeName());
-                                }
-                            }
-                        }
+                        continue;
                     }
-
-                    text = "";
-                    name = "";
+                } else if (c.node.getNodeType() == Node.ELEMENT_NODE) {
+                    ender.accept(c);
                 }
             }
         }
     }
 
-    private List<Parameter> determineMethodParameterList(String methodParams)
+    /** method */
+    protected void determineMethodDetails(Type type, String text, String name, Element commentNode) throws Exception {
+        String methodParams = text.substring(text.indexOf("(")
+                + 1, text.indexOf(")"));
+
+        // the throws text comes after the 'throws' text
+        String throwsParams = "";
+
+        if (text.indexOf("throws", text.lastIndexOf(")")) != -1) {
+            throwsParams = text.substring(text.indexOf(
+                        "throws", text.lastIndexOf(")"))
+                    + "throws".length());
+        }
+
+        text = text.substring(0, text.indexOf("("));
+
+        List<Parameter> params = determineMethodParameterList(methodParams);
+        Method m = type.lookupMethodByName(name, params);
+
+        if (m == null) {
+            // try looking up constructors
+            m = type.lookupConstructor(params);
+        }
+
+        if (m != null) {
+            extractMethodModifiers(m, text);
+
+            //parse the throws list and assign the found exceptions to the method
+            determineThrowsList(throwsParams, m);
+            m.setComment(determineComment(commentNode));
+        } else {
+            warning(
+                "failed to find method or constructor with name "
+                + name + " in type " + type.getTypeName());
+         }
+    }
+
+    /** Could be either a field, enum constant, or element detail */
+    protected void determineFieldDetails(Type type, String text, String name, Element commentNode) throws Exception {
+        Field f = type.lookupFieldByName(name);
+        if (f != null) {
+            // field
+//System.err.println("field: " + f);
+            extractFieldModifiers(f, text);
+            f.setComment(determineComment(commentNode));
+        } else {
+            EnumConst ec = type.lookupEnumConstByName(name);
+
+            if (ec != null) {
+                // enum constant
+//System.err.println("enum: " + ec);
+                ec.setComment(determineComment(commentNode));
+            } else {
+                Method m = type.lookupMethodByName(name, new ArrayList<Parameter>()); // annotation elements have no params
+
+                if ( m != null ) {
+                    // method
+//System.err.println("method: " + m);
+                    extractMethodModifiers(m, text);
+//System.err.println("method comment: " + commentNode.asXML());
+                    m.setComment(determineComment(commentNode));
+//System.err.println("method default: " + determineDefault(commentNode));
+                    m.setDefaultValue(determineDefault(commentNode));
+                } else {
+                    warning("No field, enum constant, or annotation element with name " + name + " in type " + type.getTypeName());
+                }
+            }
+        }
+    }
+
+    protected List<Parameter> determineMethodParameterList(String methodParams)
         throws Exception {
         List<Parameter> params = new ArrayList<>();
 
@@ -525,10 +579,10 @@ public class ParserUtils {
             params.add(p);
         }
 
-        return(params);
+        return params;
     }
 
-    private List<String> tokenizeWordListWithTypeParameters(String text, String delimeters)
+    protected List<String> tokenizeWordListWithTypeParameters(String text, String delimeters)
     {
         int inTypeParamStackCount = 0;
         String currentWord = "";
@@ -563,7 +617,7 @@ public class ParserUtils {
         return(words);
     }
 
-    private void extractMethodModifiers(Method m, String text)
+    protected void extractMethodModifiers(Method m, String text)
         throws Exception {
         List<String> words = tokenizeWordListWithTypeParameters(text, " \t\n\r\f");
         Iterator<String> it = words.iterator();
@@ -572,7 +626,7 @@ public class ParserUtils {
         }
     }
 
-    private void determineThrowsList(String throwsParams, Method m) {
+    protected void determineThrowsList(String throwsParams, Method m) {
         List<String> words = tokenizeWordListWithTypeParameters(throwsParams, " ,\t\n\r\f");
         Iterator<String> it = words.iterator();
         while(it.hasNext()) {
@@ -580,7 +634,7 @@ public class ParserUtils {
         }
     }
 
-    private void extractFieldModifiers(Field f, String text)
+    protected void extractFieldModifiers(Field f, String text)
         throws Exception {
         List<String> words = tokenizeWordListWithTypeParameters(text, " \t\n\r\f");
         Iterator<String> it = words.iterator();
@@ -599,7 +653,7 @@ public class ParserUtils {
      * @throws Exception DOCUMENT ME!
      */
     public void determineFields(Type type, Document typeXml, List<?> externalLinks )
-        throws Exception {
+            throws Exception {
         // get the method details out of the Field Summary table
         // this information is missing the modifier info which is only
         // availible in the field details
@@ -625,10 +679,16 @@ public class ParserUtils {
         &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;DOCUMENT ME!</TD>
         </TR>
          */
-        String fieldsXpath = "//TR[contains(parent::TABLE/TR[1], 'Field Summary')][position()>1]";
+        String fieldsXpath = "//TR[contains(parent::TABLE/TR[1], '" + rb.getString("token.field_summary") + "')][position()>1]";
+        determineFields(fieldsXpath, type, typeXml, externalLinks);
+    }
+
+    /** fields */
+    protected void determineFields(String fieldsXpath, Type type, Document typeXml, List<?> externalLinks )
+        throws Exception {
         List<?> fieldList = typeXml.selectNodes( fieldsXpath );
 
-        for (int i = 0; (fieldList != null) && (i < fieldList.size()); i++) {
+        for (int i = 0; fieldList != null && i < fieldList.size(); i++) {
             Field field = type.createField();
 
             Node fieldNode = (Node) fieldList.get(i);
@@ -654,11 +714,12 @@ public class ParserUtils {
 
             //debug( "fieldname: " + fieldName );
             field.setName(fieldName);
+//System.err.println(field);
         }
     }
 
     /**
-     * DOCUMENT ME!
+     * enum constants
      *
      * @param type DOCUMENT ME!
      * @param typeXml DOCUMENT ME!
@@ -668,8 +729,15 @@ public class ParserUtils {
      */
     public void determineEnumConsts(Type type, Document typeXml, List<?> externalLinks )
         throws Exception {
-        String enumConstsXpath = "//TR[contains(parent::TABLE/TR[1], 'Enum Constant Summary')][position()>1]";
+        String enumConstsXpath = "//TR[contains(parent::TABLE/TR[1], '" + rb.getString("token.enum_constant_summary") + "')][position()>1]";
+        determineEnumConsts(enumConstsXpath, type, typeXml, externalLinks);
+    }
+
+    /** enum constants */
+    protected void determineEnumConsts(String enumConstsXpath, Type type, Document typeXml, List<?> externalLinks )
+            throws Exception {
         List<?> enumConstList = typeXml.selectNodes( enumConstsXpath );
+//System.err.println(enumConstList.size());
 
         for (int i = 0; (enumConstList != null) && (i < enumConstList.size()); i++) {
             EnumConst enumConst = type.createEnumConst();
@@ -680,6 +748,7 @@ public class ParserUtils {
             Element enumConstNameNode = (Element) enumConstNode.selectSingleNode(
                     "TD[position()=1]/A");
             String enumConstName = enumConstNameNode.getText();
+//System.err.println(enumConstName);
 
             //debug( "enumConstName: " + enumConstName );
             enumConst.setName(enumConstName);
@@ -719,7 +788,13 @@ public class ParserUtils {
         &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Creates a new MissingParameterException object.</TD>
         </TR>
          */
-           String constructorsXpath = "//TR[contains(parent::TABLE/TR,'Constructor Summary')][position()>1]";
+        String constructorsXpath = "//TR[contains(parent::TABLE/TR,'" + rb.getString("token.constructor_summary") + "')][position()>1]";
+        determineConstructors(constructorsXpath, type, typeXml, externalLinks);
+    }
+
+    /** constructor */
+    protected void determineConstructors(String constructorsXpath, Type type, Document typeXml, List<?> externalLinks)
+            throws Exception {
         List<?> methodList = typeXml.selectNodes( constructorsXpath );
 
         for (int i = 0; (methodList != null) && (i < methodList.size()); i++) {
@@ -739,9 +814,11 @@ public class ParserUtils {
 
             List<?> paramlistNodes = paramlistNode.content();
             determineMethodParameters(method, paramlistNodes, externalLinks );
+//System.err.println(method);
         }
     }
 
+    /** parameter */
     private void determineMethodParameters(Method method, List<?> paramlistNodes, List<?> externalLinks )
         throws Exception {
         Element methodNameElement = (Element) paramlistNodes.get(0); // link in the same file
@@ -797,6 +874,7 @@ public class ParserUtils {
         }
     }
 
+    /** parameter */
     private Parameter determineParameter(String parameterText, boolean parseName)
         throws Exception {
         // parses a parameter with modifiers, type, with or without a name
@@ -847,7 +925,8 @@ public class ParserUtils {
         return p;
     }
 
-    private Parameter determineMethodReturnParameter(Method m, String parameterText)
+    /** method return */
+    protected Parameter determineMethodReturnParameter(Method m, String parameterText)
         throws Exception {
         // parses a parameter with modifiers, type, with or without a name
         // private final java.lang.String[][] name
@@ -895,7 +974,7 @@ public class ParserUtils {
      *
      * @return plain text to be parsed.
      */
-    private String convertNodesToString(Element contentElement, List<?> externalLinks ) {
+    protected String convertNodesToString(Element contentElement, List<?> externalLinks ) {
         List<?> returnparamNodes = contentElement.content();
 
         String text = "";
@@ -904,27 +983,33 @@ public class ParserUtils {
                 (returnparamNodes != null)
                 && (paramIdx < returnparamNodes.size()); paramIdx++) {
             Node paramNode = (Node) returnparamNodes.get(paramIdx);
-
-            // need to combine method description into a single text which can then
-            // be parsed easily. If we link to another type rather than a generic type variable, the name of the link's text matches the classname
-            if (paramNode.getNodeType() == Node.ELEMENT_NODE && "A".equals(paramNode.getName()) && paramNode.getText().length() > 1 && paramNode.valueOf("@href").indexOf(paramNode.getText()) != -1) {
-                // reference to type
-                text += javadocLinkToTypename(paramNode.valueOf("@href"), externalLinks);
-            } else if (paramNode.getNodeType() == Node.ELEMENT_NODE) {
-                text += convertNodesToString((Element)paramNode,externalLinks);
-            } else if (paramNode.getNodeType() == Node.TEXT_NODE) {
-                text += paramNode.getStringValue();
-            } else if (paramNode.getNodeType() == Node.ENTITY_REFERENCE_NODE) {
-                if(paramNode.getStringValue().equals("&lt;"))
-                    text += "<";
-                else if(paramNode.getStringValue().equals("&gt;"))
-                    text += ">";
-                else if(paramNode.getStringValue().equals("&nbsp;"))
-                    text += " ";
-            }
+            text += convertNodesToString(paramNode, externalLinks);
         }
 
         return text;
+    }
+
+    /** */
+    protected String convertNodesToString(Node paramNode, List<?> externalLinks ) {
+        // need to combine method description into a single text which can then
+        // be parsed easily. If we link to another type rather than a generic type variable, the name of the link's text matches the classname
+        if (paramNode.getNodeType() == Node.ELEMENT_NODE && "A".equals(paramNode.getName()) && paramNode.getText().length() > 1 && paramNode.valueOf("@href").indexOf(paramNode.getText()) != -1) {
+            // reference to type
+            return javadocLinkToTypename(paramNode.valueOf("@href"), externalLinks);
+        } else if (paramNode.getNodeType() == Node.ELEMENT_NODE) {
+            return convertNodesToString((Element)paramNode,externalLinks);
+        } else if (paramNode.getNodeType() == Node.TEXT_NODE) {
+            return paramNode.getStringValue();
+        } else if (paramNode.getNodeType() == Node.ENTITY_REFERENCE_NODE) {
+            if (paramNode.getStringValue().equals("&lt;")) {
+                return "<";
+            } else if(paramNode.getStringValue().equals("&gt;")) {
+                return ">";
+            } else if(paramNode.getStringValue().equals("&nbsp;")) {
+                return " ";
+            }
+        }
+        return ""; // umm...
     }
 
     /**
@@ -990,8 +1075,14 @@ public class ParserUtils {
             </TD>
           </TR>
          */
+        String methodXpath = "//TR[contains(parent::TABLE/TR,'" + rb.getString("token.method_summary") + "')][position()>1]";
+        determineMethods(methodXpath, type, typeXml, externalLinks);
+    }
 
-           String methodXpath = "//TR[contains(parent::TABLE/TR,'Method Summary')][position()>1]";
+    /** method */
+    protected void determineMethods(String methodXpath, Type type, Document typeXml, List<?> externalLinks )
+        throws Exception {
+
         List<?> methodList = typeXml.selectNodes( methodXpath );
 
         for (int i = 0; (methodList != null) && (i < methodList.size()); i++) {
@@ -1022,11 +1113,12 @@ public class ParserUtils {
             List<?> paramlistNodes = paramlistNode.content();
 
             determineMethodParameters(method, paramlistNodes, externalLinks);
+//System.err.println(method);
         }
     }
 
     /**
-     * DOCUMENT ME!
+     * annotation elements.
      *
      * @param type DOCUMENT ME!
      * @param typeXml DOCUMENT ME!
@@ -1050,9 +1142,15 @@ public class ParserUtils {
       </TR>...
     </TABLE>  †
          */
+        String requiredMethodXpath = "//TR[contains(parent::TABLE/TR,'" + rb.getString("token.required_element_summary") + "')][position()>1]";
+        String optionalMethodXpath = "//TR[contains(parent::TABLE/TR,'" + rb.getString("token.optional_element_summary") + "')][position()>1]";
+        determineElements(requiredMethodXpath, optionalMethodXpath, type, typeXml, externalLinks);
+    }
 
-           String methodXpath = "//TR[contains(parent::TABLE/TR,'Required Element Summary')][position()>1]";
-        List<?> methodList = typeXml.selectNodes( methodXpath );
+    /** annotation elements. */
+    protected void determineElements(String requiredMethodXpath, String optionalMethodXpath, Type type, Document typeXml, List<?> externalLinks )
+            throws Exception {
+        List<?> methodList = typeXml.selectNodes( requiredMethodXpath );
 
         for (int i = 0; (methodList != null) && (i < methodList.size()); i++) {
             Method method = type.createMethod();
@@ -1081,8 +1179,7 @@ public class ParserUtils {
             method.setName(elementName);
         }
 
-           methodXpath = "//TR[contains(parent::TABLE/TR,'Optional Element Summary')][position()>1]";
-        methodList = typeXml.selectNodes( methodXpath );
+        methodList = typeXml.selectNodes( optionalMethodXpath );
 
         for (int i = 0; (methodList != null) && (i < methodList.size()); i++) {
             Method method = type.createMethod();
@@ -1132,7 +1229,7 @@ public class ParserUtils {
             // http://java.sun.com/j2se/1.3/docs/api/
             // http://java.sun.com/j2se/1.4.2/docs/api/
             // http://java.sun.com/j2se/1.5.0/docs/api/
-            if ( link.startsWith("http://java.sun.com/") && link.indexOf("/api/") != -1 ) {
+            if ((link.startsWith("http://java.sun.com/") || link.startsWith("https://docs.oracle.com/")) && link.indexOf("/api/") != -1) {
                 // standard sun api links - no need to explicitly mention these
                 link = link.substring(link.indexOf("/api/") + "/api/".length());
             } else {
@@ -1162,6 +1259,10 @@ public class ParserUtils {
             link = link.substring(0, link.indexOf("#"));
         }
 
+        if (link.indexOf("?") != -1) {
+            link = link.substring(0, link.indexOf("?"));
+        }
+
         return typenameFromFilename(link);
     }
 
@@ -1188,13 +1289,18 @@ public class ParserUtils {
     }
 
     private boolean containsToken( String token, String input ) {
-        StringTokenizer tokenizer = new StringTokenizer(input);
-        while( tokenizer.hasMoreTokens() ) {
-            if(  tokenizer.nextToken().equals(token) ) {
-                return true;
+        if (isLanguageOf(Locale.JAPANESE)) {
+            // japanese is not separated by white space.
+            return input.indexOf(token) >= 0;
+        } else {
+            StringTokenizer tokenizer = new StringTokenizer(input);
+            while( tokenizer.hasMoreTokens() ) {
+                if(  tokenizer.nextToken().equals(token) ) {
+                    return true;
+                }
             }
+            return false;
         }
-        return false;
     }
 
     /**
@@ -1209,7 +1315,7 @@ public class ParserUtils {
 
         // <H2>org.jumpi.spi.component Interface SequenceGenerator</H2>
         if ((classHeader != null) ) {
-            return containsToken( "Interface", classHeader );
+            return containsToken(rb.getString("token.interface"), classHeader);
         }
 
         return false;
@@ -1226,7 +1332,7 @@ public class ParserUtils {
         String classHeader = typeXml.valueOf("//H2");
         //<H2>org.codavaj.javadoc.input Annotation Type AnnotationClass</H2>
         if ((classHeader != null) ) {
-            return containsToken( "Annotation", classHeader ) && containsToken( "Type", classHeader );
+            return containsToken(rb.getString("token.annotation"), classHeader ) && containsToken(rb.getString("token.type"), classHeader);
         }
 
         return false;
@@ -1244,7 +1350,8 @@ public class ParserUtils {
 
         // <H2>org.jumpi.impl.connector.mpi11 Class MpiDestination</H2>
         if ( classHeader != null ) {
-            return containsToken("Class", classHeader );
+//System.err.println(rb.getString("token.class") + ", " + classHeader);
+            return containsToken(rb.getString("token.class"), classHeader);
         }
         return false;
     }
@@ -1258,9 +1365,10 @@ public class ParserUtils {
      */
     public boolean isEnum(Document typeXml) {
         String classHeader = typeXml.valueOf("//H2");
+//System.err.println(rb.getString("token.enum") + ", " + classHeader);
 
         if ( classHeader != null ) {
-            return containsToken("Enum", classHeader );
+            return containsToken(rb.getString("token.enum"), classHeader);
         }
         return false;
     }
@@ -1293,9 +1401,8 @@ public class ParserUtils {
           </DT>
         </DL>
         */
-
-        List<?> extendedTypeDTs = typeXml.selectNodes(
-                "//DT[starts-with(normalize-space(text()),'extends')]");
+        String xpath = "//DT[starts-with(normalize-space(text()),'extends')]";
+        List<?> extendedTypeDTs = typeXml.selectNodes(xpath);
         // there should only be one
         if(extendedTypeDTs != null && extendedTypeDTs.size() > 1) {
             warning("There should only be one extends");
@@ -1325,6 +1432,14 @@ public class ParserUtils {
      * @param typeXml DOCUMENT ME!
      */
     public void determineTypeModifiers(Type type, Document typeXml, List<?> externalLinks) {
+        Element typeDescriptorElement = (Element)typeXml.selectSingleNode("//DT[parent::DL/preceding-sibling::H2 and string-length(.) > 0 and not(contains(.,'All')) and not(contains(.,'Enclosing')) and not(contains(.,'Direct')) and not(contains(.,'Type Parameters:'))]");
+        String typeDescriptor = convertNodesToString(typeDescriptorElement, externalLinks);
+
+        determineTypeModifiers(typeDescriptor, type, typeXml, externalLinks);
+    }
+
+    /** */
+    protected void determineTypeModifiers(String typeDescriptor, Type type, Document typeXml, List<?> externalLinks) {
         // "//DT[parent::DL/preceding-sibling::H2 and not(contains(.,'All')) and not(contains(.,'Enclosing')) and not(contains(.,'Direct'))]"
 
         /*
@@ -1354,9 +1469,6 @@ public class ParserUtils {
           <DT>public interface Handle</DT>
         </DL>
         */
-
-        Element typeDescriptorElement = (Element)typeXml.selectSingleNode("//DT[parent::DL/preceding-sibling::H2 and string-length(.) > 0 and not(contains(.,'All')) and not(contains(.,'Enclosing')) and not(contains(.,'Direct')) and not(contains(.,'Type Parameters:'))]");
-        String typeDescriptor = convertNodesToString(typeDescriptorElement, externalLinks);
 
         // take the generics type parameters
         if ( typeDescriptor.indexOf("<") != -1 && typeDescriptor.lastIndexOf(">") != -1 && typeDescriptor.indexOf("<") < typeDescriptor.lastIndexOf(">")) {
@@ -1418,9 +1530,7 @@ public class ParserUtils {
         */
         String extension = t.isInterface() ? "extends" : "implements";
 
-        List<?> implementsTypeDTs = typeXml.selectNodes(
-                "//DT[starts-with(normalize-space(text()),'" + extension
-                + "')]");
+        List<?> implementsTypeDTs = typeXml.selectNodes("//DT[starts-with(normalize-space(text()),'" + extension + "')]");
         for (int i = 0; (implementsTypeDTs != null) && (i < implementsTypeDTs.size());
                 i++) {
             Node node = (Node) implementsTypeDTs.get(i);
@@ -1442,6 +1552,130 @@ public class ParserUtils {
                 }
             }
         }
+    }
+
+    /**
+     * @return "class" or "interface" or "enum" or "annotation".
+     */
+    protected String getLabelString(Type type) {
+        if (type.isEnum()) {
+            return rb.getString("token.enum");
+        } else if (type.isAnnotation()) {
+            // TODO check en
+            return rb.getString("token.annotation") + (isLanguageOf(Locale.JAPANESE) ? "" : " ") + rb.getString("token.type");
+        } else if (type.isInterface()) {
+            return rb.getString("token.interface");
+        } else {
+            return rb.getString("token.class");
+        }
+    }
+
+    /** i18n */
+    protected static ResourceBundle rb; 
+
+    /** determines language */
+    private boolean isLanguageOf(Locale locale) {
+        // umm...
+        return rb.getLocale().getLanguage().equals(locale.getLanguage());
+    }
+
+    /**
+     * Creates suitable parser.
+     *
+     * @param filename the filename to parse.
+     *
+     * @throws SAXException DOCUMENT ME!
+     * @throws IOException DOCUMENT ME!
+     * @throws DocumentException DOCUMENT ME!
+     */
+    public static ParserUtils factory(String filename)
+        throws SAXException, IOException, DocumentException {
+
+        Locale.setDefault(Locale.ENGLISH); // for token.properties
+
+        Document document = loadHtmlMetadataAsDom(new InputSource(new FileInputStream(filename)));
+        Node langNode = document.selectSingleNode("/HTML/@lang");
+
+        if (langNode != null) {
+            String lang = langNode.getText();
+System.err.println("lang: " + lang);
+
+            rb = ResourceBundle.getBundle("token", new Locale(lang));
+System.err.println("rb: " + lang + ": " + rb.getLocale());
+
+            String versionText = document.selectSingleNode("//comment()[contains(., \"Generated by javadoc\")]").getText();
+            int firstBracket = versionText.indexOf('(');
+            int secondBracket = versionText.indexOf(')', firstBracket);
+            String version = versionText.substring(firstBracket + 1, secondBracket);
+System.err.println("version: " + version);
+
+            if (version.startsWith("1.8")) { // TODO more flexible
+                return new ParserUtils8();
+            } else {
+                return new ParserUtils();
+            }
+        } else {
+            rb = ResourceBundle.getBundle("token");
+
+            return new ParserUtils();
+        }
+    }
+
+    /**
+     * load javadoc metadata
+     *
+     * @param html
+     *
+     * @return includes only html tag and comments.
+     *
+     * @throws SAXException DOCUMENT ME!
+     * @throws IOException DOCUMENT ME!
+     * @throws DocumentException DOCUMENT ME!
+     */
+    private static Document loadHtmlMetadataAsDom(InputSource html)
+        throws SAXException, IOException, DocumentException {
+        org.cyberneko.html.parsers.DOMParser parser = new org.cyberneko.html.parsers.DOMParser();
+
+        //XMLParserConfiguration parser = new HTMLConfiguration();
+        parser.setFeature("http://cyberneko.org/html/features/augmentations",
+            true);
+        parser.setFeature("http://cyberneko.org/html/features/report-errors",
+            false);
+        parser.setProperty("http://cyberneko.org/html/properties/names/elems",
+            "lower");
+        parser.setProperty("http://cyberneko.org/html/properties/names/attrs",
+            "lower");
+
+        parser.setFeature("http://apache.org/xml/features/scanner/notify-char-refs",
+            true);
+        parser.setFeature("http://cyberneko.org/html/features/scanner/notify-builtin-refs",
+            true);
+
+        parser.setFeature("http://apache.org/xml/features/dom/defer-node-expansion",
+            false);
+
+        org.cyberneko.html.filters.ElementRemover remover = new org.cyberneko.html.filters.ElementRemover();
+
+        // set which elements to accept
+        remover.acceptElement("html", new String[] { "lang" });
+
+        // completely remove script elements
+        remover.removeElement("script");
+        remover.removeElement("link");
+
+        org.apache.xerces.xni.parser.XMLDocumentFilter[] filters = new org.apache.xerces.xni.parser.XMLDocumentFilter[] {
+                new org.cyberneko.html.filters.Purifier(),
+                remover,
+            };
+        parser.setProperty("http://cyberneko.org/html/properties/filters",
+            filters);
+        parser.parse(html);
+
+        DOMReader xmlReader = new DOMReader();
+        Document result = xmlReader.read(parser.getDocument());
+
+//        info ("XML " + prettyPrint(result));
+        return result;
     }
 
     /**
@@ -1495,6 +1729,26 @@ public class ParserUtils {
 
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
 
+        org.apache.xerces.xni.parser.XMLDocumentFilter[] filters = new org.apache.xerces.xni.parser.XMLDocumentFilter[] {
+                new org.cyberneko.html.filters.Purifier(),
+                getRemover(),
+                new org.cyberneko.html.filters.Writer(baos, "UTF-8")
+            };
+        parser.setProperty("http://cyberneko.org/html/properties/filters",
+            filters);
+        parser.parse(html);
+
+        //String html = new String( baos.toByteArray(), "UTF-8");
+        //info( html );
+        DOMReader xmlReader = new DOMReader();
+        Document result = xmlReader.read(parser.getDocument());
+
+        //info ( "XML " + prettyPrint(result));
+        return result;
+    }
+
+    /** */
+    protected org.cyberneko.html.filters.ElementRemover getRemover() {
         org.cyberneko.html.filters.ElementRemover remover = new org.cyberneko.html.filters.ElementRemover();
 
         // set which elements to accept
@@ -1517,21 +1771,7 @@ public class ParserUtils {
         remover.removeElement("script");
         remover.removeElement("link");
 
-        org.apache.xerces.xni.parser.XMLDocumentFilter[] filters = new org.apache.xerces.xni.parser.XMLDocumentFilter[] {
-                new org.cyberneko.html.filters.Purifier(), remover,
-                new org.cyberneko.html.filters.Writer(baos, "UTF-8")
-            };
-        parser.setProperty("http://cyberneko.org/html/properties/filters",
-            filters);
-        parser.parse(html);
-
-        //String html = new String( baos.toByteArray(), "UTF-8");
-        //info( html );
-        DOMReader xmlReader = new DOMReader();
-        Document result = xmlReader.read(parser.getDocument());
-
-        //info ( "XML " + prettyPrint(result));
-        return result;
+        return remover;
     }
 
     /**

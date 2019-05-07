@@ -35,10 +35,6 @@ import java.util.List;
  */
 public class WriterUtils {
 
-    public static final String LABEL_CLASS = "class";
-    public static final String LABEL_INTERFACE = "interface";
-    public static final String LABEL_ENUM = "enum";
-
     private static String LINEFEED = System.getProperty("line.separator");
 
     /**
@@ -78,7 +74,7 @@ public class WriterUtils {
 
     protected static void printModifiers(Modifiable t, Writer w)
         throws IOException {
-        if (t.isPublic()) {
+        if (t.isPublic()) { // TODO label(!interface&&!@interface) && location(!class)
             w.write(Modifiable.MODIFIER_PUBLIC);
             w.write(" ");
         } else if (t.isProtected()) {
@@ -94,7 +90,7 @@ public class WriterUtils {
             w.write(" ");
         }
 
-        if (t.isAbstract()) {
+        if (t.isAbstract()) { // TODO label(!interface&&!@interface) && location(!class)
             w.write(Modifiable.MODIFIER_ABSTRACT);
             w.write(" ");
         }
@@ -362,7 +358,7 @@ public class WriterUtils {
 
     protected static void print(Type t, Writer w, int indentation)
         throws IOException {
-        if (t.getEnclosingType() == null) {
+        if (t.getEnclosingType() == null && !t.getPackage().getName().isEmpty()) {
             // print package statement
             printIndentation(indentation, w);
             w.write("package " + t.getPackage().getName() + ";");
@@ -373,20 +369,8 @@ public class WriterUtils {
         printIndentation(indentation, w);
         printModifiers(t, w);
 
-        if (t.isAnnotation()) {
-            w.write("@");
-            w.write(LABEL_INTERFACE);
-            w.write(" ");
-        } else if (t.isInterface()) {
-            w.write(LABEL_INTERFACE);
-            w.write(" ");
-        } else if(t.isEnum()) {
-            w.write(LABEL_ENUM);
-            w.write(" ");
-        } else {
-            w.write(LABEL_CLASS);
-            w.write(" ");
-        }
+        w.write(t.getLabelString());
+        w.write(" ");
 
         w.write(t.getShortName());
         if ( t.getTypeParameters() != null ) {

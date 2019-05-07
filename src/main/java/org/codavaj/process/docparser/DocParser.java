@@ -48,13 +48,14 @@ public class DocParser implements Progressive {
      */
     private String javadocClassName;
     private List<?> externalLinks;
-    private ParserUtils parserUtil = new ParserUtils();
+    private ParserUtils parserUtil;
     private TypeFactory typeFactory = new TypeFactory();
 
     /**
      * Creates a new DocParser object.
      */
     public DocParser() {
+        debugFlag = false;
     }
 
     /**
@@ -79,6 +80,9 @@ public class DocParser implements Progressive {
             // load and then process the list of all classes javadoc
             String allclassesfilename = javadocDirName + Main.FILE_SEPARATOR
                 + "allclasses-frame.html";
+
+            parserUtil = ParserUtils.factory(allclassesfilename);
+
             Document allclasses = parserUtil.loadFileAsDom(allclassesfilename);
 
             List<?> classes = parserUtil.getAllFqTypenames(allclasses);
