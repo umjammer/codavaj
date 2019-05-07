@@ -23,7 +23,7 @@ import java.util.Stack;
 
 import org.codavaj.Main;
 import org.codavaj.ProcessException;
-import org.codavaj.process.AbstractProcess;
+import org.codavaj.process.Progressive;
 import org.codavaj.process.ProgressEvent;
 
 import com.meterware.httpunit.GetMethodWebRequest;
@@ -41,7 +41,7 @@ import static org.codavaj.Logger.warning;
 /**
  * DOCUMENT ME!
  */
-public class Wget extends AbstractProcess {
+public class Wget implements Progressive {
 
     private static final String CONST_INDEX_HTML = "index.html";
     private static final String CONST_INDEX_ALL_HTML = "index-all.html";

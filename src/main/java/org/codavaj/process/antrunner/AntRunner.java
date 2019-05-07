@@ -20,14 +20,14 @@ import org.apache.tools.ant.launch.Launcher;
 
 import org.codavaj.ProcessException;
 
-import org.codavaj.process.AbstractProcess;
+import org.codavaj.process.Progressive;
 
 import java.io.File;
 
 /**
  * DOCUMENT ME!
  */
-public class AntRunner extends AbstractProcess {
+public class AntRunner implements Progressive {
 
     private String antFileName;
     private String antTarget;

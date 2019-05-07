@@ -16,23 +16,33 @@
 
 package org.codavaj.process;
 
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 
 import org.codavaj.ProcessException;
 
 /**
  * DOCUMENT ME!
  */
-public abstract class AbstractProcess implements Process {
-    protected List<ProgressListener> listeners = new LinkedList<>();
+public interface Progressive {
+    // TODO should be protected
+    static Map<Progressive, List<ProgressListener>> listeners = new HashMap<>();
 
     /**
-     * Creates a new AbstractProcess object.
+     * DOCUMENT ME!
+     *
+     * @param lstnr DOCUMENT ME!
      */
-    public AbstractProcess() {
-        super();
+    default void addProgressListener(ProgressListener lstnr) {
+        List<ProgressListener> l = listeners.get(this);
+        if (l == null) {
+            l = new LinkedList<>();
+            listeners.put(this, l);
+        }
+        l.add(lstnr);
     }
 
     /**
@@ -40,25 +50,23 @@ public abstract class AbstractProcess implements Process {
      *
      * @param lstnr DOCUMENT ME!
      */
-    public void addProgressListener(ProgressListener lstnr) {
-        listeners.add(lstnr);
+    default void removeProgressListener(ProgressListener lstnr) {
+        List<ProgressListener> l = listeners.get(this);
+        if (l != null) {
+            l.remove(lstnr);
+        }
     }
 
-    /**
-     * DOCUMENT ME!
-     *
-     * @param lstnr DOCUMENT ME!
-     */
-    public void removeProgressListener(ProgressListener lstnr) {
-        listeners.remove(lstnr);
-    }
+    // TODO should be protected
+    default void notifyListeners(ProgressEvent event) {
+        List<ProgressListener> ll = listeners.get(this);
+        if (ll != null) {
+            Iterator<ProgressListener> it = ll.iterator();
 
-    protected void notifyListeners(ProgressEvent event) {
-        Iterator<ProgressListener> it = listeners.iterator();
-
-        while (it.hasNext()) {
-            ProgressListener l = it.next();
-            l.notify(event);
+            while (it.hasNext()) {
+                ProgressListener l = it.next();
+                l.notify(event);
+            }
         }
     }
 
@@ -67,5 +75,5 @@ public abstract class AbstractProcess implements Process {
      *
      * @throws ProcessException DOCUMENT ME!
      */
-    abstract public void process() throws ProcessException;
+    void process() throws ProcessException;
 }

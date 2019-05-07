@@ -21,7 +21,7 @@ import java.util.List;
 
 import org.codavaj.Main;
 import org.codavaj.ProcessException;
-import org.codavaj.process.AbstractProcess;
+import org.codavaj.process.Progressive;
 import org.codavaj.process.ProgressEvent;
 import org.codavaj.type.Type;
 import org.codavaj.type.TypeFactory;
@@ -35,7 +35,7 @@ import static org.codavaj.Logger.info;
  * representation of all it's constituent parts ( Classes, Interfaces ... ) in
  * a TypeFactory.
  */
-public class DocParser extends AbstractProcess {
+public class DocParser implements Progressive {
 
     /**
      * directory to find javadoc root.

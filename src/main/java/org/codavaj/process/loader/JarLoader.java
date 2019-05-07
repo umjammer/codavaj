@@ -20,7 +20,7 @@ import java.io.File;
 import java.util.jar.JarFile;
 
 import org.codavaj.ProcessException;
-import org.codavaj.process.AbstractProcess;
+import org.codavaj.process.Progressive;
 import org.codavaj.type.TypeFactory;
 
 import static org.codavaj.Logger.warning;
@@ -28,7 +28,7 @@ import static org.codavaj.Logger.warning;
 /**
  * Load the complete contents of a Jar file into a TypeFactory.
  */
-public class JarLoader extends AbstractProcess {
+public class JarLoader implements Progressive {
     private String jarFileName;
     private TypeFactory typeFactory;
 
