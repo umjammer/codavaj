@@ -20,7 +20,10 @@ import java.io.ByteArrayOutputStream;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.StringReader;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
@@ -51,9 +54,10 @@ import static com.rainerhahnekamp.sneakythrow.Sneaky.sneaked;
 import static org.codavaj.Logger.warning;
 
 /**
- * for ~ 1.6.x
+ * for veersion ~ 1.6.x
  */
 public class ParserUtils {
+
     /**
      * Creates a new ParserUtils object.
      */
@@ -67,7 +71,7 @@ public class ParserUtils {
      *
      * @return the typename - java.lang.String
      */
-    public String typenameFromFilename(String filename) {
+    protected String typenameFromFilename(String filename) {
         if (filename.endsWith(".html")) {
             filename = filename.substring(0,
                     filename.length() - ".html".length());
@@ -103,7 +107,7 @@ public class ParserUtils {
      *
      * @throws Exception DOCUMENT ME!
      */
-    public List<String> determineComment(Element enclosingNode)
+    protected List<String> determineComment(Element enclosingNode)
         throws Exception {
         if (enclosingNode == null) {
             return null;
@@ -149,7 +153,7 @@ public class ParserUtils {
      *
      * @throws Exception DOCUMENT ME!
      */
-    public String determineDefault(Element enclosingNode)
+    protected String determineDefault(Element enclosingNode)
         throws Exception {
         if (enclosingNode == null) {
             return null;
@@ -267,9 +271,17 @@ public class ParserUtils {
     }
 
     /** constants */
+    protected String[] getConstantsXpath() {
+        return new String[] {
+            "TD[position()=2]/A/@href",
+            "TD[position()=2]/A",
+            "TD[position()=3]",
+        };
+    }
+
+    /** constants */
     protected void determineConstants(String xpath, Document allconstants, TypeFactory typeFactory, List<?> externalLinks, boolean lenient) {
         List<?> constantList = allconstants.selectNodes(xpath);
-//System.err.println(constantList.size());
         for (int i = 0; (constantList != null) && (i < constantList.size());
                 i++) {
             Node constantNode = (Node) constantList.get(i);
@@ -287,10 +299,10 @@ public class ParserUtils {
               <TD>"org.codavaj.antrunner.target"</TD>
             </TR>
             */
-            String typeName = javadocLinkToTypename(constantNode.valueOf(
-                        "TD[ position() = 2 ]/A/@href"), externalLinks );
-            String fieldName = constantNode.valueOf("TD[ position() = 2 ]/A");
-            String constantValue = constantNode.valueOf("TD[ position() = 3 ]");
+            String[] xpaths = getConstantsXpath();
+            String typeName = javadocLinkToTypename(constantNode.valueOf(xpaths[0]), externalLinks);
+            String fieldName = constantNode.valueOf(xpaths[1]);
+            String constantValue = constantNode.valueOf(xpaths[2]);
 
             //debug( typeName + "#" + fieldName +"=" +constantValue );
             Type type = typeFactory.lookupType(typeName);
@@ -311,7 +323,6 @@ public class ParserUtils {
                 continue;
             }
 
-//System.err.println(constantValue);
             field.setValue(determineConstantValue(field.getType(), constantValue));
         }
     }
@@ -324,7 +335,7 @@ public class ParserUtils {
      *
      * @return DOCUMENT ME!
      */
-    public Object determineConstantValue(String typeName, String constantvalue) {
+    protected Object determineConstantValue(String typeName, String constantvalue) {
         //( Boolean, Byte, Char, Double, Float, Integer, Long, Short )
         Object value = null;
 
@@ -464,7 +475,6 @@ public class ParserUtils {
         Context c = new Context();
 
         for (int i = 0; (allNodes != null) && (i < allNodes.size()); i++) {
-//System.err.println("i: " + i + "/" + allNodes.size());
             c.node = (Node) allNodes.get(i);
 
             if (starter.apply(c)) {
@@ -472,12 +482,13 @@ public class ParserUtils {
             }
 
             if (c.parseOn) {
-//System.err.println(c.node);
                 if (c.node.getNodeType() == Node.TEXT_NODE) {
                     c.text += c.node.getStringValue();
                 } else if ((c.node.getNodeType() == Node.ELEMENT_NODE) && "A".equals(c.node.getName()) && c.node.getText().length() > 1 && c.node.valueOf("@href").indexOf(c.node.getText()) != -1) {
                     c.text += javadocLinkToTypename(c.node.valueOf("@href"), externalLinks);
                 } else if ((c.node.getNodeType() == Node.ELEMENT_NODE) && "A".equals(c.node.getName())) {
+                    c.text += convertNodesToString((Element) c.node, externalLinks);
+                } else if ((c.node.getNodeType() == Node.ELEMENT_NODE) && "H3".equals(c.node.getName())) { // v.13
                     c.text += convertNodesToString((Element) c.node, externalLinks);
                 } else if (c.node.getNodeType() == Node.COMMENT_NODE) {
                     continue;
@@ -540,7 +551,6 @@ public class ParserUtils {
         Field f = type.lookupFieldByName(name);
         if (f != null) {
             // field
-//System.err.println("field: " + f);
             extractFieldModifiers(f, text);
             f.setComment(determineComment(commentNode));
         } else {
@@ -548,18 +558,14 @@ public class ParserUtils {
 
             if (ec != null) {
                 // enum constant
-//System.err.println("enum: " + ec);
                 ec.setComment(determineComment(commentNode));
             } else {
                 Method m = type.lookupMethodByName(name, new ArrayList<Parameter>()); // annotation elements have no params
 
                 if ( m != null ) {
                     // method
-//System.err.println("method: " + m);
                     extractMethodModifiers(m, text);
-//System.err.println("method comment: " + commentNode.asXML());
                     m.setComment(determineComment(commentNode));
-//System.err.println("method default: " + determineDefault(commentNode));
                     m.setDefaultValue(determineDefault(commentNode));
                 } else {
                     warning("No field, enum constant, or annotation element with name " + name + " in type " + type.getTypeName());
@@ -680,11 +686,11 @@ public class ParserUtils {
         </TR>
          */
         String fieldsXpath = "//TR[contains(parent::TABLE/TR[1], '" + rb.getString("token.field_summary") + "')][position()>1]";
-        determineFields(fieldsXpath, type, typeXml, externalLinks);
+        determineFields(fieldsXpath, type, typeXml, externalLinks, "TD[position()=2]/A");
     }
 
     /** fields */
-    protected void determineFields(String fieldsXpath, Type type, Document typeXml, List<?> externalLinks )
+    protected void determineFields(String fieldsXpath, Type type, Document typeXml, List<?> externalLinks, String nameXpath)
         throws Exception {
         List<?> fieldList = typeXml.selectNodes( fieldsXpath );
 
@@ -708,13 +714,11 @@ public class ParserUtils {
             field.setTypeArgumentList(temp.getTypeArgumentList());
 
             // now we get the parameter list
-            Element fieldNameNode = (Element) fieldNode.selectSingleNode(
-                    "TD[position()=2]/A");
+            Element fieldNameNode = (Element) fieldNode.selectSingleNode(nameXpath);
             String fieldName = fieldNameNode.getText();
 
             //debug( "fieldname: " + fieldName );
             field.setName(fieldName);
-//System.err.println(field);
         }
     }
 
@@ -730,14 +734,13 @@ public class ParserUtils {
     public void determineEnumConsts(Type type, Document typeXml, List<?> externalLinks )
         throws Exception {
         String enumConstsXpath = "//TR[contains(parent::TABLE/TR[1], '" + rb.getString("token.enum_constant_summary") + "')][position()>1]";
-        determineEnumConsts(enumConstsXpath, type, typeXml, externalLinks);
+        determineEnumConsts(enumConstsXpath, type, typeXml, externalLinks, "TD[position()=1]/A");
     }
 
     /** enum constants */
-    protected void determineEnumConsts(String enumConstsXpath, Type type, Document typeXml, List<?> externalLinks )
+    protected void determineEnumConsts(String enumConstsXpath, Type type, Document typeXml, List<?> externalLinks, String nameXpath)
             throws Exception {
         List<?> enumConstList = typeXml.selectNodes( enumConstsXpath );
-//System.err.println(enumConstList.size());
 
         for (int i = 0; (enumConstList != null) && (i < enumConstList.size()); i++) {
             EnumConst enumConst = type.createEnumConst();
@@ -745,10 +748,8 @@ public class ParserUtils {
             Node enumConstNode = (Node) enumConstList.get(i);
 
             // now we get the parameter list
-            Element enumConstNameNode = (Element) enumConstNode.selectSingleNode(
-                    "TD[position()=1]/A");
+            Element enumConstNameNode = (Element) enumConstNode.selectSingleNode(nameXpath);
             String enumConstName = enumConstNameNode.getText();
-//System.err.println(enumConstName);
 
             //debug( "enumConstName: " + enumConstName );
             enumConst.setName(enumConstName);
@@ -793,6 +794,21 @@ public class ParserUtils {
     }
 
     /** constructor */
+    protected List<?> getConstructorParamlistNodes(Node methodNode) {
+        // now we get the parameter list
+        Element paramlistNode = (Element) methodNode.selectSingleNode(
+                "TD[position()=2]");
+
+        if (paramlistNode == null) {
+            // constructor table is simplified if all constructors are public
+            paramlistNode = (Element) methodNode.selectSingleNode(
+                    "TD[position()=1]");
+        }
+
+        return paramlistNode.content();
+    }
+
+    /** constructor */
     protected void determineConstructors(String constructorsXpath, Type type, Document typeXml, List<?> externalLinks)
             throws Exception {
         List<?> methodList = typeXml.selectNodes( constructorsXpath );
@@ -802,24 +818,13 @@ public class ParserUtils {
 
             Node methodNode = (Node) methodList.get(i);
 
-            // now we get the parameter list
-            Element paramlistNode = (Element) methodNode.selectSingleNode(
-                    "TD[position()=2]");
-
-            if (paramlistNode == null) {
-                // constructor table is simplified if all constructors are public
-                paramlistNode = (Element) methodNode.selectSingleNode(
-                        "TD[position()=1]");
-            }
-
-            List<?> paramlistNodes = paramlistNode.content();
+            List<?> paramlistNodes = getConstructorParamlistNodes(methodNode);
             determineMethodParameters(method, paramlistNodes, externalLinks );
-//System.err.println(method);
         }
     }
 
     /** parameter */
-    private void determineMethodParameters(Method method, List<?> paramlistNodes, List<?> externalLinks )
+    protected void determineMethodParameters(Method method, List<?> paramlistNodes, List<?> externalLinks )
         throws Exception {
         Element methodNameElement = (Element) paramlistNodes.get(0); // link in the same file
         method.setName(methodNameElement.getText());
@@ -833,7 +838,7 @@ public class ParserUtils {
             //expect the methodName in the first parameter, so skip it
             Node paramNode = (Node) paramlistNodes.get(paramIdx);
 
-            //debug( paramNode.getNodeTypeName()+" "+paramNode.getStringValue() );
+            // debug( paramNode.getNodeTypeName()+" "+paramNode.getStringValue() );
             // need to combine method description into a single text which can then
             // be parsed easily. TypeVariables tend to have length 1 ( E, V, K etc ) which can easily match one character of the link to the generic parent
             if (paramNode.getNodeType() == Node.ELEMENT_NODE && "A".equals(paramNode.getName()) && paramNode.getText().length() > 1 && paramNode.valueOf("@href").indexOf(paramNode.getText()) != -1 ) {
@@ -1080,6 +1085,13 @@ public class ParserUtils {
     }
 
     /** method */
+    protected List<?> getMethodParamlistNodes(Node methodNode) {
+        // now we get the parameter list
+        Element paramlistNode = (Element) methodNode.selectSingleNode("TD[position()=2]");
+        return paramlistNode.content();
+    }
+
+    /** method */
     protected void determineMethods(String methodXpath, Type type, Document typeXml, List<?> externalLinks )
         throws Exception {
 
@@ -1105,15 +1117,10 @@ public class ParserUtils {
 
             method.setReturnParameter(returnType);
 
-            // now we get the parameter list
-            Element paramlistNode = (Element) methodNode.selectSingleNode(
-                    "TD[position()=2]");
-
             //if ( paramlistNode == null ) continue; // no method
-            List<?> paramlistNodes = paramlistNode.content();
+            List<?> paramlistNodes = getMethodParamlistNodes(methodNode);
 
             determineMethodParameters(method, paramlistNodes, externalLinks);
-//System.err.println(method);
         }
     }
 
@@ -1144,11 +1151,11 @@ public class ParserUtils {
          */
         String requiredMethodXpath = "//TR[contains(parent::TABLE/TR,'" + rb.getString("token.required_element_summary") + "')][position()>1]";
         String optionalMethodXpath = "//TR[contains(parent::TABLE/TR,'" + rb.getString("token.optional_element_summary") + "')][position()>1]";
-        determineElements(requiredMethodXpath, optionalMethodXpath, type, typeXml, externalLinks);
+        determineElements(requiredMethodXpath, optionalMethodXpath, type, typeXml, externalLinks, "TD[position()=2]/A");
     }
 
     /** annotation elements. */
-    protected void determineElements(String requiredMethodXpath, String optionalMethodXpath, Type type, Document typeXml, List<?> externalLinks )
+    protected void determineElements(String requiredMethodXpath, String optionalMethodXpath, Type type, Document typeXml, List<?> externalLinks, String nameXpath)
             throws Exception {
         List<?> methodList = typeXml.selectNodes( requiredMethodXpath );
 
@@ -1173,7 +1180,7 @@ public class ParserUtils {
             method.setReturnParameter(returnType);
 
             // now we get the element name
-            Element elemenNameNode = (Element) methodNode.selectSingleNode("TD[position()=2]/A");
+            Element elemenNameNode = (Element) methodNode.selectSingleNode(nameXpath);
 
             String elementName = elemenNameNode.getText();
             method.setName(elementName);
@@ -1202,7 +1209,7 @@ public class ParserUtils {
             method.setReturnParameter(returnType);
 
             // now we get the element name
-            Element elemenNameNode = (Element) methodNode.selectSingleNode("TD[position()=2]/A");
+            Element elemenNameNode = (Element) methodNode.selectSingleNode(nameXpath);
 
             String elementName = elemenNameNode.getText();
             method.setName(elementName);
@@ -1222,7 +1229,7 @@ public class ParserUtils {
      * @return a classname corresponding to a relative javadoc link.
      * @throws Exception if an absolute link is not resolved in the external links
      */
-    public String javadocLinkToTypename(String link, List<?> externalLinks) throws UnresolvedExternalLinkException {
+    protected String javadocLinkToTypename(String link, List<?> externalLinks) throws UnresolvedExternalLinkException {
         if ( link == null ) return null;
         if ( link.startsWith("http:") || link.startsWith("https:")) {
             // external link - try to resolve any java.sun.com external links
@@ -1274,8 +1281,13 @@ public class ParserUtils {
      * @return a list of fully qualified classnames.
      */
     public List<String> getAllFqTypenames(Document alltypesXml) {
-        List<?> classes = alltypesXml.selectNodes(
-                "//A[@target='classFrame']/@href");
+        String xpath = "//A[@target='classFrame']/@href";
+        return getAllFqTypenames(alltypesXml, xpath);
+    }
+
+    /** */
+    protected List<String> getAllFqTypenames(Document alltypesXml, String xpath) {
+        List<?> classes = alltypesXml.selectNodes(xpath);
         List<String> result = new ArrayList<>();
 
         for (int i = 0; i < classes.size(); i++) {
@@ -1303,6 +1315,11 @@ public class ParserUtils {
         }
     }
 
+    /** label */
+    protected String getLabelXpath() {
+        return "H2";
+    }
+
     /**
      * Identify whether the HTML represents an interface.
      *
@@ -1311,7 +1328,7 @@ public class ParserUtils {
      * @return whether the HTML represents an interface.
      */
     public boolean isInterface(Document typeXml) {
-        String classHeader = typeXml.valueOf("//H2");
+        String classHeader = typeXml.valueOf("//" + getLabelXpath());
 
         // <H2>org.jumpi.spi.component Interface SequenceGenerator</H2>
         if ((classHeader != null) ) {
@@ -1329,7 +1346,7 @@ public class ParserUtils {
      * @return whether the HTML represents an interface.
      */
     public boolean isAnnotation(Document typeXml) {
-        String classHeader = typeXml.valueOf("//H2");
+        String classHeader = typeXml.valueOf("//" + getLabelXpath());
         //<H2>org.codavaj.javadoc.input Annotation Type AnnotationClass</H2>
         if ((classHeader != null) ) {
             return containsToken(rb.getString("token.annotation"), classHeader ) && containsToken(rb.getString("token.type"), classHeader);
@@ -1346,11 +1363,10 @@ public class ParserUtils {
      * @return whether the HTML represents a class.
      */
     public boolean isClass(Document typeXml) {
-        String classHeader = typeXml.valueOf("//H2");
+        String classHeader = typeXml.valueOf("//" + getLabelXpath());
 
         // <H2>org.jumpi.impl.connector.mpi11 Class MpiDestination</H2>
         if ( classHeader != null ) {
-//System.err.println(rb.getString("token.class") + ", " + classHeader);
             return containsToken(rb.getString("token.class"), classHeader);
         }
         return false;
@@ -1364,8 +1380,7 @@ public class ParserUtils {
      * @return whether the HTML represents an enum.
      */
     public boolean isEnum(Document typeXml) {
-        String classHeader = typeXml.valueOf("//H2");
-//System.err.println(rb.getString("token.enum") + ", " + classHeader);
+        String classHeader = typeXml.valueOf("//" + getLabelXpath());
 
         if ( classHeader != null ) {
             return containsToken(rb.getString("token.enum"), classHeader);
@@ -1571,10 +1586,10 @@ public class ParserUtils {
     }
 
     /** i18n */
-    protected static ResourceBundle rb; 
+    protected static ResourceBundle rb;
 
     /** determines language */
-    private boolean isLanguageOf(Locale locale) {
+    protected boolean isLanguageOf(Locale locale) {
         // umm...
         return rb.getLocale().getLanguage().equals(locale.getLanguage());
     }
@@ -1593,6 +1608,12 @@ public class ParserUtils {
 
         Locale.setDefault(Locale.ENGLISH); // for token.properties
 
+        if (!Files.exists(Paths.get(filename))) {
+            filename = filename.replace("-frame", ""); // umm... for v.11
+        }
+        if (!Files.exists(Paths.get(filename))) {
+            filename = filename.replace(".html", "-index.html"); // umm... for v.13
+        }
         Document document = loadHtmlMetadataAsDom(new InputSource(new FileInputStream(filename)));
         Node langNode = document.selectSingleNode("/HTML/@lang");
 
@@ -1609,7 +1630,14 @@ System.err.println("rb: " + lang + ": " + rb.getLocale());
             String version = versionText.substring(firstBracket + 1, secondBracket);
 System.err.println("version: " + version);
 
-            if (version.startsWith("1.8")) { // TODO more flexible
+            version = version.replaceFirst("[_\\-]\\s*\\w+", "");
+            VersionComparator vc = new VersionComparator();
+System.err.println("version: " + version + ", " + vc.compare(version, "11.0.0") + ", " + vc.compare(version, "1.8.0"));
+            if (vc.compare(version, "13.0.0") >= 0) {
+                return new ParserUtils13();
+            } else if (vc.compare(version, "11.0.0") >= 0) {
+                return new ParserUtils11();
+            } else if (vc.compare(version, "1.8.0") >= 0) {
                 return new ParserUtils8();
             } else {
                 return new ParserUtils();
@@ -1705,7 +1733,7 @@ System.err.println("version: " + version);
      * @throws IOException DOCUMENT ME!
      * @throws DocumentException DOCUMENT ME!
      */
-    public Document loadHtmlAsDom(InputSource html)
+    protected Document loadHtmlAsDom(InputSource html)
         throws SAXException, IOException, DocumentException {
         org.cyberneko.html.parsers.DOMParser parser = new org.cyberneko.html.parsers.DOMParser();
 
@@ -1813,5 +1841,84 @@ System.err.println("version: " + version);
         }
 
         return doc.asXML();
+    }
+
+    /**
+     * @see "https://stackoverflow.com/questions/6701948/efficient-way-to-compare-version-strings-in-java"
+     */
+    static class VersionComparator implements Comparator<String> {
+        /**
+         * Compares two version strings.
+         *
+         * Use this instead of String.compareTo() for a non-lexicographical
+         * comparison that works for version strings. e.g. "1.10".compareTo("1.6").
+         *
+         * @param v1 a string of alpha numerals separated by decimal points.
+         * @param v2 a string of alpha numerals separated by decimal points.
+         * @return The result is 1 if v1 is greater than v2.
+         *         The result is -1 if v2 is greater than v1.
+         *         The result is zero if the strings are equal.
+         * @throws IllegalArgumentException if the version format is unrecognized.
+         */
+        public int compare(String v1, String v2) {
+            String[] v1Str = v1.split("\\.");
+            String[] v2Str = v2.split("\\.");
+            int v1Len = v1Str.length;
+            int v2Len = v2Str.length;
+
+            if (v1Len != v2Len) {
+                int count = Math.abs(v1Len - v2Len);
+                if (v1Len > v2Len)
+                    for (int i = 1; i <= count; i++)
+                        v2 += ".0";
+                else
+                    for (int i = 1; i <= count; i++)
+                        v1 += ".0";
+            }
+
+            if (v1.equals(v2))
+                return 0;
+
+            for (int i = 0; i < v1Str.length; i++) {
+                String str1 = "", str2 = "";
+                for (char c : v1Str[i].toCharArray()) {
+                    if (Character.isLetter(c)) {
+                        int u = c - 'a' + 1;
+                        if (u < 10) {
+                            str1 += String.valueOf("0" + u);
+                        } else {
+                            str1 += String.valueOf(u);
+                        }
+                    } else {
+                        str1 += String.valueOf(c);
+                    }
+                }
+                for (char c : v2Str[i].toCharArray()) {
+                    if (Character.isLetter(c)) {
+                        int u = c - 'a' + 1;
+                        if (u < 10) {
+                            str2 += String.valueOf("0" + u);
+                        } else {
+                            str2 += String.valueOf(u);
+                        }
+                    } else {
+                        str2 += String.valueOf(c);
+                    }
+                }
+                v1Str[i] = "1" + str1;
+                v2Str[i] = "1" + str2;
+
+                int num1 = Integer.parseInt(v1Str[i]);
+                int num2 = Integer.parseInt(v2Str[i]);
+
+                if (num1 != num2) {
+                    if (num1 > num2)
+                        return 1;
+                    else
+                        return -1;
+                }
+            }
+            throw new IllegalArgumentException();
+        }
     }
 }

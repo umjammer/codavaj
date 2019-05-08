@@ -1,3 +1,8 @@
+/*
+ * Copyright (c) 2019 by Naohide Sano, All rights reserved.
+ *
+ * Programmed by Naohide Sano
+ */
 
 package org.codavaj.process.docparser;
 
@@ -16,7 +21,7 @@ import org.dom4j.Node;
 import static com.rainerhahnekamp.sneakythrow.Sneaky.sneaked;
 
 /**
- * for 1.8.x
+ * for version 1.8.x
  *
  * TODO enum param (impossible?)
  *
@@ -25,11 +30,10 @@ import static com.rainerhahnekamp.sneakythrow.Sneaky.sneaked;
  */
 public class ParserUtils8 extends ParserUtils {
 
-    /** */
+    /** details */
     protected void determineComment(List<?> allNodes, List<String> commentText) {
         for (int i = 0; (allNodes != null) && (i < allNodes.size()); i++) {
             Node node = (Node) allNodes.get(i);
-//System.err.println(node.asXML());
 
             if (node.getNodeType() == Node.ELEMENT_NODE) {
                 if ("DIV".equals(node.getName())) {
@@ -75,11 +79,9 @@ System.err.println("ignore: " + dt.getText());
                                 switch (m) {
                                 case 1: // for @param, @exception
                                     text = text.replaceFirst(" - ", " ");
-//System.err.println("1: " + text);
                                     break;
                                 case 2: // for type parameter @param at class description
                                     text = text.replaceFirst("(\\w+) - ", "<$1> ");
-//System.err.println("2: " + text);
                                     break;
                                 }
                                 commentText.add("@" + tag + " " + text); // TODO a tag
@@ -92,10 +94,11 @@ System.err.println("ignore: " + dt.getText());
     }
 
     /*
+     * details
      * a field comment
      * a method comment
      */
-    public List<String> determineComment(Element enclosingNode) throws Exception {
+    protected List<String> determineComment(Element enclosingNode) throws Exception {
         if (enclosingNode == null) {
             return null;
         }
@@ -110,10 +113,11 @@ System.err.println("ignore: " + dt.getText());
     }
 
     /*
+     * details
      * a field comment
      * a method comment
      */
-    public String determineDefault(Element enclosingNode) throws Exception {
+    protected String determineDefault(Element enclosingNode) throws Exception {
         if (enclosingNode == null) {
             return null;
         }
@@ -121,7 +125,7 @@ System.err.println("ignore: " + dt.getText());
         return node != null ? node.getText() : null;
     }
 
-    /* */
+    /* class comment */
     public void determineClassComment(Type type, Document typeXml, List<?> externalLinks) throws Exception {
         List<String> commentText = new ArrayList<>();
 
@@ -135,13 +139,24 @@ System.err.println("ignore: " + dt.getText());
         type.setComment(commentText);
     }
 
-    /* */
+    /* constants */
     public void determineConstants(Document allconstants, TypeFactory typeFactory, List<?> externalLinks, boolean lenient) {
         String xpath = "//TABLE/TR[position() != 1]";
         determineConstants(xpath, allconstants, typeFactory, externalLinks, lenient);
     }
 
-    /* */
+    /** details */
+    protected String getDetailsXpath() {
+        return "H3";
+    }
+
+    /** details */
+    protected String getDetailsName(String text) {
+        text = text.trim();
+        return text.substring(0, text.indexOf('\n', 1));
+    }
+
+    /* details */
     public void determineDetails(Type type, Document typeXml, List<?> externalLinks) throws Exception {
 
         Function<Context, Boolean> f = c -> {
@@ -149,106 +164,100 @@ System.err.println("ignore: " + dt.getText());
             return c.parseDone;
         };
 
-        List<?> constructorDetails = typeXml.selectNodes("//H3[contains(text(),'" + rb.getString("token.constructor_details") + "')]/following-sibling::LI");
+        List<?> constructorDetails = typeXml.selectNodes("//" + getDetailsXpath() + "[contains(text(),'" + rb.getString("token.constructor_details") + "')]/following-sibling::LI");
         for (int i = 0; constructorDetails != null && i < constructorDetails.size(); i++) {
             Node node = (Node) constructorDetails.get(i);
 
             List<?> allNodes = ((Element) node).content();
             determineDetails(allNodes, externalLinks, f, sneaked(c -> {
-                String name = c.text.substring(1, c.text.indexOf('\n', 1));
-//System.err.println("constructor: " + name + ", " + c.text + "\n" + StringUtil.getDump(c.text.getBytes()));
+                String name = getDetailsName(c.text);
                 determineMethodDetails(type, c.text, name, (Element) node);
                 c.parseDone = true;
             }));
         }
 
-        List<?> methodDetails = typeXml.selectNodes("//H3[contains(text(),'" + rb.getString("token.method_details") + "')]/following-sibling::LI");
+        List<?> methodDetails = typeXml.selectNodes("//" + getDetailsXpath() + "[contains(text(),'" + rb.getString("token.method_details") + "')]/following-sibling::LI");
         for (int i = 0; methodDetails != null && i < methodDetails.size(); i++) {
             Node node = (Node) methodDetails.get(i);
 
             List<?> allNodes = ((Element) node).content();
             determineDetails(allNodes, externalLinks, f, sneaked(c -> {
-                String name = c.text.substring(1, c.text.indexOf('\n', 1));
-//System.err.println("method: " + name + ", " + c.text);
+                String name = getDetailsName(c.text);
                 determineMethodDetails(type, c.text, name, (Element) node);
                 c.parseDone = true;
             }));
         }
 
-        List<?> fieldDetails = typeXml.selectNodes("//H3[contains(text(),'" + rb.getString("token.field_details") + "')]/following-sibling::LI");
+        List<?> fieldDetails = typeXml.selectNodes("//" + getDetailsXpath() + "[contains(text(),'" + rb.getString("token.field_details") + "')]/following-sibling::LI");
         for (int i = 0; fieldDetails != null && i < fieldDetails.size(); i++) {
             Node node = (Node) fieldDetails.get(i);
 
             List<?> allNodes = ((Element) node).content();
             determineDetails(allNodes, externalLinks, f, sneaked(c -> {
-                String name = c.text.substring(1, c.text.indexOf('\n', 1));
-//System.err.println("field: " + name + ", " + c.text);
+                String name = getDetailsName(c.text);
                 determineFieldDetails(type, c.text, name, (Element) node);
                 c.parseDone = true;
             }));
         }
 
         // annotation
-        List<?> elementDetails = typeXml.selectNodes("//H3[contains(text(),'" + rb.getString("token.element_details") + "')]/../../LI");
+        List<?> elementDetails = typeXml.selectNodes("//" + getDetailsXpath() + "[contains(text(),'" + rb.getString("token.element_details") + "')]/../../LI");
         for (int i = 0; elementDetails != null && i < elementDetails.size(); i++) {
             Node node = (Node) elementDetails.get(i);
-//System.err.println(i);
             List<?> allNodes = ((Element) node.selectSingleNode("LI")).content();
             determineDetails(allNodes, externalLinks, f, sneaked(c -> {
-                String name = c.text.substring(1, c.text.indexOf('\n', 1));
-//System.err.println("element: " + name + ", " + c.text);
+                String name = getDetailsName(c.text);
                 determineFieldDetails(type, c.text, name, (Element) node.selectSingleNode("LI"));
                 c.parseDone = true;
             }));
         }
 
         // enum
-        List<?> enumCOnstantDetails = typeXml.selectNodes("//H3[contains(text(),'" + rb.getString("token.enum_constant_details") + "')]/following-sibling::LI");
+        List<?> enumCOnstantDetails = typeXml.selectNodes("//" + getDetailsXpath() + "[contains(text(),'" + rb.getString("token.enum_constant_details") + "')]/following-sibling::LI");
         for (int i = 0; enumCOnstantDetails != null && i < enumCOnstantDetails.size(); i++) {
             Node node = (Node) enumCOnstantDetails.get(i);
 
             List<?> allNodes = ((Element) node).content();
             determineDetails(allNodes, externalLinks, f, sneaked(c -> {
                 String name = c.text.substring(1, c.text.indexOf('\n', 1));
-//System.err.println("enum constant: " + name + ", " + c.text);
                 determineFieldDetails(type, c.text, name, (Element) node);
                 c.parseOn = false;
             }));
         }
     }
 
-    /* */
+    /* field */
     public void determineFields(Type type, Document typeXml, List<?> externalLinks) throws Exception {
         String fieldsXpath = "//TABLE[contains(text(),'" + rb.getString("token.field") + "')]/TR[position()>1]";
-        determineFields(fieldsXpath, type, typeXml, externalLinks);
+        determineFields(fieldsXpath, type, typeXml, externalLinks, "TD[position()=2]/A");
     }
 
-    /* */
+    /* enum */
     public void determineEnumConsts(Type type, Document typeXml, List<?> externalLinks) throws Exception {
         String enumConstsXpath = "//TABLE[contains(text(),'" + rb.getString("token.enum_constant") + "')]/TR[position()>1]";
-        determineEnumConsts(enumConstsXpath, type, typeXml, externalLinks);
+        determineEnumConsts(enumConstsXpath, type, typeXml, externalLinks, "TD[position()=1]/A");
     }
 
-    /* */
+    /* constructor */
     public void determineConstructors(Type type, Document typeXml, List<?> externalLinks) throws Exception {
         String constructorsXpath = "//TABLE[contains(text(),'" + rb.getString("token.constructor") + "')]/TR[position()>1]";
         determineConstructors(constructorsXpath, type, typeXml, externalLinks);
     }
 
-    /* */
+    /* method */
     public void determineMethods(Type type, Document typeXml, List<?> externalLinks) throws Exception {
         String methodXpath = "//TABLE[contains(text(),'" + rb.getString("token.all_methods") + "')]/TR[position()>1]";
         determineMethods(methodXpath, type, typeXml, externalLinks);
     }
 
-    /* */
+    /* annotation */
     public void determineElements(Type type, Document typeXml, List<?> externalLinks ) throws Exception {
         String requiredMethodXpath = "//TABLE[contains(text(),'" + rb.getString("token.required_element") + "')]/TR[position()>1]";
         String optionalMethodXpath = "//TABLE[contains(text(),'" + rb.getString("token.optional_element") + "')]/TR[position()>1]";
-        determineElements(requiredMethodXpath, optionalMethodXpath, type, typeXml, externalLinks);
+        determineElements(requiredMethodXpath, optionalMethodXpath, type, typeXml, externalLinks, "TD[position()=2]/A");
     }
 
-    /** umm... */
+    /** extends umm... */
     public void extendedType(Type t, Document typeXml, List<?> externalLinks ) {
         final String keyword = "extends";
         Node node = typeXml.selectSingleNode("//LI/text()[contains(.,'" + keyword + "')]/following-sibling::A[1]");
@@ -268,10 +277,11 @@ System.err.println("ignore: " + dt.getText());
         }
     }
 
-    /* */
+    /* modifiers */
     public void determineTypeModifiers(Type type, Document typeXml, List<?> externalLinks) {
 //System.err.println("type: " + type.getShortName() + ", " + type.getTypeString());
-        Node typeDescriptorNode = typeXml.selectSingleNode("//H2[contains(text(),'" + getLabelString(type) + " " + type.getShortName() + "')]");
+        String typeDescriptorXpath = "//" + getLabelXpath() + "[contains(text(),'" + getLabelString(type) + " " + type.getShortName() + "')]";
+        Node typeDescriptorNode = typeXml.selectSingleNode(typeDescriptorXpath);
 //System.err.println(typeDescriptorNode.asXML());
         String typeDescriptor1 = convertNodesToString(typeDescriptorNode, externalLinks);
         typeDescriptor1 = typeDescriptor1.replace(getLabelString(type) + " ", "").trim();
@@ -283,7 +293,7 @@ System.err.println("ignore: " + dt.getText());
         determineTypeModifiers(typeDescriptor, type, typeXml, externalLinks);
     }
 
-    /* */
+    /* implements */
     public void determineImplementsList(Type t, Document typeXml, List<?> externalLinks) {
         String extension = t.isInterface() ? "extends" : "implements";
 
@@ -311,7 +321,7 @@ System.err.println("ignore: " + dt.getText());
         }
     }
 
-    /** */
+    /** add li, dd, div */
     protected ElementRemover getRemover() {
         ElementRemover remover = new ElementRemover();
 

@@ -74,5 +74,6 @@ which use the class's default constructor through the implicit super().
 
 ## TODO
 
- * javadoc 1.8
+ * ~~javadoc 1.8~~
  * javadoc html5
+ * ~~javadoc 11~~
