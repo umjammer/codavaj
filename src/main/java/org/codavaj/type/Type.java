@@ -95,7 +95,7 @@ public class Type extends Modifiable {
      *
      * @return the package name of the type, "" if in default package
      */
-    String getPackageName() {
+    public String getPackageName() {
         if ((getTypeName() != null) && (getTypeName().indexOf(".") != -1)) {
             return getTypeName().substring(0, getTypeName().lastIndexOf("."));
         }
@@ -420,5 +420,24 @@ public class Type extends Modifiable {
      */
     public void setTypeParameters(String typeParameters) {
         this.typeParameters = typeParameters;
+    }
+
+    public static final String LABEL_CLASS = "class";
+    public static final String LABEL_INTERFACE = "interface";
+    public static final String LABEL_ENUM = "enum";
+
+    /**
+     * @return "class" or "interface" or "enum" or "annotation".
+     */
+    public String getLabelString() {
+        if (isEnum()) {
+            return LABEL_ENUM;
+        } else if (isAnnotation()) {
+            return "@" + LABEL_INTERFACE;
+        } else if (isInterface()) {
+            return LABEL_INTERFACE;
+        } else {
+            return LABEL_CLASS;
+        }
     }
 }

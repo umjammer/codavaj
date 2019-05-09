@@ -16,27 +16,26 @@
 
 package org.codavaj.process.docparser;
 
+import java.io.File;
+import java.util.List;
+
 import org.codavaj.Main;
 import org.codavaj.ProcessException;
-
-import org.codavaj.process.AbstractProcess;
+import org.codavaj.process.Progressive;
 import org.codavaj.process.ProgressEvent;
-
 import org.codavaj.type.Type;
 import org.codavaj.type.TypeFactory;
-
 import org.dom4j.Document;
 
-import java.io.File;
-
-import java.util.List;
+import static org.codavaj.Logger.error;
+import static org.codavaj.Logger.info;
 
 /**
  * Read an entire javadoc file tree and construct a reflection-like
  * representation of all it's constituent parts ( Classes, Interfaces ... ) in
  * a TypeFactory.
  */
-public class DocParser extends AbstractProcess {
+public class DocParser implements Progressive {
 
     /**
      * directory to find javadoc root.
@@ -49,13 +48,14 @@ public class DocParser extends AbstractProcess {
      */
     private String javadocClassName;
     private List<?> externalLinks;
-    private ParserUtils parserUtil = new ParserUtils();
+    private ParserUtils parserUtil;
     private TypeFactory typeFactory = new TypeFactory();
 
     /**
      * Creates a new DocParser object.
      */
     public DocParser() {
+        debugFlag = false;
     }
 
     /**
@@ -80,6 +80,9 @@ public class DocParser extends AbstractProcess {
             // load and then process the list of all classes javadoc
             String allclassesfilename = javadocDirName + Main.FILE_SEPARATOR
                 + "allclasses-frame.html";
+
+            parserUtil = ParserUtils.factory(allclassesfilename);
+
             Document allclasses = parserUtil.loadFileAsDom(allclassesfilename);
 
             List<?> classes = parserUtil.getAllFqTypenames(allclasses);

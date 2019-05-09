@@ -35,10 +35,6 @@ import java.util.List;
  */
 public class WriterUtils {
 
-    public static final String LABEL_CLASS = "class";
-    public static final String LABEL_INTERFACE = "interface";
-    public static final String LABEL_ENUM = "enum";
-
     private static String LINEFEED = System.getProperty("line.separator");
 
     /**
@@ -64,6 +60,9 @@ public class WriterUtils {
         return sw.toString();
     }
 
+    /** */
+    private Writer w;
+
     /**
      * Formatted print the Type.
      *
@@ -73,12 +72,30 @@ public class WriterUtils {
      * @throws IOException any IO problem.
      */
     public static void print(Type t, Writer w) throws IOException {
-        print(t, w, 0);
+        WriterUtils writer = new WriterUtils();
+        writer.w = w;
+        writer.print(t, 0);
     }
 
-    protected static void printModifiers(Modifiable t, Writer w)
+    /** no need to be public method at interface or annotation */
+    private boolean isCondition1(Type type, Modifiable t) {
+        if (t instanceof Method && (type.isAnnotation() || type.isInterface())) {
+            return false;
+        }
+        return true;
+    }
+
+    /** no need to be abstract method at interface or annotation */
+    private boolean isCondition2(Type type, Modifiable t) {
+        if (t instanceof Method && (type.isAnnotation() || type.isInterface())) {
+            return false;
+        }
+        return true;
+    }
+
+    protected void printModifiers(Type type, Modifiable t)
         throws IOException {
-        if (t.isPublic()) {
+        if (t.isPublic() && isCondition1(type, t)) {
             w.write(Modifiable.MODIFIER_PUBLIC);
             w.write(" ");
         } else if (t.isProtected()) {
@@ -94,7 +111,7 @@ public class WriterUtils {
             w.write(" ");
         }
 
-        if (t.isAbstract()) {
+        if (t.isAbstract() && isCondition2(type, t)) {
             w.write(Modifiable.MODIFIER_ABSTRACT);
             w.write(" ");
         }
@@ -110,44 +127,43 @@ public class WriterUtils {
         }
     }
 
-    protected static void printIndentation(int indentation, Writer w)
+    protected void printIndentation(int indentation)
         throws IOException {
         for (int i = 0; i < indentation; i++) {
             w.write(" ");
         }
     }
 
-    protected static void printLineFeed(Writer w) throws IOException {
+    protected void printLineFeed() throws IOException {
         w.write(LINEFEED);
     }
 
-    protected static void printComment(List<?> commentText, Writer w,
-        int indentation) throws IOException {
+    protected void printComment(List<?> commentText, int indentation) throws IOException {
         if ((commentText == null) || (commentText.size() == 0)) {
             return;
         }
 
-        printIndentation(indentation, w);
+        printIndentation(indentation);
         w.write("/**");
-        printLineFeed(w);
+        printLineFeed();
 
         for (int i = 0; i < commentText.size(); i++) {
-            printIndentation(indentation, w);
+            printIndentation(indentation);
             w.write(" * ");
             w.write((String) commentText.get(i));
-            printLineFeed(w);
+            printLineFeed();
         }
 
-        printIndentation(indentation, w);
+        printIndentation(indentation);
         w.write(" */");
-        printLineFeed(w);
+        printLineFeed();
     }
 
-    protected static void printField(Field f, Writer w, int indentation)
+    protected void printField(Type t, Field f, int indentation)
         throws IOException {
-        printComment(f.getComment(), w, indentation);
-        printIndentation(indentation, w);
-        printModifiers(f, w);
+        printComment(f.getComment(), indentation);
+        printIndentation(indentation);
+        printModifiers(t, f);
         w.write(getSourceTypeName(f.getType()));
         if ( f.getTypeArgumentList() != null ) {
             w.write(getSourceTypeName(f.getTypeArgumentList()));
@@ -163,29 +179,29 @@ public class WriterUtils {
 
         if (f.getValue() != null) {
             w.write("=");
-            print(f.getValue(), w);
+            print(f.getValue());
         } else if ( f.isFinal() ) {
             // final fields need initializing if they weren't already.
             w.write("=");
-            printInitialValue(f.getType(), w);
+            printInitialValue(f.getType());
         }
 
         w.write(";");
-        printLineFeed(w);
+        printLineFeed();
     }
 
-    protected static void printEnumConst(EnumConst ec, Writer w, int indentation, boolean isLast)
+    protected void printEnumConst(EnumConst ec, int indentation, boolean isLast)
         throws IOException {
-        printComment(ec.getComment(), w, indentation);
-        printIndentation(indentation, w);
+        printComment(ec.getComment(), indentation);
+        printIndentation(indentation);
 
         w.write(ec.getName());
 
         w.write(isLast ? ";" : ",");
-        printLineFeed(w);
+        printLineFeed();
     }
 
-    protected static void printInitialValue(String type, Writer w) throws IOException {
+    protected void printInitialValue(String type) throws IOException {
         if ("boolean".equals(type)) {
             w.write("false");
         } else if ("float".equals(type)) {
@@ -207,7 +223,7 @@ public class WriterUtils {
         }
     }
 
-    protected static void print(Object value, Writer w)
+    protected void print(Object value)
         throws IOException {
         if (value instanceof String) {
             w.write("\"" + value + "\"");
@@ -225,11 +241,10 @@ public class WriterUtils {
         }
     }
 
-    protected static void printMethod(Type t, Method m, Writer w,
-        boolean isConstructor, int indentation) throws IOException {
-        printComment(m.getComment(), w, indentation);
-        printIndentation(indentation, w);
-        printModifiers(m, w);
+    protected void printMethod(Type t, Method m, boolean isConstructor, int indentation) throws IOException {
+        printComment(m.getComment(), indentation);
+        printIndentation(indentation);
+        printModifiers(t, m);
         if ( m.getTypeParameters() != null) {
             w.write(getSourceTypeName(m.getTypeParameters()));
             w.write(" ");
@@ -299,14 +314,13 @@ public class WriterUtils {
 
         if (m.isAbstract()) {
             w.write(";");
-            printLineFeed(w);
+            printLineFeed();
         } else {
-            printMethodContents(m.getReturnParameter(), w, indentation);
+            printMethodContents(m.getReturnParameter(), indentation);
         }
     }
 
-    protected static void printMethodContents(Parameter returnParameter,
-        Writer w, int indentation) throws IOException {
+    protected void printMethodContents(Parameter returnParameter, int indentation) throws IOException {
         String contentText = "";
 
         if (returnParameter != null) {
@@ -338,55 +352,43 @@ public class WriterUtils {
         }
 
         w.write("{");
-        printLineFeed(w);
+        printLineFeed();
         indentation += 4;
 
-        printIndentation(indentation, w);
+        printIndentation(indentation);
         w.write(contentText);
         w.write(" ");
-        printTodo(w);
-        printLineFeed(w);
+        printTodo();
+        printLineFeed();
         indentation -= 4;
-        printIndentation(indentation, w);
+        printIndentation(indentation);
         w.write("}");
-        printLineFeed(w);
+        printLineFeed();
     }
 
-    protected static void printTodo(Writer w) throws IOException {
+    protected void printTodo() throws IOException {
         w.write("//TODO codavaj!!");
     }
 
-    protected static String getSourceTypeName( String name ) {
+    protected String getSourceTypeName( String name ) {
         return name.replace('$', '.');
     }
 
-    protected static void print(Type t, Writer w, int indentation)
+    protected void print(Type t, int indentation)
         throws IOException {
-        if (t.getEnclosingType() == null) {
+        if (t.getEnclosingType() == null && !t.getPackage().getName().isEmpty()) {
             // print package statement
-            printIndentation(indentation, w);
+            printIndentation(indentation);
             w.write("package " + t.getPackage().getName() + ";");
-            printLineFeed(w);
+            printLineFeed();
         }
 
-        printComment(t.getComment(), w, indentation);
-        printIndentation(indentation, w);
-        printModifiers(t, w);
+        printComment(t.getComment(), indentation);
+        printIndentation(indentation);
+        printModifiers(t, t);
 
-        if (t.isAnnotation()) {
-            w.write("@");
-            w.write(LABEL_INTERFACE);
-            w.write(" ");
-        } else if (t.isInterface()) {
-            w.write(LABEL_INTERFACE);
-            w.write(" ");
-        } else if(t.isEnum()) {
-            w.write(LABEL_ENUM);
-            w.write(" ");
-        } else {
-            w.write(LABEL_CLASS);
-            w.write(" ");
-        }
+        w.write(t.getLabelString());
+        w.write(" ");
 
         w.write(t.getShortName());
         if ( t.getTypeParameters() != null ) {
@@ -416,29 +418,29 @@ public class WriterUtils {
         }
 
         w.write("{");
-        printLineFeed(w);
+        printLineFeed();
         indentation += 4;
 
         for (int i = 0; (t.getEnumConstList() != null) && (i < t.getEnumConstList().size()); i++) {
             EnumConst ec = t.getEnumConstList().get(i);
-            printEnumConst(ec, w, indentation, i == t.getEnumConstList().size()-1);
-            printLineFeed(w);
+            printEnumConst(ec, indentation, i == t.getEnumConstList().size()-1);
+            printLineFeed();
         }
 
         for (int i = 0;
                 (t.getFieldList() != null) && (i < t.getFieldList().size());
                 i++) {
             Field f = t.getFieldList().get(i);
-            printField(f, w, indentation);
-            printLineFeed(w);
+            printField(t, f, indentation);
+            printLineFeed();
         }
 
         for (int i = 0;
                 (t.getConstructorList() != null)
                 && (i < t.getConstructorList().size()); i++) {
             Method m = t.getConstructorList().get(i);
-            printMethod(t, m, w, true, indentation);
-            printLineFeed(w);
+            printMethod(t, m, true, indentation);
+            printLineFeed();
         }
 
         for (int i = 0;
@@ -449,8 +451,8 @@ public class WriterUtils {
             // in the JavaDocs but will generate a compiler error if you
             // override them because they're static methods.
             if(!(t.isEnum() && (m.getName().equals("valueOf") || m.getName().equals("values")))) {
-                printMethod(t, m, w, false, indentation);
-                printLineFeed(w);
+                printMethod(t, m, false, indentation);
+                printLineFeed();
             }
         }
 
@@ -458,12 +460,12 @@ public class WriterUtils {
                 (t.getInnerTypeList() != null)
                 && (i < t.getInnerTypeList().size()); i++) {
             Type innertype = t.getInnerTypeList().get(i);
-            print(innertype, w, indentation);
+            print(innertype, indentation);
         }
 
         indentation -= 4;
-        printIndentation(indentation, w);
+        printIndentation(indentation);
         w.write("}");
-        printLineFeed(w);
+        printLineFeed();
     }
 }

@@ -2,11 +2,12 @@ package org.codavaj.process.search;
 
 import java.util.List;
 
-import org.codavaj.AbstractLogger;
-import org.codavaj.type.TypeFactory;
 import org.codavaj.type.Package;
+import org.codavaj.type.TypeFactory;
 
-public class SearchAlgorithm extends AbstractLogger {
+import static org.codavaj.Logger.info;
+
+public class SearchAlgorithm {
 
     private TypeFactory docFactory;
     private TypeFactory jarFactory;

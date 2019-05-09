@@ -17,14 +17,15 @@
 package org.codavaj.process.search;
 
 import org.codavaj.ProcessException;
-
-import org.codavaj.process.AbstractProcess;
+import org.codavaj.process.Progressive;
 import org.codavaj.type.TypeFactory;
+
+import static org.codavaj.Logger.warning;
 
 /**
  * DOCUMENT ME!
  */
-public class Search extends AbstractProcess {
+public class Search implements Progressive {
 
     private TypeFactory javadocTypeFactory;
     private TypeFactory jarTypeFactory;

@@ -17,52 +17,64 @@
 package org.codavaj;
 
 /**
- * Logger interface.
- *
- * @author Peter
+ * DOCUMENT ME!
  */
-public interface Logger {
+public class Logger {
     /**
-     * Log an info message.
+     * DOCUMENT ME!
      *
-     * @param message the message
+     * @param message DOCUMENT ME!
      */
-    public void info(String message);
+    public static void info(String message) {
+        System.out.println("INFO: " + message);
+    }
 
     /**
-     * Log a debug message.
+     * DOCUMENT ME!
      *
-     * @param message the message
+     * @param message DOCUMENT ME!
      */
-    public void debug(String message);
+    public static void debug(String message) {
+        System.out.println("DEBUG: " + message);
+    }
 
     /**
-     * Log a warning message.
+     * DOCUMENT ME!
      *
-     * @param message the message
+     * @param message DOCUMENT ME!
      */
-    public void warning(String message);
+    public static void warning(String message) {
+        System.out.println("WARN: " + message);
+    }
 
     /**
-     * Log a warning message with stacktrace.
+     * DOCUMENT ME!
      *
-     * @param message the message
-     * @param e the exception
+     * @param message DOCUMENT ME!
+     * @param e DOCUMENT ME!
      */
-    public void warning(String message, Throwable e);
+    public static void warning(String message, Throwable e) {
+        System.err.println("WARN: " + message);
+        e.printStackTrace(System.out);
+    }
 
     /**
-     * Log an info message.
+     * DOCUMENT ME!
      *
-     * @param message the message
+     * @param message DOCUMENT ME!
      */
-    public void error(String message);
+    public static void error(String message) {
+        System.out.println("ERROR: " + message);
+    }
 
     /**
-     * Log an error message and stacktrace.
+     * DOCUMENT ME!
      *
-     * @param message the message
-     * @param e the exception
+     * @param message DOCUMENT ME!
+     * @param e DOCUMENT ME!
      */
-    public void error(String message, Throwable e);
+    public static void error(String message, Throwable e) {
+        System.err.println("ERROR: " + message);
+        e.printStackTrace(System.out);
+    }
 }
