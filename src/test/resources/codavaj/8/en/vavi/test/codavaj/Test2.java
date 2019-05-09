@@ -30,7 +30,6 @@ public class Test2<T> extends vavi.test.codavaj.Test1 implements vavi.test.codav
     }
 
     /**
-     * Description copied from interface: 
      * description for this method.
      * more description.
      */

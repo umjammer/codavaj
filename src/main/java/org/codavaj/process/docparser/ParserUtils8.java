@@ -37,9 +37,15 @@ public class ParserUtils8 extends ParserUtils {
 
             if (node.getNodeType() == Node.ELEMENT_NODE) {
                 if ("DIV".equals(node.getName())) {
-                    String[] lines = node.getText().split("\\n");
-                    for (String line : lines) {
-                        commentText.add(line.trim());
+                    // TODO {@link} a tag
+                    String text = node.asXML().replace("<DIV>", "").replace("</DIV>", "").trim();
+                    if (!text.contains(rb.getString("token.comment.exclude"))) {
+                        String[] lines = text.split("\\n");
+                        for (String line : lines) {
+                            commentText.add(line.trim());
+                        }
+                    } else {
+System.err.println("ignore: " + text);
                     }
                 } else if ("DL".equals(node.getName())) {
                     List<Node> nodes = node.selectNodes("*[name()='DT' or name()='DD']");
