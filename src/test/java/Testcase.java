@@ -27,10 +27,14 @@ class Testcase {
 
     @ParameterizedTest
     @CsvSource({
-        "8,8/jp",
-        "11,8/jp",
-        "12,8/jp",
-        "13,8/jp",
+        "8/en,8/en",
+        "11/en,8/en",
+        "12/en,8/en",
+        "13/en,8/en",
+        "8/jp,8/jp",
+        "11/jp,8/jp",
+        "12/jp,8/jp",
+        "13/jp,8/jp",
     })
     void test(String version, String expected) throws Exception {
 

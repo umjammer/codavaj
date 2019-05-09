@@ -85,8 +85,7 @@ public class ParserUtils11 extends ParserUtils8 {
     @Override
     protected String getLabelString(Type type) {
         if (type.isEnum()) {
-            // TODO check en
-            return rb.getString("token.enum") + (isLanguageOf(Locale.JAPANESE) ? "" : " ") + rb.getString("token.type"); // umm...
+            return rb.getString("token.enum") + (isLanguageOf(Locale.JAPANESE) ? rb.getString("token.type") : ""); // umm...
         } else {
             return super.getLabelString(type);
         }

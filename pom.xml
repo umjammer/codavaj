@@ -2,7 +2,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>org.codavaj</groupId>
   <artifactId>codavaj</artifactId>
-  <version>1.4.1</version>
+  <version>1.4.2</version>
   <build>
     <plugins>
       <plugin>
@@ -20,8 +20,10 @@
         <artifactId>maven-javadoc-plugin</artifactId>
         <version>3.1.0</version>
         <configuration>
+          <additionalJOption>-J-Duser.language=en_US</additionalJOption> <!-- ad-hoc -->
+          <locale>en_US</locale> <!-- doesn't work why ??? -->
           <sourcepath>src/test/java</sourcepath>
-          <debug>false</debug>
+          <debug>true</debug>
           <verbose>false</verbose>
           <sourceFileIncludes>vavi/test/codavaj/**/*.java</sourceFileIncludes>
         </configuration>
@@ -36,7 +38,6 @@
               <goal>resources</goal>
             </goals>
             <configuration>
-              <srcDir>src/main/resources</srcDir>
               <includes>
                 <include>**/*_ja.properties</include>
               </includes>
