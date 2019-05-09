@@ -1,0 +1,1 @@
+/Library/Java/JavaVirtualMachines/jdk-11.0.1.jdk/Contents/Home/bin/javadoc -J-Duser.language=en_US @options @argfile
