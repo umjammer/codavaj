@@ -84,8 +84,14 @@ System.err.println("ignore: " + dt.getText());
                                     comment = dd.getText().replaceFirst(" - ", " ");
                                     typeName = convertNodesToString(typeNode, externalLinks);
                                 } else {
-                                    comment = dd.getText().substring(text.indexOf(" - ") + " -".length());
-                                    typeName = dd.getText().substring(0, text.indexOf(" - "));
+                                    int p = text.indexOf(" - ");
+                                    if (p >= 0) {
+                                        comment = dd.getText().substring(text.indexOf(" - ") + " -".length());
+                                        typeName = dd.getText().substring(0, p);
+                                    } else {
+                                        comment = "";
+                                        typeName = dd.getText().trim();
+                                    }
                                 }
                                 text = toFQDN(t, typeName) + comment;
                                 break;
