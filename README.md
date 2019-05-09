@@ -1,3 +1,5 @@
+[![](https://jitpack.io/v/umjammer/codavaj.svg)](https://jitpack.io/#umjammer/codavaj)
+
 # CODAVAJ - ( javadoc in reverse ) README
 
 ## Download
@@ -42,6 +44,15 @@ codavaj.cmd codavaj tmp/jumpi/javadoc tmp/jumpi/src http://external.link.com/api
 
 ## change history
 
+version 1.4.0
+
+ * java8 support
+ * java11 support
+ * java12 support
+ * java13 support
+ * i18n support
+ * add unit test
+
 version 1.3.0
 
  * java1.5 support for Enums and Generics
@@ -77,3 +88,4 @@ which use the class's default constructor through the implicit super().
  * ~~javadoc 1.8~~
  * javadoc html5
  * ~~javadoc 11~~
+ * en test case
