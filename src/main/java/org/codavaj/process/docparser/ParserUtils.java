@@ -24,9 +24,11 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.ResourceBundle;
 import java.util.StringTokenizer;
 import java.util.function.Consumer;
@@ -62,6 +64,15 @@ public class ParserUtils {
      * Creates a new ParserUtils object.
      */
     protected ParserUtils() {
+        fqdns.put(Void.TYPE.toString(), Void.TYPE.toString());
+        fqdns.put(Boolean.TYPE.toString(), Boolean.TYPE.toString());
+        fqdns.put(Integer.TYPE.toString(), Integer.TYPE.toString());
+        fqdns.put(Short.TYPE.toString(), Short.TYPE.toString());
+        fqdns.put(Byte.TYPE.toString(), Byte.TYPE.toString());
+        fqdns.put(Long.TYPE.toString(), Long.TYPE.toString());
+        fqdns.put(Float.TYPE.toString(), Float.TYPE.toString());
+        fqdns.put(Double.TYPE.toString(), Double.TYPE.toString());
+        fqdns.put(Character.TYPE.toString(), Character.TYPE.toString());
     }
 
     /**
@@ -107,7 +118,7 @@ public class ParserUtils {
      *
      * @throws Exception DOCUMENT ME!
      */
-    protected List<String> determineComment(Element enclosingNode)
+    protected List<String> determineComment(Type t, Element enclosingNode, List<?> externalLinks)
         throws Exception {
         if (enclosingNode == null) {
             return null;
@@ -271,7 +282,7 @@ public class ParserUtils {
     }
 
     /** constants */
-    protected String[] getConstantsXpath() {
+    protected String[] getConstantsXpaths() {
         return new String[] {
             "TD[position()=2]/A/@href",
             "TD[position()=2]/A",
@@ -299,7 +310,7 @@ public class ParserUtils {
               <TD>"org.codavaj.antrunner.target"</TD>
             </TR>
             */
-            String[] xpaths = getConstantsXpath();
+            String[] xpaths = getConstantsXpaths();
             String typeName = javadocLinkToTypename(constantNode.valueOf(xpaths[0]), externalLinks);
             String fieldName = constantNode.valueOf(xpaths[1]);
             String constantValue = constantNode.valueOf(xpaths[2]);
@@ -442,10 +453,10 @@ public class ParserUtils {
 
                 if ((c.text.indexOf("(") != -1) && (c.text.indexOf(")") != -1)
                         && (c.text.indexOf(")") >= c.text.indexOf("("))) {
-                    determineMethodDetails(type, c.text, c.name, commentNode);
+                    determineMethodDetails(type, c.text, c.name, commentNode, externalLinks);
                 } else {
                     // Could be either a field, enum constant, or element detail
-                    determineFieldDetails(type, c.text, c.name, commentNode);
+                    determineFieldDetails(type, c.text, c.name, commentNode, externalLinks);
                 }
 
                 c.text = "";
@@ -510,7 +521,7 @@ public class ParserUtils {
     }
 
     /** method */
-    protected void determineMethodDetails(Type type, String text, String name, Element commentNode) throws Exception {
+    protected void determineMethodDetails(Type type, String text, String name, Element commentNode, List<?> externalLinks) throws Exception {
         String methodParams = text.substring(text.indexOf("(")
                 + 1, text.indexOf(")"));
 
@@ -538,7 +549,7 @@ public class ParserUtils {
 
             //parse the throws list and assign the found exceptions to the method
             determineThrowsList(throwsParams, m);
-            m.setComment(determineComment(commentNode));
+            m.setComment(determineComment(type, commentNode, externalLinks));
         } else {
             warning(
                 "failed to find method or constructor with name "
@@ -547,25 +558,25 @@ public class ParserUtils {
     }
 
     /** Could be either a field, enum constant, or element detail */
-    protected void determineFieldDetails(Type type, String text, String name, Element commentNode) throws Exception {
+    protected void determineFieldDetails(Type type, String text, String name, Element commentNode, List<?> externalLinks) throws Exception {
         Field f = type.lookupFieldByName(name);
         if (f != null) {
             // field
             extractFieldModifiers(f, text);
-            f.setComment(determineComment(commentNode));
+            f.setComment(determineComment(type, commentNode, externalLinks));
         } else {
             EnumConst ec = type.lookupEnumConstByName(name);
 
             if (ec != null) {
                 // enum constant
-                ec.setComment(determineComment(commentNode));
+                ec.setComment(determineComment(type, commentNode, externalLinks));
             } else {
                 Method m = type.lookupMethodByName(name, new ArrayList<Parameter>()); // annotation elements have no params
 
                 if ( m != null ) {
                     // method
                     extractMethodModifiers(m, text);
-                    m.setComment(determineComment(commentNode));
+                    m.setComment(determineComment(type, commentNode, externalLinks));
                     m.setDefaultValue(determineDefault(commentNode));
                 } else {
                     warning("No field, enum constant, or annotation element with name " + name + " in type " + type.getTypeName());
@@ -685,14 +696,18 @@ public class ParserUtils {
         &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;DOCUMENT ME!</TD>
         </TR>
          */
-        String fieldsXpath = "//TR[contains(parent::TABLE/TR[1], '" + rb.getString("token.field_summary") + "')][position()>1]";
-        determineFields(fieldsXpath, type, typeXml, externalLinks, "TD[position()=2]/A");
+        determineFields(type, typeXml, externalLinks, "TD[position()=2]/A");
     }
 
     /** fields */
-    protected void determineFields(String fieldsXpath, Type type, Document typeXml, List<?> externalLinks, String nameXpath)
+    protected String getFieldsXpath() {
+        return "//TR[contains(parent::TABLE/TR[1], '" + rb.getString("token.field_summary") + "')][position()>1]";
+    }
+
+    /** fields */
+    protected void determineFields(Type type, Document typeXml, List<?> externalLinks, String nameXpath)
         throws Exception {
-        List<?> fieldList = typeXml.selectNodes( fieldsXpath );
+        List<?> fieldList = typeXml.selectNodes(getFieldsXpath());
 
         for (int i = 0; fieldList != null && i < fieldList.size(); i++) {
             Field field = type.createField();
@@ -931,7 +946,7 @@ public class ParserUtils {
     }
 
     /** method return */
-    protected Parameter determineMethodReturnParameter(Method m, String parameterText)
+    protected Parameter determineMethodReturnParameter(Type t, Method m, String parameterText)
         throws Exception {
         // parses a parameter with modifiers, type, with or without a name
         // private final java.lang.String[][] name
@@ -959,7 +974,7 @@ public class ParserUtils {
                 } else if ( word.startsWith("<") ){
                     m.setTypeParameters(word);
                 } else {
-                    p.setType(word);
+                    p.setType(toFQDN(t, word));
                 }
             }
         } catch (Exception e) {
@@ -1108,7 +1123,7 @@ public class ParserUtils {
 
             String methodReturnParam = convertNodesToString(returnparamNode, externalLinks );
 
-            Parameter returnType = determineMethodReturnParameter(method, methodReturnParam);
+            Parameter returnType = determineMethodReturnParameter(type, method, methodReturnParam);
 
             if (returnType == null) {
                 warning("failed to determine return type: "
@@ -1149,15 +1164,22 @@ public class ParserUtils {
       </TR>...
     </TABLE>  †
          */
-        String requiredMethodXpath = "//TR[contains(parent::TABLE/TR,'" + rb.getString("token.required_element_summary") + "')][position()>1]";
-        String optionalMethodXpath = "//TR[contains(parent::TABLE/TR,'" + rb.getString("token.optional_element_summary") + "')][position()>1]";
-        determineElements(requiredMethodXpath, optionalMethodXpath, type, typeXml, externalLinks, "TD[position()=2]/A");
+        determineElements(type, typeXml, externalLinks, "TD[position()=2]/A");
+    }
+
+    /** */
+    protected String[] getElementsXpaths() {
+        return new String[] {
+            "//TR[contains(parent::TABLE/TR,'" + rb.getString("token.required_element_summary") + "')][position()>1]",
+            "//TR[contains(parent::TABLE/TR,'" + rb.getString("token.optional_element_summary") + "')][position()>1]"
+        };
     }
 
     /** annotation elements. */
-    protected void determineElements(String requiredMethodXpath, String optionalMethodXpath, Type type, Document typeXml, List<?> externalLinks, String nameXpath)
+    protected void determineElements(Type type, Document typeXml, List<?> externalLinks, String nameXpath)
             throws Exception {
-        List<?> methodList = typeXml.selectNodes( requiredMethodXpath );
+        final String[] xpaths = getElementsXpaths();
+        List<?> methodList = typeXml.selectNodes(xpaths[0]);
 
         for (int i = 0; (methodList != null) && (i < methodList.size()); i++) {
             Method method = type.createMethod();
@@ -1170,7 +1192,7 @@ public class ParserUtils {
 
             String methodReturnParam = convertNodesToString(returnparamNode, externalLinks );
 
-            Parameter returnType = determineMethodReturnParameter(method, methodReturnParam );
+            Parameter returnType = determineMethodReturnParameter(type, method, methodReturnParam );
 
             if (returnType == null) {
                 warning("failed to determine return type: "
@@ -1186,7 +1208,7 @@ public class ParserUtils {
             method.setName(elementName);
         }
 
-        methodList = typeXml.selectNodes( optionalMethodXpath );
+        methodList = typeXml.selectNodes(xpaths[1]);
 
         for (int i = 0; (methodList != null) && (i < methodList.size()); i++) {
             Method method = type.createMethod();
@@ -1199,7 +1221,7 @@ public class ParserUtils {
 
             String methodReturnParam = convertNodesToString(returnparamNode, externalLinks );
 
-            Parameter returnType = determineMethodReturnParameter(method, methodReturnParam);
+            Parameter returnType = determineMethodReturnParameter(type, method, methodReturnParam);
 
             if (returnType == null) {
                 warning("failed to determine return type: "
@@ -1453,7 +1475,7 @@ public class ParserUtils {
         determineTypeModifiers(typeDescriptor, type, typeXml, externalLinks);
     }
 
-    /** */
+    /** type modifier */
     protected void determineTypeModifiers(String typeDescriptor, Type type, Document typeXml, List<?> externalLinks) {
         // "//DT[parent::DL/preceding-sibling::H2 and not(contains(.,'All')) and not(contains(.,'Enclosing')) and not(contains(.,'Direct'))]"
 
@@ -1619,22 +1641,20 @@ public class ParserUtils {
 
         if (langNode != null) {
             String lang = langNode.getText();
-System.err.println("lang: " + lang);
 
             rb = ResourceBundle.getBundle("token", new Locale(lang));
-System.err.println("rb: " + lang + ": " + rb.getLocale());
 
             String versionText = document.selectSingleNode("//comment()[contains(., \"Generated by javadoc\")]").getText();
             int firstBracket = versionText.indexOf('(');
             int secondBracket = versionText.indexOf(')', firstBracket);
             String version = versionText.substring(firstBracket + 1, secondBracket);
-System.err.println("version: " + version);
 
             version = version.replaceFirst("[_\\-]\\s*\\w+", "");
             VersionComparator vc = new VersionComparator();
-System.err.println("version: " + version + ", " + vc.compare(version, "11.0.0") + ", " + vc.compare(version, "1.8.0"));
             if (vc.compare(version, "13.0.0") >= 0) {
                 return new ParserUtils13();
+            } else if (vc.compare(version, "12.0.0") >= 0) {
+                return new ParserUtils12();
             } else if (vc.compare(version, "11.0.0") >= 0) {
                 return new ParserUtils11();
             } else if (vc.compare(version, "1.8.0") >= 0) {
@@ -1816,6 +1836,36 @@ System.err.println("version: " + version + ", " + vc.compare(version, "11.0.0") 
     public Document loadFileAsDom(String filename)
         throws SAXException, IOException, DocumentException {
         return loadHtmlAsDom(new InputSource(new FileInputStream(filename)));
+    }
+
+    /** */
+    private Map<String, String> fqdns = new HashMap<>();
+
+    /** */
+    protected String toFQDN(Type type, String typeName) {
+        if (typeName.indexOf(".") == -1) {
+            if (fqdns.containsKey(typeName)) {
+                return fqdns.get(typeName);
+            } else {
+                try {
+                    Class<?> clazz = Class.forName("java.lang." + typeName);
+                    String className = clazz.getName();
+                    fqdns.put(typeName, className);
+                    return className;
+                } catch (ClassNotFoundException e) {
+//                    debug("not found: " + typeName);
+                }
+                try {
+                    Class<?> clazz = Class.forName(type.getPackageName() + "." + typeName);
+                    String className = clazz.getName();
+                    fqdns.put(typeName, className);
+                    return className;
+                } catch (ClassNotFoundException e) {
+                    warning("not found: " + typeName);
+                }
+            }
+        }
+        return typeName;
     }
 
     /**

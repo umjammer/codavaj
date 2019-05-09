@@ -7,9 +7,9 @@
 package org.codavaj.process.docparser;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import org.codavaj.type.Type;
 import org.codavaj.type.TypeFactory;
@@ -31,7 +31,7 @@ import static com.rainerhahnekamp.sneakythrow.Sneaky.sneaked;
 public class ParserUtils8 extends ParserUtils {
 
     /** details */
-    protected void determineComment(List<?> allNodes, List<String> commentText) {
+    protected void determineComment(Type t, List<?> allNodes, List<String> commentText, List<?> externalLinks) {
         for (int i = 0; (allNodes != null) && (i < allNodes.size()); i++) {
             Node node = (Node) allNodes.get(i);
 
@@ -44,11 +44,8 @@ public class ParserUtils8 extends ParserUtils {
                 } else if ("DL".equals(node.getName())) {
                     List<Node> nodes = node.selectNodes("*[name()='DT' or name()='DD']");
                     int j = 0;
-                    // text modification mode
-                    int m;
                     do {
                         Node dt = nodes.get(j++);
-                        m = 0;
                         String tag;
                         if (dt.getText().indexOf(rb.getString("token.version")) >= 0) {
                             tag = "version";
@@ -60,32 +57,51 @@ public class ParserUtils8 extends ParserUtils {
                             tag = "see";
                         } else if (dt.getText().indexOf(rb.getString("token.type_parameter")) >= 0) {
                             // WARNNING depends on order of conditions, should be before of token.parameter
-                            tag = "param";
-                            m = 2;
+                            tag = "typeparam";
                         } else if (dt.getText().indexOf(rb.getString("token.parameter")) >= 0) {
                             tag = "param";
-                            m = 1;
                         } else if (dt.getText().indexOf(rb.getString("token.exception")) >= 0) {
                             tag = "exception";
-                            m = 1;
                         } else {
 System.err.println("ignore: " + dt.getText());
                             tag = "ignore";
                         }
                         do {
                             Node dd = nodes.get(j++);
-                            if (!"ignore".equals(tag)) {
-                                String text = dd.valueOf("normalize-space(.)").trim();
-                                switch (m) {
-                                case 1: // for @param, @exception
-                                    text = text.replaceFirst(" - ", " ");
-                                    break;
-                                case 2: // for type parameter @param at class description
-                                    text = text.replaceFirst("(\\w+) - ", "<$1> ");
-                                    break;
+                            String text = dd.asXML().replace("<DD>", "").replace("</DD>", "").trim();
+                            switch (tag) { //.equals(tag)) {
+                            case "param":
+                                text = text.replaceFirst(" - ", " ");
+                                break;
+                            case "typeparam": // for type parameter @param at class description
+                                text = text.replaceFirst("([\\w\\$_\\.\\<\\>]+) - ", "<$1> ");
+                                break;
+                            case "exception":
+                                Node typeNode = dd.selectSingleNode("A");
+                                String comment;
+                                String typeName;
+                                if (typeNode != null) {
+                                    comment = dd.getText().replaceFirst(" - ", " ");
+                                    typeName = convertNodesToString(typeNode, externalLinks);
+                                } else {
+                                    comment = dd.getText().substring(text.indexOf(" - ") + " -".length());
+                                    typeName = dd.getText().substring(0, text.indexOf(" - "));
                                 }
-                                commentText.add("@" + tag + " " + text); // TODO a tag
+                                text = toFQDN(t, typeName) + comment;
+                                break;
+                            case "see":
+                                if (text.contains(rb.getString("token.see.exclude.1")) ||
+                                    text.contains(rb.getString("token.see.exclude.2"))) {
+System.err.println("ignore: " + dd.selectSingleNode("A").getText());
+                                    continue;
+                                }
+                                break;
+                            default:
+                                break;
+                            case "ignore":
+                                continue;
                             }
+                            commentText.add("@" + tag + " " + text);
                         } while(j < nodes.size() && nodes.get(j).getName().equals("DD"));
                     } while (j < nodes.size());
                 }
@@ -98,7 +114,8 @@ System.err.println("ignore: " + dt.getText());
      * a field comment
      * a method comment
      */
-    protected List<String> determineComment(Element enclosingNode) throws Exception {
+    @Override
+    protected List<String> determineComment(Type t, Element enclosingNode, List<?> externalLinks) throws Exception {
         if (enclosingNode == null) {
             return null;
         }
@@ -107,7 +124,7 @@ System.err.println("ignore: " + dt.getText());
         List<?> allNodes = enclosingNode.selectNodes("*[name()='DIV' or name()='DL']");
         List<String> commentText = new ArrayList<>();
 
-        determineComment(allNodes, commentText);
+        determineComment(t, allNodes, commentText, externalLinks);
 
         return commentText;
     }
@@ -117,6 +134,7 @@ System.err.println("ignore: " + dt.getText());
      * a field comment
      * a method comment
      */
+    @Override
     protected String determineDefault(Element enclosingNode) throws Exception {
         if (enclosingNode == null) {
             return null;
@@ -126,20 +144,24 @@ System.err.println("ignore: " + dt.getText());
     }
 
     /* class comment */
+    @Override
     public void determineClassComment(Type type, Document typeXml, List<?> externalLinks) throws Exception {
         List<String> commentText = new ArrayList<>();
 
+        // for others
         List<?> allNodes = typeXml.selectNodes("//LI/text()[contains(.,'" + type.getLabelString() + " " + type.getShortName() + "')]/following-sibling::*[name()='DIV' or name()='DL']");
-        determineComment(allNodes, commentText);
+        determineComment(type, allNodes, commentText, externalLinks);
 
+        // for type parameter
         allNodes = typeXml.selectNodes("//DL/DT[contains(text(),'" + rb.getString("token.type_parameter") + "')]/..");
 //allNodes.forEach(System.err::println);
-        determineComment(allNodes, commentText);
+        determineComment(type, allNodes, commentText, externalLinks);
 
         type.setComment(commentText);
     }
 
     /* constants */
+    @Override
     public void determineConstants(Document allconstants, TypeFactory typeFactory, List<?> externalLinks, boolean lenient) {
         String xpath = "//TABLE/TR[position() != 1]";
         determineConstants(xpath, allconstants, typeFactory, externalLinks, lenient);
@@ -157,6 +179,7 @@ System.err.println("ignore: " + dt.getText());
     }
 
     /* details */
+    @Override
     public void determineDetails(Type type, Document typeXml, List<?> externalLinks) throws Exception {
 
         Function<Context, Boolean> f = c -> {
@@ -171,7 +194,7 @@ System.err.println("ignore: " + dt.getText());
             List<?> allNodes = ((Element) node).content();
             determineDetails(allNodes, externalLinks, f, sneaked(c -> {
                 String name = getDetailsName(c.text);
-                determineMethodDetails(type, c.text, name, (Element) node);
+                determineMethodDetails(type, c.text, name, (Element) node, externalLinks);
                 c.parseDone = true;
             }));
         }
@@ -183,7 +206,7 @@ System.err.println("ignore: " + dt.getText());
             List<?> allNodes = ((Element) node).content();
             determineDetails(allNodes, externalLinks, f, sneaked(c -> {
                 String name = getDetailsName(c.text);
-                determineMethodDetails(type, c.text, name, (Element) node);
+                determineMethodDetails(type, c.text, name, (Element) node, externalLinks);
                 c.parseDone = true;
             }));
         }
@@ -195,7 +218,7 @@ System.err.println("ignore: " + dt.getText());
             List<?> allNodes = ((Element) node).content();
             determineDetails(allNodes, externalLinks, f, sneaked(c -> {
                 String name = getDetailsName(c.text);
-                determineFieldDetails(type, c.text, name, (Element) node);
+                determineFieldDetails(type, c.text, name, (Element) node, externalLinks);
                 c.parseDone = true;
             }));
         }
@@ -207,7 +230,7 @@ System.err.println("ignore: " + dt.getText());
             List<?> allNodes = ((Element) node.selectSingleNode("LI")).content();
             determineDetails(allNodes, externalLinks, f, sneaked(c -> {
                 String name = getDetailsName(c.text);
-                determineFieldDetails(type, c.text, name, (Element) node.selectSingleNode("LI"));
+                determineFieldDetails(type, c.text, name, (Element) node.selectSingleNode("LI"), externalLinks);
                 c.parseDone = true;
             }));
         }
@@ -220,64 +243,97 @@ System.err.println("ignore: " + dt.getText());
             List<?> allNodes = ((Element) node).content();
             determineDetails(allNodes, externalLinks, f, sneaked(c -> {
                 String name = c.text.substring(1, c.text.indexOf('\n', 1));
-                determineFieldDetails(type, c.text, name, (Element) node);
+                determineFieldDetails(type, c.text, name, (Element) node, externalLinks);
                 c.parseOn = false;
             }));
         }
     }
 
     /* field */
+    @Override
+    protected String getFieldsXpath() {
+        return "//TABLE[contains(text(),'" + rb.getString("token.field") + "')]/TR[position()>1]";
+    }
+
+    /* field */
+    @Override
     public void determineFields(Type type, Document typeXml, List<?> externalLinks) throws Exception {
-        String fieldsXpath = "//TABLE[contains(text(),'" + rb.getString("token.field") + "')]/TR[position()>1]";
-        determineFields(fieldsXpath, type, typeXml, externalLinks, "TD[position()=2]/A");
+        determineFields(type, typeXml, externalLinks, "TD[position()=2]/A");
     }
 
     /* enum */
+    @Override
     public void determineEnumConsts(Type type, Document typeXml, List<?> externalLinks) throws Exception {
         String enumConstsXpath = "//TABLE[contains(text(),'" + rb.getString("token.enum_constant") + "')]/TR[position()>1]";
         determineEnumConsts(enumConstsXpath, type, typeXml, externalLinks, "TD[position()=1]/A");
     }
 
     /* constructor */
+    @Override
     public void determineConstructors(Type type, Document typeXml, List<?> externalLinks) throws Exception {
         String constructorsXpath = "//TABLE[contains(text(),'" + rb.getString("token.constructor") + "')]/TR[position()>1]";
         determineConstructors(constructorsXpath, type, typeXml, externalLinks);
     }
 
     /* method */
+    @Override
     public void determineMethods(Type type, Document typeXml, List<?> externalLinks) throws Exception {
         String methodXpath = "//TABLE[contains(text(),'" + rb.getString("token.all_methods") + "')]/TR[position()>1]";
         determineMethods(methodXpath, type, typeXml, externalLinks);
     }
 
+    /** */
+    @Override
+    protected String[] getElementsXpaths() {
+        return new String[] {
+            "//TABLE[contains(text(),'" + rb.getString("token.required_element") + "')]/TR[position()>1]",
+            "//TABLE[contains(text(),'" + rb.getString("token.optional_element") + "')]/TR[position()>1]"
+        };
+    }
+
     /* annotation */
+    @Override
     public void determineElements(Type type, Document typeXml, List<?> externalLinks ) throws Exception {
-        String requiredMethodXpath = "//TABLE[contains(text(),'" + rb.getString("token.required_element") + "')]/TR[position()>1]";
-        String optionalMethodXpath = "//TABLE[contains(text(),'" + rb.getString("token.optional_element") + "')]/TR[position()>1]";
-        determineElements(requiredMethodXpath, optionalMethodXpath, type, typeXml, externalLinks, "TD[position()=2]/A");
+        determineElements(type, typeXml, externalLinks, "TD[position()=2]/A");
     }
 
     /** extends umm... */
+    @Override
     public void extendedType(Type t, Document typeXml, List<?> externalLinks ) {
         final String keyword = "extends";
-        Node node = typeXml.selectSingleNode("//LI/text()[contains(.,'" + keyword + "')]/following-sibling::A[1]");
-        if (node == null) {
-            String combinedText = typeXml.selectSingleNode("//LI/text()[contains(.,'" + keyword + "')]").getText();
-            combinedText = combinedText.substring(combinedText.indexOf(keyword) + keyword.length()).trim();
-            t.setSuperType(combinedText);
-        } else {
-            String combinedText = convertNodesToString(node, externalLinks);
-            if (combinedText != null) {
-                combinedText = combinedText.trim();
+        Node aNode = typeXml.selectSingleNode("//LI/text()[contains(.,'" + keyword + "')]/following-sibling::A[1]");
+        if (aNode != null) {
+            Node liNode = typeXml.selectSingleNode("//LI[text()[contains(.,'" + keyword + "')]]");
+            // selectNodes doesn't contain text...
+            List<Node> l = ((Element) liNode).content();
+            List<Node> nodes = l.stream()
+                    .filter(n -> "A".equals(n.getName()) ||
+                            "DIV".equals(n.getName()) ||
+                            n.getNodeType() == Node.TEXT_NODE && !n.getText().trim().replace("\r", "").isEmpty() ||
+                            n.getNodeType() == Node.ENTITY_REFERENCE_NODE)
+                    .collect(Collectors.toList());
 
-                if (!combinedText.isEmpty()) {
-                    t.setSuperType(combinedText);
+            String combinedText = "";
+            for (Node n : nodes) {
+                if ("DIV".equals(n.getName())) {
+                    break;
                 }
+                combinedText += convertNodesToString(n, externalLinks);
             }
+            combinedText = combinedText.trim().replaceFirst("^.+\\s*" + keyword + "\\s+([\\w_\\$\\.\\<\\>]+)\\s*.*$", "$1");
+            if (!combinedText.isEmpty()) {
+                String typeName = toFQDN(t, combinedText);
+                t.setSuperType(typeName);
+            }
+        } else {
+            String nodeText = typeXml.selectSingleNode("//LI/text()[contains(.,'" + keyword + "')]").getText().trim();
+            nodeText = nodeText.replaceFirst(".+\\s" + keyword + "\\s+([\\w_\\$\\.\\<\\>]+)\\s*.*", "$1");
+            t.setSuperType(nodeText);
         }
     }
 
     /* modifiers */
+    @Override
     public void determineTypeModifiers(Type type, Document typeXml, List<?> externalLinks) {
 //System.err.println("type: " + type.getShortName() + ", " + type.getTypeString());
         String typeDescriptorXpath = "//" + getLabelXpath() + "[contains(text(),'" + getLabelString(type) + " " + type.getShortName() + "')]";
@@ -294,34 +350,45 @@ System.err.println("ignore: " + dt.getText());
     }
 
     /* implements */
+    @Override
     public void determineImplementsList(Type t, Document typeXml, List<?> externalLinks) {
         String extension = t.isInterface() ? "extends" : "implements";
 
         List<?> implementsTypeAs = typeXml.selectNodes("//LI/text()[contains(.,'" + extension + "')]/following-sibling::A");
-        for (int i = 0; implementsTypeAs != null && i < implementsTypeAs.size(); i++) {
-            Node node = (Node) implementsTypeAs.get(i);
+        if (implementsTypeAs != null && implementsTypeAs.size() > 0) {
+            for (int i = 0; i < implementsTypeAs.size(); i++) {
+                Node node = (Node) implementsTypeAs.get(i);
 
-            String combinedText = convertNodesToString(node, externalLinks);
-            if (combinedText != null) {
-                combinedText = combinedText.trim();
+                String combinedText = convertNodesToString(node, externalLinks);
+                if (combinedText != null) {
+                    combinedText = combinedText.trim();
 
-                if (!combinedText.isEmpty()) {
-                    List<String> words = tokenizeWordListWithTypeParameters(combinedText, " ,\t\n\r\f");
-                    Iterator<String> it = words.iterator();
-                    while (it.hasNext()) {
-                        String typeName = it.next();
-
-//                        debug("token: " + typeName);
-                        t.addImplementsType(typeName);
+                    if (!combinedText.isEmpty()) {
+                        List<String> words = tokenizeWordListWithTypeParameters(combinedText, " ,\t\n\r\f");
+                        for (String typeName : words) {
+                            typeName = toFQDN(t, typeName);
+                            t.addImplementsType(typeName);
+                        }
+                    } else {
+                        break; // TODO too easy
                     }
-                } else {
-                    break; // TODO too easy
+                }
+            }
+        } else {
+            Node node = typeXml.selectSingleNode("//LI/text()[contains(.,'" + extension + "')]");
+            if (node != null) {
+                String text = node.getText().trim();
+                text = text.substring(text.indexOf(extension) + extension.length() + 1);
+                String[] types = text.split("[\\s,]+");
+                for (String type : types) {
+                    t.addImplementsType(type);
                 }
             }
         }
     }
 
     /** add li, dd, div */
+    @Override
     protected ElementRemover getRemover() {
         ElementRemover remover = new ElementRemover();
 

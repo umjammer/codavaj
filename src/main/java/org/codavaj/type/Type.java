@@ -95,7 +95,7 @@ public class Type extends Modifiable {
      *
      * @return the package name of the type, "" if in default package
      */
-    String getPackageName() {
+    public String getPackageName() {
         if ((getTypeName() != null) && (getTypeName().indexOf(".") != -1)) {
             return getTypeName().substring(0, getTypeName().lastIndexOf("."));
         }
