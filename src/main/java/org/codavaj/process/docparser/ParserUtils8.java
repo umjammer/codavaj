@@ -80,6 +80,7 @@ System.err.println("ignore: " + dt.getText());
                                 text = text.replaceFirst(" - ", " ");
                                 break;
                             case "typeparam": // for type parameter @param at class description
+                                tag = "param";
                                 text = text.replaceFirst("([\\w\\$_\\.\\<\\>]+) - ", "<$1> ");
                                 break;
                             case "exception":

@@ -4,7 +4,7 @@ package vavi.test.codavaj;
  * more description of this class.
  * @version 0.00 2019/05/07 umjammer initial version
  * @author <A href="mailto:umjammer@gmail.com">Naohide Sano</A> (umjammer)
- * @typeparam <T> description for this type
+ * @param <T> description for this type
  */
 public class Test2<T> extends vavi.test.codavaj.Test1 implements vavi.test.codavaj.Test5{
     /**
