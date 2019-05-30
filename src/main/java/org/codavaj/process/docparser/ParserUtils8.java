@@ -31,9 +31,10 @@ import static com.rainerhahnekamp.sneakythrow.Sneaky.sneaked;
 public class ParserUtils8 extends ParserUtils {
 
     /** details */
-    protected void determineComment(Type t, List<?> allNodes, List<String> commentText, List<?> externalLinks) {
+    @Override
+    protected void determineComment(Type t, List<Node> allNodes, List<String> commentText, List<?> externalLinks) {
         for (int i = 0; (allNodes != null) && (i < allNodes.size()); i++) {
-            Node node = (Node) allNodes.get(i);
+            Node node = allNodes.get(i);
 
             if (node.getNodeType() == Node.ELEMENT_NODE) {
                 if ("DIV".equals(node.getName())) {
@@ -45,33 +46,14 @@ public class ParserUtils8 extends ParserUtils {
                             commentText.add(line.trim());
                         }
                     } else {
-System.err.println("ignore: " + text);
+System.err.println("ignore 1: " + text);
                     }
                 } else if ("DL".equals(node.getName())) {
                     List<Node> nodes = node.selectNodes("*[name()='DT' or name()='DD']");
                     int j = 0;
                     do {
                         Node dt = nodes.get(j++);
-                        String tag;
-                        if (dt.getText().indexOf(rb.getString("token.version")) >= 0) {
-                            tag = "version";
-                        } else if (dt.getText().indexOf(rb.getString("token.author")) >= 0) {
-                            tag = "author";
-                        } else if (dt.getText().indexOf(rb.getString("token.return")) >= 0) {
-                            tag = "return";
-                        } else if (dt.getText().indexOf(rb.getString("token.see")) >= 0) {
-                            tag = "see";
-                        } else if (dt.getText().indexOf(rb.getString("token.type_parameter")) >= 0) {
-                            // WARNNING depends on order of conditions, should be before of token.parameter
-                            tag = "typeparam";
-                        } else if (dt.getText().indexOf(rb.getString("token.parameter")) >= 0) {
-                            tag = "param";
-                        } else if (dt.getText().indexOf(rb.getString("token.exception")) >= 0) {
-                            tag = "exception";
-                        } else {
-System.err.println("ignore: " + dt.getText());
-                            tag = "ignore";
-                        }
+                        String tag = getTag(dt.getText());
                         do {
                             Node dd = nodes.get(j++);
                             String text = dd.asXML().replace("<DD>", "").replace("</DD>", "").trim();
@@ -105,7 +87,7 @@ System.err.println("ignore: " + dt.getText());
                             case "see":
                                 if (text.contains(rb.getString("token.see.exclude.1")) ||
                                     text.contains(rb.getString("token.see.exclude.2"))) {
-System.err.println("ignore: " + dd.selectSingleNode("A").getText());
+System.err.println("ignore 3: " + dd.selectSingleNode("A").getText());
                                     continue;
                                 }
                                 break;
@@ -115,7 +97,7 @@ System.err.println("ignore: " + dd.selectSingleNode("A").getText());
                                 continue;
                             }
                             commentText.add("@" + tag + " " + text);
-                        } while(j < nodes.size() && nodes.get(j).getName().equals("DD"));
+                        } while (j < nodes.size() && "DD".equals(nodes.get(j).getName()));
                     } while (j < nodes.size());
                 }
             }
@@ -134,7 +116,7 @@ System.err.println("ignore: " + dd.selectSingleNode("A").getText());
         }
 
         // LI/DIV, DL...
-        List<?> allNodes = enclosingNode.selectNodes("*[name()='DIV' or name()='DL']");
+        List<Node> allNodes = enclosingNode.selectNodes("*[name()='DIV' or name()='DL']");
         List<String> commentText = new ArrayList<>();
 
         determineComment(t, allNodes, commentText, externalLinks);
@@ -162,7 +144,7 @@ System.err.println("ignore: " + dd.selectSingleNode("A").getText());
         List<String> commentText = new ArrayList<>();
 
         // for others
-        List<?> allNodes = typeXml.selectNodes("//LI/text()[contains(.,'" + type.getLabelString() + " " + type.getShortName() + "')]/following-sibling::*[name()='DIV' or name()='DL']");
+        List<Node> allNodes = typeXml.selectNodes("//LI/text()[contains(.,'" + type.getLabelString() + " " + type.getShortName() + "')]/following-sibling::*[name()='DIV' or name()='DL']");
         determineComment(type, allNodes, commentText, externalLinks);
 
         // for type parameter

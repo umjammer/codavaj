@@ -44,6 +44,7 @@ import org.codavaj.type.Modifiable;
 import org.codavaj.type.Parameter;
 import org.codavaj.type.Type;
 import org.codavaj.type.TypeFactory;
+import org.cyberneko.html.filters.ElementRemover;
 import org.dom4j.Document;
 import org.dom4j.DocumentException;
 import org.dom4j.Element;
@@ -109,93 +110,171 @@ public class ParserUtils {
         return typename += ".html";
     }
 
+    /** */
+    protected String getTag(String text) {
+        if (text.indexOf(rb.getString("token.version")) >= 0) {
+            return "version";
+        } else if (text.indexOf(rb.getString("token.author")) >= 0) {
+            return "author";
+        } else if (text.indexOf(rb.getString("token.return")) >= 0) {
+            return "return";
+        } else if (text.indexOf(rb.getString("token.see")) >= 0) {
+            return "see";
+        } else if (text.indexOf(rb.getString("token.type_parameter")) >= 0) {
+            // WARNNING depends on order of conditions, should be before of token.parameter
+            return "typeparam";
+        } else if (text.indexOf(rb.getString("token.parameter")) >= 0) {
+            return "param";
+        } else if (text.indexOf(rb.getString("token.exception")) >= 0) {
+            return "exception";
+        } else if (text.indexOf(rb.getString("token.specified_by")) >= 0) {
+            return "ignore";
+        } else if (text.indexOf(rb.getString("token.overrides")) >= 0) {
+            return "ignore";
+        } else {
+System.err.println("ignore 2: " + text);
+            return "ignore";
+        }
+    }
+
     /**
-     * DOCUMENT ME!
-     *
-     * @param enclosingNode DOCUMENT ME!
-     *
-     * @return DOCUMENT ME!
-     *
-     * @throws Exception DOCUMENT ME!
+     * @param nodes nodes include dt, dd...
+     * @param next index of the dt node
+     * @param tag dt text
+     * @return update index
      */
-    protected List<String> determineComment(Type t, Element enclosingNode, List<?> externalLinks)
-        throws Exception {
+    private int processDT(Type t, List<Node> nodes, int j, String tag, List<String> commentText, List<?> externalLinks) {
+        while (j < nodes.size() && "DD".equals(nodes.get(j).getName())) {
+            Node dd = nodes.get(j++);
+            String text = dd.asXML().replace("<DD>", "").replace("</DD>", "").trim();
+            switch (tag) { //.equals(tag)) {
+            case "param":
+                text = text.replaceFirst(" - ", " ");
+                break;
+            case "typeparam": // for type parameter @param at class description
+                tag = "param";
+                text = text.replaceFirst("([\\w\\$_\\.\\<\\>]+) - ", "<$1> ");
+                break;
+            case "exception":
+                Node typeNode = dd.selectSingleNode("A");
+                String comment;
+                String typeName;
+                if (typeNode != null) {
+                    comment = dd.getText().replaceFirst(" - ", " ");
+                    typeName = convertNodesToString(typeNode, externalLinks);
+                } else {
+                    int p = text.indexOf(" - ");
+                    if (p >= 0) {
+                        comment = dd.getText().substring(text.indexOf(" - ") + " -".length());
+                        typeName = dd.getText().substring(0, p);
+                    } else {
+                        comment = "";
+                        typeName = dd.getText().trim();
+                    }
+                }
+                text = toFQDN(t, typeName) + comment.replaceAll("\\s$", "");
+                break;
+            case "see":
+                if (text.contains(rb.getString("token.see.exclude.1")) ||
+                    text.contains(rb.getString("token.see.exclude.2"))) {
+System.err.println("ignore 3: " + dd.selectSingleNode("A").getText());
+                    continue;
+                }
+                break;
+            default:
+                break;
+            case "ignore":
+                continue;
+            }
+            commentText.add("@" + tag + " " + text);
+        }
+        return j;
+    }
+
+    /**
+     * details
+     *
+     * TODO fix @param, @throws
+     *
+     * @param allNodes input
+     * @param commentText output
+     */
+    protected void determineComment(Type t, List<Node> allNodes, List<String> commentText, List<?> externalLinks) {
+        for (int i = 0; (allNodes != null) && (i < allNodes.size()); i++) {
+            Node node = allNodes.get(i);
+//System.err.println("node: " + node.getName() + ": " + node.asXML());
+
+            if (node.getNodeType() == Node.ELEMENT_NODE) {
+                if ("DT".equals(node.getName())) {
+                    i = processDT(t, allNodes, i + 1, getTag(node.getText()), commentText, externalLinks);
+                } else if ("DD".equals(node.getName())) {
+                    determineComment(t, ((Element) node).content(), commentText, externalLinks);
+                } else if ("P".equals(node.getName())) {
+                    determineComment(t, ((Element) node).content(), commentText, externalLinks);
+                } else if ("DL".equals(node.getName())) {
+                    List<Node> nodes = node.selectNodes("*[name()='DT' or name()='DD']");
+                    int j = 0;
+                    while (j < nodes.size()) {
+                        Node dt = nodes.get(j++);
+                        if (dt.getText().isEmpty()) {
+                            continue; // <DT/> in class comment type parameter
+                        } else if ("DD".equals(dt.getName())) {
+                            determineComment(t, ((Element) dt).content(), commentText, externalLinks);
+                            continue;
+                        }
+
+                        j = processDT(t, nodes, j, getTag(dt.getText()), commentText, externalLinks);
+                    }
+                } else if ("I".equals(node.getName())) {
+                    commentText.add("@" + node.getText());
+                }
+            } else if (node.getNodeType() == Node.TEXT_NODE) {
+                if (node.getText().replace("\n", "").startsWith(rb.getString("token.deprecated"))) {
+                    commentText.add("@deprecated");
+                } else if (!node.getText().replace("\n", "").isEmpty()) {
+                    String[] lines = node.getText().replaceAll("^\\n", "").replaceAll("\\n$", "").split("\\n");
+                    for (String line : lines) {
+                        commentText.add(line.trim());
+                    }
+                }
+            }
+        }
+    }
+
+    /*
+     * details
+     * a field comment
+     * a method comment
+     */
+    protected List<String> determineComment(Type t, Element enclosingNode, List<?> externalLinks) throws Exception {
         if (enclosingNode == null) {
             return null;
         }
 
-        /*
-         a field comment
-         a method comment
-         */
-        List<?> allNodes = enclosingNode.content();
+        // LI/DIV, DL...
+        List<Node> allNodes = enclosingNode.content();
+//System.out.println("comment: " + enclosingNode.asXML());
+//System.out.println("comment: " + allNodes.size());
         List<String> commentText = new ArrayList<>();
 
-        for (int i = 0; (allNodes != null) && (i < allNodes.size()); i++) {
-            Node node = (Node) allNodes.get(i);
-
-            if ((node.getNodeType() == Node.ELEMENT_NODE)
-                    && "P".equals(node.getName())) {
-                String commentLine = node.valueOf("normalize-space(.)");
-
-                if ((commentLine != null) && !commentLine.trim().equals("")) {
-                    commentText.add(commentLine.trim());
-                }
-            }
-
-            if (node.getNodeType() == Node.TEXT_NODE) {
-                String commentLine = node.valueOf("normalize-space(.)");
-
-                if ((commentLine != null) && !commentLine.trim().equals("")) {
-                    commentText.add(commentLine.trim());
-                }
-            }
-        }
+        determineComment(t, allNodes, commentText, externalLinks);
 
         return commentText;
     }
 
-    /**
-     * a field or a method comment
-     *
-     * @param enclosingNode DOCUMENT ME!
-     *
-     * @return DOCUMENT ME!
-     *
-     * @throws Exception DOCUMENT ME!
+    /*
+     * details
+     * a field comment
+     * a method comment
      */
-    protected String determineDefault(Element enclosingNode)
-        throws Exception {
+    protected String determineDefault(Element enclosingNode) throws Exception {
         if (enclosingNode == null) {
             return null;
         }
-
-        /*
-         a field comment
-         a method comment
-         */
-        List<?> allNodes = enclosingNode.content();
-        String defaultText="";
-
-        for (int i = 0; (allNodes != null) && (i < allNodes.size()); i++) {
-            Node node = (Node) allNodes.get(i);
-
-            if ((node.getNodeType() == Node.ELEMENT_NODE)
-                    && "DL".equals(node.getName())) {
-                String commentLine = node.valueOf("normalize-space(.)");
-
-                if (commentLine.indexOf(rb.getString("token.default") + ":") != -1) {
-                    defaultText += commentLine.substring(commentLine.indexOf(rb.getString("token.default") + ":") + 8);
-                }
-            }
-
-        }
-        if ( defaultText.length() > 0 )
-        {
-            return defaultText;
-        }
-        return null;
+        Node node = enclosingNode.selectSingleNode(".//DL/DT[contains(text(), '" + rb.getString("token.default") + "')]/../DD");
+        return node != null ? node.getText() : null;
     }
+
 
     /**
      * DOCUMENT ME!
@@ -222,21 +301,21 @@ public class ParserUtils {
         </P>
         <HR/>
          */
-        List<?> allNodes = typeXml.getRootElement().content();
+        List<Node> allNodes = typeXml.getRootElement().content();
 
         // H2 indicates class descriptor
         boolean parseOn = false;
-        List<String> commentText = new ArrayList<>();
+        List<Node> commentNodes = new ArrayList<>();
 
         for (int i = 0; (allNodes != null) && (i < allNodes.size()); i++) {
-            Node node = (Node) allNodes.get(i);
+            Node node = allNodes.get(i);
 
             if (!parseOn && (node.getNodeType() == Node.ELEMENT_NODE)
                     && "H2".equals(node.getName())) {
                 // H2 starts the parsing off
                 while (i < allNodes.size()) {
                     i++;
-                    node = (Node) allNodes.get(i);
+                    node = allNodes.get(i);
 
                     if ((node.getNodeType() == Node.ELEMENT_NODE)
                             && "HR".equals(node.getName())) {
@@ -252,17 +331,20 @@ public class ParserUtils {
             if (parseOn) {
                 if ((node.getNodeType() == Node.ELEMENT_NODE)
                         && "P".equals(node.getName())) {
-                    String commentLine = node.valueOf("normalize-space(.)");
-
-                    if ((commentLine != null) && !commentLine.trim().equals("")) {
-                        commentText.add(commentLine.trim());
-                    }
+                    commentNodes.add(node);
                 } else if ((node.getNodeType() == Node.ELEMENT_NODE)
                         && "HR".equals(node.getName())) {
                     parseOn = false;
                 }
             }
         }
+
+        List<String> commentText = new ArrayList<>();
+        determineComment(type, commentNodes, commentText, externalLinks);
+
+        // for type parameter
+        allNodes = typeXml.selectNodes("//DL/DT[contains(text(),'" + rb.getString("token.type_parameter") + "')]/..");
+        determineComment(type, allNodes, commentText, externalLinks);
 
         type.setComment(commentText);
     }
@@ -412,7 +494,7 @@ public class ParserUtils {
      *
      * @param type DOCUMENT ME!
      * @param typeXml DOCUMENT ME!
-     * @param externalLinks list of externaly linked javadoc references.
+     * @param externalLinks list of externally linked javadoc references.
      *
      * @throws Exception DOCUMENT ME!
      */
@@ -1469,7 +1551,12 @@ public class ParserUtils {
      * @param typeXml DOCUMENT ME!
      */
     public void determineTypeModifiers(Type type, Document typeXml, List<?> externalLinks) {
-        Element typeDescriptorElement = (Element)typeXml.selectSingleNode("//DT[parent::DL/preceding-sibling::H2 and string-length(.) > 0 and not(contains(.,'All')) and not(contains(.,'Enclosing')) and not(contains(.,'Direct')) and not(contains(.,'Type Parameters:'))]");
+        Element typeDescriptorElement = (Element) typeXml.selectSingleNode("//DT[parent::DL/preceding-sibling::H2 and string-length(.) > 0 and not(contains(.,'All')) and not(contains(.,'Enclosing')) and not(contains(.,'Direct')) and not(contains(.,'Type Parameters:')) and not(contains(.,'Parameters:')) and not(contains(.,'Returns:'))]");
+        if (typeDescriptorElement == null) {
+            String typeDescriptorXpath = "//DT[contains(text(),'" + type.getLabelString() + " " + type.getShortName() + "')]";
+            typeDescriptorElement = (Element) typeXml.selectSingleNode(typeDescriptorXpath);
+//System.err.println(typeDescriptorElement.asXML());
+        }
         String typeDescriptor = convertNodesToString(typeDescriptorElement, externalLinks);
 
         determineTypeModifiers(typeDescriptor, type, typeXml, externalLinks);
@@ -1795,9 +1882,9 @@ public class ParserUtils {
         return result;
     }
 
-    /** */
-    protected org.cyberneko.html.filters.ElementRemover getRemover() {
-        org.cyberneko.html.filters.ElementRemover remover = new org.cyberneko.html.filters.ElementRemover();
+    /** add dd */
+    protected ElementRemover getRemover() {
+        ElementRemover remover = new ElementRemover();
 
         // set which elements to accept
         remover.acceptElement("html", null);
@@ -1814,6 +1901,7 @@ public class ParserUtils {
         remover.acceptElement("a", new String[] { "href", "target" });
         remover.acceptElement("dt", null);
         remover.acceptElement("dl", null);
+        remover.acceptElement("dd", null);
 
         // completely remove script elements
         remover.removeElement("script");
