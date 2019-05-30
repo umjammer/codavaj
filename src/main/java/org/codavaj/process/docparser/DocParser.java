@@ -108,10 +108,11 @@ public class DocParser implements Progressive {
             notifyListeners(new ProgressEvent(i + 1, alltypes.size(),
                     type.getTypeName()));
 
+            Document typeXml = null;
             try {
                 String filename = javadocDirName + Main.FILE_SEPARATOR
                     + parserUtil.filenameFromTypename(type.getTypeName());
-                Document typeXml = parserUtil.loadFileAsDom(filename);
+                typeXml = parserUtil.loadFileAsDom(filename);
 
                 if (parserUtil.isAnnotation(typeXml)) {
                     type.setAnnotation(true);
@@ -149,6 +150,8 @@ public class DocParser implements Progressive {
                 parserUtil.determineClassComment(type, typeXml, externalLinks);
             } catch (Exception e) {
                 error("Class parsing failed on " + type.getTypeName(), e);
+System.err.println(parserUtil.prettyPrint(typeXml));
+System.exit(1);
             }
         }
 
