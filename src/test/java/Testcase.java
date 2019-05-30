@@ -27,6 +27,7 @@ class Testcase {
 
     @ParameterizedTest
     @CsvSource({
+        "6/en,6/en",
         "8/en,8/en",
         "11/en,8/en",
         "12/en,8/en",
