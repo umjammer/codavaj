@@ -40,7 +40,8 @@ public class ParserUtils8 extends ParserUtils {
                 if ("DIV".equals(node.getName())) {
                     // TODO {@link} a tag
                     String text = node.asXML().replace("<DIV>", "").replace("</DIV>", "").trim();
-                    if (!text.contains(rb.getString("token.comment.exclude"))) {
+                    if (!text.contains(rb.getString("token.comment.exclude.1")) &&
+                        !text.contains(rb.getString("token.comment.exclude.2"))) {
                         String[] lines = text.split("\\n");
                         for (String line : lines) {
                             commentText.add(line.trim());
