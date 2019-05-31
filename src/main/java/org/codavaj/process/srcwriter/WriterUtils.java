@@ -138,7 +138,7 @@ public class WriterUtils {
         w.write(LINEFEED);
     }
 
-    protected void printComment(List<?> commentText, int indentation) throws IOException {
+    protected void printComment(List<String> commentText, int indentation) throws IOException {
         if ((commentText == null) || (commentText.size() == 0)) {
             return;
         }
@@ -150,7 +150,7 @@ public class WriterUtils {
         for (int i = 0; i < commentText.size(); i++) {
             printIndentation(indentation);
             w.write(" * ");
-            w.write((String) commentText.get(i));
+            w.write(commentText.get(i));
             printLineFeed();
         }
 

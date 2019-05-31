@@ -66,10 +66,10 @@ public class SrcWriter implements Progressive {
             throw new ProcessException("" + srcDir + " must be a directory.");
         }
 
-        List<?> alltypes = typeFactory.getTypes();
+        List<Type> alltypes = typeFactory.getTypes();
 
         for (int i = 0; (alltypes != null) && (i < alltypes.size()); i++) {
-            Type type = (Type) alltypes.get(i);
+            Type type = alltypes.get(i);
 
             notifyListeners(new ProgressEvent(i + 1, alltypes.size(),
                     type.getTypeName()));

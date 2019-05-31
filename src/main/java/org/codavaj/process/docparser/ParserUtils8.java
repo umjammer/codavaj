@@ -32,7 +32,7 @@ public class ParserUtils8 extends ParserUtils {
 
     /** details */
     @Override
-    protected void determineComment(Type t, List<Node> allNodes, List<String> commentText, List<?> externalLinks) {
+    protected void determineComment(Type t, List<Node> allNodes, List<String> commentText, List<String> externalLinks) {
         for (int i = 0; (allNodes != null) && (i < allNodes.size()); i++) {
             Node node = allNodes.get(i);
 
@@ -110,7 +110,7 @@ System.err.println("ignore 3: " + dd.selectSingleNode("A").getText());
      * a method comment
      */
     @Override
-    protected List<String> determineComment(Type t, Element enclosingNode, List<?> externalLinks) throws Exception {
+    protected List<String> determineComment(Type t, Element enclosingNode, List<String> externalLinks) throws Exception {
         if (enclosingNode == null) {
             return null;
         }
@@ -140,7 +140,7 @@ System.err.println("ignore 3: " + dd.selectSingleNode("A").getText());
 
     /* class comment */
     @Override
-    public void determineClassComment(Type type, Document typeXml, List<?> externalLinks) throws Exception {
+    public void determineClassComment(Type type, Document typeXml, List<String> externalLinks) throws Exception {
         List<String> commentText = new ArrayList<>();
 
         // for others
@@ -157,7 +157,7 @@ System.err.println("ignore 3: " + dd.selectSingleNode("A").getText());
 
     /* constants */
     @Override
-    public void determineConstants(Document allconstants, TypeFactory typeFactory, List<?> externalLinks, boolean lenient) {
+    public void determineConstants(Document allconstants, TypeFactory typeFactory, List<String> externalLinks, boolean lenient) {
         String xpath = "//TABLE/TR[position() != 1]";
         determineConstants(xpath, allconstants, typeFactory, externalLinks, lenient);
     }
@@ -175,18 +175,18 @@ System.err.println("ignore 3: " + dd.selectSingleNode("A").getText());
 
     /* details */
     @Override
-    public void determineDetails(Type type, Document typeXml, List<?> externalLinks) throws Exception {
+    public void determineDetails(Type type, Document typeXml, List<String> externalLinks) throws Exception {
 
         Function<Context, Boolean> f = c -> {
             c.parseOn = true;
             return c.parseDone;
         };
 
-        List<?> constructorDetails = typeXml.selectNodes("//" + getDetailsXpath() + "[contains(text(),'" + rb.getString("token.constructor_details") + "')]/following-sibling::LI");
+        List<Node> constructorDetails = typeXml.selectNodes("//" + getDetailsXpath() + "[contains(text(),'" + rb.getString("token.constructor_details") + "')]/following-sibling::LI");
         for (int i = 0; constructorDetails != null && i < constructorDetails.size(); i++) {
-            Node node = (Node) constructorDetails.get(i);
+            Node node = constructorDetails.get(i);
 
-            List<?> allNodes = ((Element) node).content();
+            List<Node> allNodes = ((Element) node).content();
             determineDetails(allNodes, externalLinks, f, sneaked(c -> {
                 String name = getDetailsName(c.text);
                 determineMethodDetails(type, c.text, name, (Element) node, externalLinks);
@@ -198,7 +198,7 @@ System.err.println("ignore 3: " + dd.selectSingleNode("A").getText());
         for (int i = 0; methodDetails != null && i < methodDetails.size(); i++) {
             Node node = (Node) methodDetails.get(i);
 
-            List<?> allNodes = ((Element) node).content();
+            List<Node> allNodes = ((Element) node).content();
             determineDetails(allNodes, externalLinks, f, sneaked(c -> {
                 String name = getDetailsName(c.text);
                 determineMethodDetails(type, c.text, name, (Element) node, externalLinks);
@@ -210,7 +210,7 @@ System.err.println("ignore 3: " + dd.selectSingleNode("A").getText());
         for (int i = 0; fieldDetails != null && i < fieldDetails.size(); i++) {
             Node node = (Node) fieldDetails.get(i);
 
-            List<?> allNodes = ((Element) node).content();
+            List<Node> allNodes = ((Element) node).content();
             determineDetails(allNodes, externalLinks, f, sneaked(c -> {
                 String name = getDetailsName(c.text);
                 determineFieldDetails(type, c.text, name, (Element) node, externalLinks);
@@ -219,10 +219,10 @@ System.err.println("ignore 3: " + dd.selectSingleNode("A").getText());
         }
 
         // annotation
-        List<?> elementDetails = typeXml.selectNodes("//" + getDetailsXpath() + "[contains(text(),'" + rb.getString("token.element_details") + "')]/../../LI");
+        List<Node> elementDetails = typeXml.selectNodes("//" + getDetailsXpath() + "[contains(text(),'" + rb.getString("token.element_details") + "')]/../../LI");
         for (int i = 0; elementDetails != null && i < elementDetails.size(); i++) {
-            Node node = (Node) elementDetails.get(i);
-            List<?> allNodes = ((Element) node.selectSingleNode("LI")).content();
+            Node node = elementDetails.get(i);
+            List<Node> allNodes = ((Element) node.selectSingleNode("LI")).content();
             determineDetails(allNodes, externalLinks, f, sneaked(c -> {
                 String name = getDetailsName(c.text);
                 determineFieldDetails(type, c.text, name, (Element) node.selectSingleNode("LI"), externalLinks);
@@ -231,11 +231,11 @@ System.err.println("ignore 3: " + dd.selectSingleNode("A").getText());
         }
 
         // enum
-        List<?> enumCOnstantDetails = typeXml.selectNodes("//" + getDetailsXpath() + "[contains(text(),'" + rb.getString("token.enum_constant_details") + "')]/following-sibling::LI");
+        List<Node> enumCOnstantDetails = typeXml.selectNodes("//" + getDetailsXpath() + "[contains(text(),'" + rb.getString("token.enum_constant_details") + "')]/following-sibling::LI");
         for (int i = 0; enumCOnstantDetails != null && i < enumCOnstantDetails.size(); i++) {
-            Node node = (Node) enumCOnstantDetails.get(i);
+            Node node = enumCOnstantDetails.get(i);
 
-            List<?> allNodes = ((Element) node).content();
+            List<Node> allNodes = ((Element) node).content();
             determineDetails(allNodes, externalLinks, f, sneaked(c -> {
                 String name = c.text.substring(1, c.text.indexOf('\n', 1));
                 determineFieldDetails(type, c.text, name, (Element) node, externalLinks);
@@ -252,27 +252,27 @@ System.err.println("ignore 3: " + dd.selectSingleNode("A").getText());
 
     /* field */
     @Override
-    public void determineFields(Type type, Document typeXml, List<?> externalLinks) throws Exception {
+    public void determineFields(Type type, Document typeXml, List<String> externalLinks) throws Exception {
         determineFields(type, typeXml, externalLinks, "TD[position()=2]/A");
     }
 
     /* enum */
     @Override
-    public void determineEnumConsts(Type type, Document typeXml, List<?> externalLinks) throws Exception {
+    public void determineEnumConsts(Type type, Document typeXml, List<String> externalLinks) throws Exception {
         String enumConstsXpath = "//TABLE[contains(text(),'" + rb.getString("token.enum_constant") + "')]/TR[position()>1]";
         determineEnumConsts(enumConstsXpath, type, typeXml, externalLinks, "TD[position()=1]/A");
     }
 
     /* constructor */
     @Override
-    public void determineConstructors(Type type, Document typeXml, List<?> externalLinks) throws Exception {
+    public void determineConstructors(Type type, Document typeXml, List<String> externalLinks) throws Exception {
         String constructorsXpath = "//TABLE[contains(text(),'" + rb.getString("token.constructor") + "')]/TR[position()>1]";
         determineConstructors(constructorsXpath, type, typeXml, externalLinks);
     }
 
     /* method */
     @Override
-    public void determineMethods(Type type, Document typeXml, List<?> externalLinks) throws Exception {
+    public void determineMethods(Type type, Document typeXml, List<String> externalLinks) throws Exception {
         String methodXpath = "//TABLE[contains(text(),'" + rb.getString("token.all_methods") + "')]/TR[position()>1]";
         determineMethods(methodXpath, type, typeXml, externalLinks);
     }
@@ -288,13 +288,13 @@ System.err.println("ignore 3: " + dd.selectSingleNode("A").getText());
 
     /* annotation */
     @Override
-    public void determineElements(Type type, Document typeXml, List<?> externalLinks ) throws Exception {
+    public void determineElements(Type type, Document typeXml, List<String> externalLinks ) throws Exception {
         determineElements(type, typeXml, externalLinks, "TD[position()=2]/A");
     }
 
     /** extends umm... */
     @Override
-    public void extendedType(Type t, Document typeXml, List<?> externalLinks ) {
+    public void extendedType(Type t, Document typeXml, List<String> externalLinks ) {
         final String keyword = "extends";
         Node aNode = typeXml.selectSingleNode("//LI/text()[contains(.,'" + keyword + "')]/following-sibling::A[1]");
         if (aNode != null) {
@@ -329,7 +329,7 @@ System.err.println("ignore 3: " + dd.selectSingleNode("A").getText());
 
     /* modifiers */
     @Override
-    public void determineTypeModifiers(Type type, Document typeXml, List<?> externalLinks) {
+    public void determineTypeModifiers(Type type, Document typeXml, List<String> externalLinks) {
 //System.err.println("type: " + type.getShortName() + ", " + type.getTypeString());
         String typeDescriptorXpath = "//" + getLabelXpath() + "[contains(text(),'" + getLabelString(type) + " " + type.getShortName() + "')]";
         Node typeDescriptorNode = typeXml.selectSingleNode(typeDescriptorXpath);
@@ -346,7 +346,7 @@ System.err.println("ignore 3: " + dd.selectSingleNode("A").getText());
 
     /* implements */
     @Override
-    public void determineImplementsList(Type t, Document typeXml, List<?> externalLinks) {
+    public void determineImplementsList(Type t, Document typeXml, List<String> externalLinks) {
         String extension = t.isInterface() ? "extends" : "implements";
 
         List<?> implementsTypeAs = typeXml.selectNodes("//LI/text()[contains(.,'" + extension + "')]/following-sibling::A");

@@ -38,12 +38,12 @@ public class SearchAlgorithm {
     private boolean matchAll( Package javadocPackage, Package jarPackage ) {
         // a package matches another if all it's subpackages can be made to
         // match the other too.
-        List<?> jarsubPackages = jarPackage.getPackages();
-        List<?> docsubPackages = javadocPackage.getPackages();
+        List<Package> jarsubPackages = jarPackage.getPackages();
+        List<Package> docsubPackages = javadocPackage.getPackages();
 
         boolean matchesAllSubPackages = true;
         for( int i = 0; i < docsubPackages.size(); i++ ) {
-            Package docsubPackage = (Package)docsubPackages.get(i);
+            Package docsubPackage = docsubPackages.get(i);
 
             if ( !matchAny( docsubPackage, jarsubPackages)) {
                 info( "Package " + docsubPackage.getName() + " doesn't match any sub packages of " + jarPackage.getName());
@@ -55,9 +55,9 @@ public class SearchAlgorithm {
         return matchesAllSubPackages;
     }
 
-    private boolean matchAny( Package javadocPackage, List<?> jarPackages ) {
+    private boolean matchAny( Package javadocPackage, List<Package> jarPackages ) {
         for( int i=0; i < jarPackages.size(); i++ ) {
-            Package jarPackage = (Package)jarPackages.get(i);
+            Package jarPackage = jarPackages.get(i);
 
             if ( ctx.getMap(jarPackage) != null ) {
                 info("Already mapped " + jarPackage.getName());

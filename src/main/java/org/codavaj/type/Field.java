@@ -23,7 +23,7 @@ import java.util.List;
  */
 public class Field extends Parameter {
     private Object value; // if we know the constant value
-    private List<?> comment = null;
+    private List<String> comment = null;
 
     Field() {
         super();
@@ -52,7 +52,7 @@ public class Field extends Parameter {
      *
      * @return DOCUMENT ME!
      */
-    public List<?> getComment() {
+    public List<String> getComment() {
         return comment;
     }
 
@@ -61,7 +61,7 @@ public class Field extends Parameter {
      *
      * @param comment DOCUMENT ME!
      */
-    public void setComment(List<?> comment) {
+    public void setComment(List<String> comment) {
         this.comment = comment;
     }
 }

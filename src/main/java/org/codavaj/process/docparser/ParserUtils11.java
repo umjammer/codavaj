@@ -34,19 +34,19 @@ public class ParserUtils11 extends ParserUtils8 {
 
     /* annotation */
     @Override
-    public void determineElements(Type type, Document typeXml, List<?> externalLinks) throws Exception {
+    public void determineElements(Type type, Document typeXml, List<String> externalLinks) throws Exception {
         determineElements(type, typeXml, externalLinks, "A");
     }
 
     /** constructor */
     @Override
-    protected List<?> getConstructorParamlistNodes(Node methodNode) {
+    protected List<Node> getConstructorParamlistNodes(Node methodNode) {
         return getMethodParamlistNodes(methodNode);
     }
 
     /** method */
     @Override
-    protected List<?> getMethodParamlistNodes(Node methodNode) {
+    protected List<Node> getMethodParamlistNodes(Node methodNode) {
         // TODO methodNode.selectNodes("*[name()!='DT']") excludes text nodes...
         List<Node> l = ((Element) methodNode).content();
         return l.stream()
@@ -57,13 +57,13 @@ public class ParserUtils11 extends ParserUtils8 {
 
     /* field */
     @Override
-    public void determineFields(Type type, Document typeXml, List<?> externalLinks) throws Exception {
+    public void determineFields(Type type, Document typeXml, List<String> externalLinks) throws Exception {
         determineFields(type, typeXml, externalLinks, "A");
     }
 
     /* enum */
     @Override
-    public void determineEnumConsts(Type type, Document typeXml, List<?> externalLinks) throws Exception {
+    public void determineEnumConsts(Type type, Document typeXml, List<String> externalLinks) throws Exception {
         String keyword = rb.getString("token.enum_constant").replace(rb.getString("token.type"), ""); // umm...
         String enumConstsXpath = "//TABLE[contains(text(),'" + keyword + "')]/TR[position()>1]";
         determineEnumConsts(enumConstsXpath, type, typeXml, externalLinks, "A");

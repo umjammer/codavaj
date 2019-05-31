@@ -47,7 +47,7 @@ public class DocParser implements Progressive {
      *  javadocClassName used by Tests to parse single classes instead of all docs
      */
     private String javadocClassName;
-    private List<?> externalLinks;
+    private List<String> externalLinks;
     private ParserUtils parserUtil;
     private TypeFactory typeFactory = new TypeFactory();
 
@@ -101,10 +101,10 @@ public class DocParser implements Progressive {
 
         // now the typeFactory is loaded with the type names
         // we must go through each in turn
-        List<?> alltypes = typeFactory.getTypes();
+        List<Type> alltypes = typeFactory.getTypes();
 
         for (int i = 0; (alltypes != null) && (i < alltypes.size()); i++) {
-            Type type = (Type) alltypes.get(i);
+            Type type = alltypes.get(i);
             notifyListeners(new ProgressEvent(i + 1, alltypes.size(),
                     type.getTypeName()));
 
@@ -187,7 +187,7 @@ System.exit(1);
      *
      * @return the list of configured exteral references.
      */
-    public List<?> getExternalLinks() {
+    public List<String> getExternalLinks() {
         return externalLinks;
     }
 
@@ -197,7 +197,7 @@ System.exit(1);
      *
      * @param externalLinks the external references list.
      */
-    public void setExternalLinks(List<?> externalLinks) {
+    public void setExternalLinks(List<String> externalLinks) {
         this.externalLinks = externalLinks;
     }
 

@@ -21,6 +21,7 @@ import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import java.util.zip.ZipEntry;
 
@@ -192,9 +193,9 @@ public class TypeFactory {
 
         SingleJarClassLoader cl = new SingleJarClassLoader(jar);
 
-        Enumeration<?> jarentries = jar.entries();
+        Enumeration<JarEntry> jarentries = jar.entries();
         while ( jarentries.hasMoreElements() ) {
-            ZipEntry entry = (ZipEntry)jarentries.nextElement();
+            ZipEntry entry = jarentries.nextElement();
             String filename = entry.getName();
 
             String classname = filename.replace('/','.');

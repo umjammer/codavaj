@@ -29,7 +29,7 @@ public class Type extends Modifiable {
     private List<Field> fieldList = new ArrayList<>();
     private List<EnumConst> enumConstList = new ArrayList<>();
     private List<Method> constructorList = new ArrayList<>();
-    private List<?> comment = null;
+    private List<String> comment = null;
     private List<Type> innerTypeList = new ArrayList<>();
     private String typeName;
     private String typeParameters; // generics
@@ -250,7 +250,7 @@ public class Type extends Modifiable {
      *
      * @return DOCUMENT ME!
      */
-    public List<?> getComment() {
+    public List<String> getComment() {
         return comment;
     }
 
@@ -259,7 +259,7 @@ public class Type extends Modifiable {
      *
      * @param typeComment DOCUMENT ME!
      */
-    public void setComment(List<?> typeComment) {
+    public void setComment(List<String> typeComment) {
         this.comment = typeComment;
     }
 
@@ -319,7 +319,7 @@ public class Type extends Modifiable {
      *
      * @return a method if found, otherwise null.
      */
-    public Method lookupConstructor(List<?> params) {
+    public Method lookupConstructor(List<Parameter> params) {
         for (int i = 0;
                 (getConstructorList() != null)
                 && (i < getConstructorList().size()); i++) {
@@ -333,7 +333,7 @@ public class Type extends Modifiable {
 
             for (int j = 0; j < params.size(); j++) {
                 Parameter p1 = m.getParameterList().get(j);
-                Parameter p2 = (Parameter) params.get(j);
+                Parameter p2 = params.get(j);
 
                 if (!p1.getType().equals(p2.getType())) {
                     matchedAll = false;
@@ -358,7 +358,7 @@ public class Type extends Modifiable {
      *
      * @return a method if found, otherwise null.
      */
-    public Method lookupMethodByName(String name, List<?> params) {
+    public Method lookupMethodByName(String name, List<Parameter> params) {
         for (int i = 0;
                 (getMethodList() != null) && (i < getMethodList().size());
                 i++) {
@@ -373,7 +373,7 @@ public class Type extends Modifiable {
 
                 for (int j = 0; j < params.size(); j++) {
                     Parameter p1 = m.getParameterList().get(j);
-                    Parameter p2 = (Parameter) params.get(j);
+                    Parameter p2 = params.get(j);
 
                     if (!p1.getType().equals(p2.getType())) {
                         matchedAll = false;

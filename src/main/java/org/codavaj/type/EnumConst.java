@@ -24,7 +24,7 @@ import java.util.List;
  * Contributed by Brian Koehmstedt.
  */
 public class EnumConst {
-    private List<?> comment = null;
+    private List<String> comment = null;
     private String name;
 
     EnumConst() {
@@ -36,7 +36,7 @@ public class EnumConst {
      *
      * @return DOCUMENT ME!
      */
-    public List<?> getComment() {
+    public List<String> getComment() {
         return comment;
     }
 
@@ -45,7 +45,7 @@ public class EnumConst {
      *
      * @param comment DOCUMENT ME!
      */
-    public void setComment(List<?> comment) {
+    public void setComment(List<String> comment) {
         this.comment = comment;
     }
 

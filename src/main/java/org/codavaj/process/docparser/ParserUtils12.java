@@ -30,7 +30,7 @@ public class ParserUtils12 extends ParserUtils11 {
 
     /* method */
     @Override
-    public void determineMethods(Type type, Document typeXml, List<?> externalLinks) throws Exception {
+    public void determineMethods(Type type, Document typeXml, List<String> externalLinks) throws Exception {
         String methodXpath = "//DIV[contains(text(),'" + rb.getString("token.all_methods") + "')]/../DIV[2]/TABLE/TR[position()>1]";
         determineMethods(methodXpath, type, typeXml, externalLinks);
     }
