@@ -25,6 +25,11 @@ public class ParserUtils13 extends ParserUtils12 {
     protected String getLabelXpath() {
         return "H1";
     }
+
+    @Override
+    protected boolean isSuitableVersion(String version) {
+        return versionComparator.compare(version, "13.0.0") >= 0;
+    }
 }
 
 /* */

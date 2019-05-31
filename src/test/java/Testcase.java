@@ -63,7 +63,7 @@ class Testcase {
 
             if (checksum1.getValue() != checksum2.getValue()) {
 System.err.println(path1 + ", " + path2 + " (" + version + ")");
-System.err.println(checksum1.getValue() + " ," + checksum2.getValue());
+System.err.println(checksum1.getValue() + ", " + checksum2.getValue());
 
                 ProcessBuilder pb = new ProcessBuilder().command("diff", "-ru", "-x", ".DS_Store", "src/test/resources/codavaj/" + expected, "tmp/test");
                 pb.inheritIO();

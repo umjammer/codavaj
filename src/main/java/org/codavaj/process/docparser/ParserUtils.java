@@ -23,6 +23,7 @@ import java.io.StringReader;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -37,6 +38,7 @@ import java.util.function.Function;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
+import org.codavaj.Main;
 import org.codavaj.type.EnumConst;
 import org.codavaj.type.Field;
 import org.codavaj.type.Method;
@@ -193,8 +195,6 @@ System.err.println("ignore 3: " + dd.selectSingleNode("A").getText());
 
     /**
      * details
-     *
-     * TODO fix @param, @throws
      *
      * @param allNodes input
      * @param commentText output
@@ -546,7 +546,7 @@ System.err.println("ignore 3: " + dd.selectSingleNode("A").getText());
             }));
     }
 
-    /** */
+    /** context for detail parsing */
     protected static class Context {
         /** umm... */
         boolean parseDone = false;
@@ -716,6 +716,7 @@ System.err.println("ignore 3: " + dd.selectSingleNode("A").getText());
         return(words);
     }
 
+    /** split by " \t\n\r\f" */
     protected void extractMethodModifiers(Method m, String text)
         throws Exception {
         List<String> words = tokenizeWordListWithTypeParameters(text, " \t\n\r\f");
@@ -725,6 +726,7 @@ System.err.println("ignore 3: " + dd.selectSingleNode("A").getText());
         }
     }
 
+    /** split by " \t\n\r\f" */
     protected void determineThrowsList(String throwsParams, Method m) {
         List<String> words = tokenizeWordListWithTypeParameters(throwsParams, " ,\t\n\r\f");
         Iterator<String> it = words.iterator();
@@ -733,6 +735,7 @@ System.err.println("ignore 3: " + dd.selectSingleNode("A").getText());
         }
     }
 
+    /** split by " \t\n\r\f" */
     protected void extractFieldModifiers(Field f, String text)
         throws Exception {
         List<String> words = tokenizeWordListWithTypeParameters(text, " \t\n\r\f");
@@ -1679,7 +1682,7 @@ System.err.println("ignore 3: " + dd.selectSingleNode("A").getText());
     }
 
     /**
-     * @return "class" or "interface" or "enum" or "annotation".
+     * @return a i18d word in "class", "interface", "enum" or "annotation".
      */
     protected String getLabelString(Type type) {
         if (type.isEnum()) {
@@ -1703,56 +1706,85 @@ System.err.println("ignore 3: " + dd.selectSingleNode("A").getText());
         return rb.getLocale().getLanguage().equals(locale.getLanguage());
     }
 
+    /** version comparator like 1.8.3 */
+    protected static VersionComparator versionComparator = new VersionComparator();
+
+    /** should compare from bigger version */
+    protected boolean isSuitableVersion(String version) {
+        return versionComparator.compare(version, "1.8.0") < 0;
+    }
+
+    /** */
+    protected String getFirstIndexFileName() {
+        return "allclasses-frame.html";
+    }
+
+    /** should be compared this order */
+    private static ParserUtils[] parseUtils = new ParserUtils[] {
+        new ParserUtils13(),
+        new ParserUtils12(),
+        new ParserUtils11(),
+        new ParserUtils8(),
+        new ParserUtils(),
+    };
+
+    /** */
+    private static String getFirstIndexFilePath(final String dir) {
+        return Arrays.asList(parseUtils).stream().map(pu -> {
+            return dir + Main.FILE_SEPARATOR + pu.getFirstIndexFileName();
+        }).filter(pn -> {
+            return Files.exists(Paths.get(pn));
+        }).findFirst().get();
+    }
+
+    /** */
+    private List<String> classes;
+
+    /** */
+    public List<String> getClasses() {
+        return classes;
+    }
+
     /**
      * Creates suitable parser.
      *
-     * @param filename the filename to parse.
-     *
-     * @throws SAXException DOCUMENT ME!
-     * @throws IOException DOCUMENT ME!
-     * @throws DocumentException DOCUMENT ME!
+     * @param dir the dir to parse.
      */
-    public static ParserUtils factory(String filename)
-        throws SAXException, IOException, DocumentException {
+    public static ParserUtils factory(String dir) throws IOException {
 
-        Locale.setDefault(Locale.ENGLISH); // for token.properties
+        try {
+            Locale.setDefault(Locale.ENGLISH); // for token.properties
 
-        if (!Files.exists(Paths.get(filename))) {
-            filename = filename.replace("-frame", ""); // umm... for v.11
-        }
-        if (!Files.exists(Paths.get(filename))) {
-            filename = filename.replace(".html", "-index.html"); // umm... for v.13
-        }
-        Document document = loadHtmlMetadataAsDom(new InputSource(new FileInputStream(filename)));
-        Node langNode = document.selectSingleNode("/HTML/@lang");
+            String allclassesfilename = getFirstIndexFilePath(dir);
+            Document document = loadHtmlMetadataAsDom(new InputSource(new FileInputStream(allclassesfilename)));
+            Node langNode = document.selectSingleNode("/HTML/@lang");
 
-        if (langNode != null) {
-            String lang = langNode.getText();
+            ParserUtils parserUtil;
 
-            rb = ResourceBundle.getBundle("token", new Locale(lang));
+            if (langNode != null) {
+                String lang = langNode.getText();
 
-            String versionText = document.selectSingleNode("//comment()[contains(., \"Generated by javadoc\")]").getText();
-            int firstBracket = versionText.indexOf('(');
-            int secondBracket = versionText.indexOf(')', firstBracket);
-            String version = versionText.substring(firstBracket + 1, secondBracket);
+                rb = ResourceBundle.getBundle("token", new Locale(lang));
 
-            version = version.replaceFirst("[_\\-]\\s*\\w+", "");
-            VersionComparator vc = new VersionComparator();
-            if (vc.compare(version, "13.0.0") >= 0) {
-                return new ParserUtils13();
-            } else if (vc.compare(version, "12.0.0") >= 0) {
-                return new ParserUtils12();
-            } else if (vc.compare(version, "11.0.0") >= 0) {
-                return new ParserUtils11();
-            } else if (vc.compare(version, "1.8.0") >= 0) {
-                return new ParserUtils8();
+                String versionText = document.selectSingleNode("//comment()[contains(., \"Generated by javadoc\")]").getText();
+                int firstBracket = versionText.indexOf('(');
+                int secondBracket = versionText.indexOf(')', firstBracket);
+                final String version = versionText.substring(firstBracket + 1, secondBracket).replaceFirst("[_\\-]\\s*\\w+", "");
+                parserUtil = Arrays.asList(parseUtils).stream().filter(pu -> pu.isSuitableVersion(version)).findFirst().get();
             } else {
-                return new ParserUtils();
-            }
-        } else {
-            rb = ResourceBundle.getBundle("token");
+                // w/o lang maybe v6
+                rb = ResourceBundle.getBundle("token");
 
-            return new ParserUtils();
+                parserUtil = new ParserUtils();
+            }
+
+            Document allclasses = parserUtil.loadFileAsDom(allclassesfilename);
+            parserUtil.classes = parserUtil.getAllFqTypenames(allclasses);
+
+//System.err.println(parserUtil.getClass().getName());
+            return parserUtil;
+        } catch (SAXException | DocumentException e) {
+            throw new IOException(e);
         }
     }
 

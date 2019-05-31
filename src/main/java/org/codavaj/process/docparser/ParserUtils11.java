@@ -6,20 +6,12 @@
 
 package org.codavaj.process.docparser;
 
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.List;
 import java.util.Locale;
 import java.util.stream.Collectors;
 
-import org.xml.sax.InputSource;
-import org.xml.sax.SAXException;
-
 import org.codavaj.type.Type;
 import org.dom4j.Document;
-import org.dom4j.DocumentException;
 import org.dom4j.Element;
 import org.dom4j.Node;
 
@@ -79,9 +71,6 @@ public class ParserUtils11 extends ParserUtils8 {
         };
     }
 
-    /**
-     * @return "class" or "interface" or "enum" or "annotation".
-     */
     @Override
     protected String getLabelString(Type type) {
         if (type.isEnum()) {
@@ -94,16 +83,17 @@ public class ParserUtils11 extends ParserUtils8 {
     /* class list */
     @Override
     public List<String> getAllFqTypenames(Document alltypesXml) {
-        return getAllFqTypenames(alltypesXml, "//A/@href");
+        return getAllFqTypenames(alltypesXml, "//TABLE/TR/TD/A/@href");
     }
 
-    /* class list */
     @Override
-    public Document loadFileAsDom(String filename) throws SAXException, IOException, DocumentException {
-        if (!Files.exists(Paths.get(filename))) {
-            filename = filename.replace("-frame", ""); // umm...
-        }
-        return loadHtmlAsDom(new InputSource(new FileInputStream(filename)));
+    protected boolean isSuitableVersion(String version) {
+        return versionComparator.compare(version, "11.0.0") >= 0 && versionComparator.compare(version, "12.0.0") < 0;
+    }
+
+    @Override
+    protected String getFirstIndexFileName() {
+        return "allclasses-index.html";
     }
 }
 

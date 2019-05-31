@@ -413,4 +413,9 @@ System.err.println("ignore 3: " + dd.selectSingleNode("A").getText());
 
         return remover;
     }
+
+    @Override
+    protected boolean isSuitableVersion(String version) {
+        return versionComparator.compare(version, "1.8.0") >= 0 && versionComparator.compare(version, "11.0.0") < 0;
+    }
 }
