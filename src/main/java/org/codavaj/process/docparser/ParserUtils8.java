@@ -331,13 +331,13 @@ System.err.println("ignore 3: " + dd.selectSingleNode("A").getText());
     @Override
     public void determineTypeModifiers(Type type, Document typeXml, List<String> externalLinks) {
 //System.err.println("type: " + type.getShortName() + ", " + type.getTypeString());
-        String typeDescriptorXpath = "//" + getLabelXpath() + "[contains(text(),'" + getLabelString(type) + " " + type.getShortName() + "')]";
+        String typeDescriptorXpath = "//" + getLabelXpath() + "[contains(text(),'" + getLabelString(type) + "') and contains(text(),'" + type.getShortName() + "')]";
         Node typeDescriptorNode = typeXml.selectSingleNode(typeDescriptorXpath);
 //System.err.println(typeDescriptorNode.asXML());
         String typeDescriptor1 = convertNodesToString(typeDescriptorNode, externalLinks);
         typeDescriptor1 = typeDescriptor1.replace(getLabelString(type) + " ", "").trim();
 //System.err.println(typeDescriptor1);
-        String typeDescriptor2 = typeXml.selectSingleNode("//LI/text()[contains(.,'" + type.getLabelString() + " " + type.getShortName() + "')]").getText();
+        String typeDescriptor2 = typeXml.selectSingleNode("//LI/text()[contains(.,'" + type.getLabelString() + "') and contains(.,'" + type.getShortName() + "')]").getText();
         String typeDescriptor = typeDescriptor2.replace(type.getShortName(), typeDescriptor1);
 //System.err.println(typeDescriptor);
 
