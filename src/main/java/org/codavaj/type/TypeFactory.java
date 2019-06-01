@@ -118,8 +118,8 @@ public class TypeFactory {
      *
      * @see Type#getTypeName()
      */
-    public Type lookupType(String typeName) {
-        return types.get(typeName);
+    public Map<String, Type> getTypeMap() {
+        return types;
     }
 
     /**

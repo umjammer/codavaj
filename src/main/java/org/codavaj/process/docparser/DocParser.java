@@ -19,16 +19,13 @@ package org.codavaj.process.docparser;
 import java.io.File;
 import java.util.List;
 
-import org.codavaj.Main;
 import org.codavaj.ProcessException;
-import org.codavaj.process.Progressive;
 import org.codavaj.process.ProgressEvent;
+import org.codavaj.process.Progressive;
 import org.codavaj.type.Type;
 import org.codavaj.type.TypeFactory;
-import org.dom4j.Document;
 
 import static org.codavaj.Logger.error;
-import static org.codavaj.Logger.info;
 
 /**
  * Read an entire javadoc file tree and construct a reflection-like
@@ -64,17 +61,8 @@ public class DocParser implements Progressive {
      *
      * @throws ProcessException failure to construct a TypeFactory.
      */
-    public void process() throws ProcessException {
-        File javadocDir = new File(javadocDirName);
+    public TypeFactory process() throws ProcessException {
 
-        if (!javadocDir.exists()) {
-            javadocDir.mkdirs();
-        }
-
-        if (!javadocDir.isDirectory()) {
-            throw new ProcessException("" + javadocDir
-                + " must be a directory.");
-        }
 
         try {
             // load and then process the list of all classes javadoc
@@ -89,8 +77,7 @@ public class DocParser implements Progressive {
             }
         } catch (Exception e) {
             error("All class determination failed!", e);
-
-            return;
+            throw new ProcessException(e);
         }
 
         // now the typeFactory is loaded with the type names
@@ -99,70 +86,34 @@ public class DocParser implements Progressive {
 
         for (int i = 0; (alltypes != null) && (i < alltypes.size()); i++) {
             Type type = alltypes.get(i);
-            notifyListeners(new ProgressEvent(i + 1, alltypes.size(),
-                    type.getTypeName()));
+            notifyListeners(new ProgressEvent(i + 1, alltypes.size(), type.getTypeName()));
 
-            Document typeXml = null;
             try {
-                String filename = javadocDirName + Main.FILE_SEPARATOR
-                    + parserUtil.filenameFromTypename(type.getTypeName());
-                typeXml = parserUtil.loadFileAsDom(filename);
-
-                if (parserUtil.isAnnotation(typeXml)) {
-                    type.setAnnotation(true);
-                } else if (parserUtil.isInterface(typeXml)) {
-                    type.setInterface(true);
-                } else if (parserUtil.isEnum(typeXml)) {
-                    type.setEnum(true);
-                    parserUtil.extendedType(type, typeXml, externalLinks);
-                } else if (parserUtil.isClass(typeXml)) {
-                    parserUtil.extendedType(type, typeXml, externalLinks);
-                } else {
-                    throw new ProcessException("type " + type.getTypeName()
-                        + " is neither class, interface, enum or annotation.");
-                }
-                if ( isDebugFlag()) {
-                    info( parserUtil.prettyPrint(typeXml) );
-                }
-
-                parserUtil.determineImplementsList(type, typeXml, externalLinks);
-
-                parserUtil.determineTypeModifiers(type, typeXml, externalLinks);
-
-                parserUtil.determineElements(type, typeXml, externalLinks);
-
-                parserUtil.determineMethods(type, typeXml, externalLinks);
-
-                parserUtil.determineFields(type, typeXml, externalLinks);
-
-                parserUtil.determineEnumConsts(type, typeXml, externalLinks);
-
-                parserUtil.determineConstructors(type, typeXml, externalLinks);
-
-                parserUtil.determineDetails(type, typeXml, externalLinks);
-
-                parserUtil.determineClassComment(type, typeXml, externalLinks);
+                parserUtil.processType(type, externalLinks);
             } catch (Exception e) {
-                error("Class parsing failed on " + type.getTypeName(), e);
-System.err.println(parserUtil.prettyPrint(typeXml));
-System.exit(1);
+                error("Class parsing failed on " + type.getTypeName());
+                errors.put(type, e);
+//                throw new ProcessException(e);
             }
         }
 
+        errors.entrySet().forEach(e -> {
+            System.err.println("******************: " + e.getKey().getShortName());
+            e.getValue().printStackTrace();
+            System.err.println(e.getValue().getMessage());
+        });
+
         try {
             // try and determine all constants
-            String allconstantsfilename = javadocDirName + Main.FILE_SEPARATOR
-                + "constant-values.html";
-            Document allconstants = parserUtil.loadFileAsDom(allconstantsfilename);
-
             //info( parserUtil.prettyPrint(allconstants));
-            parserUtil.determineConstants(allconstants, typeFactory,
-                externalLinks, getJavadocClassName() != null);
+            parserUtil.processConstant(typeFactory.getTypeMap(), externalLinks, getJavadocClassName() != null);
         } catch (Exception e) {
             error("All constant determination failed!", e);
+            throw new ProcessException(e);
         }
 
         typeFactory.link();
+
     }
 
     /**

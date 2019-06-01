@@ -20,7 +20,7 @@ package org.codavaj.process.docparser;
  * Unresolved external references to javadocs prohibit correct
  * type name determination.
  */
-public class UnresolvedExternalLinkException extends RuntimeException {
+public class UnresolvedExternalLinkException extends ParseException {
     private static final long serialVersionUID = 6822744609916808575L;
 
     /**

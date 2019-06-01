@@ -17,9 +17,10 @@
 package org.codavaj.process.docparser;
 
 import java.io.ByteArrayOutputStream;
-import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.StringReader;
+import java.io.InputStream;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -45,7 +46,6 @@ import org.codavaj.type.Method;
 import org.codavaj.type.Modifiable;
 import org.codavaj.type.Parameter;
 import org.codavaj.type.Type;
-import org.codavaj.type.TypeFactory;
 import org.cyberneko.html.filters.ElementRemover;
 import org.dom4j.Document;
 import org.dom4j.DocumentException;
@@ -85,7 +85,7 @@ public class ParserUtils {
      *
      * @return the typename - java.lang.String
      */
-    protected String typenameFromFilename(String filename) {
+    private String typenameFromFilename(String filename) {
         if (filename.endsWith(".html")) {
             filename = filename.substring(0,
                     filename.length() - ".html".length());
@@ -105,7 +105,7 @@ public class ParserUtils {
      *
      * @return filename java/lang/String.html
      */
-    public String filenameFromTypename(String typename) {
+    private String filenameFromTypename(String typename) {
         typename = typename.replace('.', '/');
         typename = typename.replace('$', '.');
 
@@ -145,7 +145,7 @@ System.err.println("ignore 2: " + text);
      * @param tag dt text
      * @return update index
      */
-    protected int processDT(Type t, List<Node> nodes, int j, String tag, List<String> commentText, List<String> externalLinks) {
+    private int processDT(Type t, List<Node> nodes, int j, String tag, List<String> commentText, List<String> externalLinks) {
         while (j < nodes.size() && "DD".equals(nodes.get(j).getName())) {
             Node dd = nodes.get(j++);
             String text = dd.asXML().replace("<DD>", "").replace("</DD>", "").trim();
@@ -246,7 +246,7 @@ System.err.println("ignore 3: " + dd.selectSingleNode("A").getText());
      * a field comment
      * a method comment
      */
-    protected List<String> determineComment(Type t, Element enclosingNode, List<String> externalLinks) throws Exception {
+    protected List<String> determineComment(Type t, Element enclosingNode, List<String> externalLinks) throws ParseException {
         if (enclosingNode == null) {
             return null;
         }
@@ -267,7 +267,7 @@ System.err.println("ignore 3: " + dd.selectSingleNode("A").getText());
      * a field comment
      * a method comment
      */
-    protected String determineDefault(Element enclosingNode) throws Exception {
+    protected String determineDefault(Element enclosingNode) throws ParseException {
         if (enclosingNode == null) {
             return null;
         }
@@ -277,16 +277,16 @@ System.err.println("ignore 3: " + dd.selectSingleNode("A").getText());
 
 
     /**
-     * DOCUMENT ME!
+     * DOCUMENT ME! (1st entry)
      *
      * @param type DOCUMENT ME!
      * @param typeXml DOCUMENT ME!
      * @param externalLinks list of externaly linked javadoc references.
      *
-     * @throws Exception DOCUMENT ME!
+     * @throws ParseException DOCUMENT ME!
      */
-    public void determineClassComment(Type type, Document typeXml, List<String> externalLinks )
-        throws Exception {
+    protected void determineClassComment(Type type, Document typeXml, List<String> externalLinks )
+        throws ParseException {
         /*
          a class comment
         <H2>org.codavaj Interface Logger</H2>
@@ -350,17 +350,16 @@ System.err.println("ignore 3: " + dd.selectSingleNode("A").getText());
     }
 
     /**
-     * DOCUMENT ME!
+     * DOCUMENT ME! (1st entry)
      *
      * @param allconstants DOCUMENT ME!
      * @param typeFactory DOCUMENT ME!
      * @param externalLinks list of externaly linked javadoc references.
      * @param lenient whether to warn when type not found
      */
-    public void determineConstants(Document allconstants,
-        TypeFactory typeFactory, List<String> externalLinks, boolean lenient) {
+    protected void determineConstants(Document allconstants, Map<String, Type> types, List<String> externalLinks, boolean lenient) {
         String xpath = "//P/TABLE/TR[position() != 1]";
-        determineConstants(xpath, allconstants, typeFactory, externalLinks, lenient);
+        determineConstants(xpath, allconstants, types, externalLinks, lenient);
     }
 
     /** constants */
@@ -373,7 +372,7 @@ System.err.println("ignore 3: " + dd.selectSingleNode("A").getText());
     }
 
     /** constants */
-    protected void determineConstants(String xpath, Document allconstants, TypeFactory typeFactory, List<String> externalLinks, boolean lenient) {
+    protected void determineConstants(String xpath, Document allconstants, Map<String, Type> types, List<String> externalLinks, boolean lenient) {
         List<Node> constantList = allconstants.selectNodes(xpath);
         for (int i = 0; (constantList != null) && (i < constantList.size());
                 i++) {
@@ -398,7 +397,7 @@ System.err.println("ignore 3: " + dd.selectSingleNode("A").getText());
             String constantValue = constantNode.valueOf(xpaths[2]);
 
             //debug( typeName + "#" + fieldName +"=" +constantValue );
-            Type type = typeFactory.lookupType(typeName);
+            Type type = types.get(typeName);
 
             if (type == null) {
                 if ( !lenient ) {
@@ -428,7 +427,7 @@ System.err.println("ignore 3: " + dd.selectSingleNode("A").getText());
      *
      * @return DOCUMENT ME!
      */
-    protected Object determineConstantValue(String typeName, String constantvalue) {
+    private Object determineConstantValue(String typeName, String constantvalue) {
         //( Boolean, Byte, Char, Double, Float, Integer, Long, Short )
         Object value = null;
 
@@ -490,16 +489,13 @@ System.err.println("ignore 3: " + dd.selectSingleNode("A").getText());
     }
 
     /**
-     * DOCUMENT ME!
+     * DOCUMENT ME! (1st entry)
      *
      * @param type DOCUMENT ME!
      * @param typeXml DOCUMENT ME!
      * @param externalLinks list of externally linked javadoc references.
-     *
-     * @throws Exception DOCUMENT ME!
      */
-    public void determineDetails(Type type, Document typeXml, List<String> externalLinks )
-        throws Exception {
+    protected void determineDetails(Type type, Document typeXml, List<String> externalLinks ) {
         /*
          an example method
         <H3>process</H3> public void process() throws
@@ -603,7 +599,7 @@ System.err.println("ignore 3: " + dd.selectSingleNode("A").getText());
     }
 
     /** method */
-    protected void determineMethodDetails(Type type, String text, String name, Element commentNode, List<String> externalLinks) throws Exception {
+    protected void determineMethodDetails(Type type, String text, String name, Element commentNode, List<String> externalLinks) throws ParseException {
         String methodParams = text.substring(text.indexOf("(")
                 + 1, text.indexOf(")"));
 
@@ -640,7 +636,7 @@ System.err.println("ignore 3: " + dd.selectSingleNode("A").getText());
     }
 
     /** Could be either a field, enum constant, or element detail */
-    protected void determineFieldDetails(Type type, String text, String name, Element commentNode, List<String> externalLinks) throws Exception {
+    protected void determineFieldDetails(Type type, String text, String name, Element commentNode, List<String> externalLinks) {
         Field f = type.lookupFieldByName(name);
         if (f != null) {
             // field
@@ -667,13 +663,12 @@ System.err.println("ignore 3: " + dd.selectSingleNode("A").getText());
         }
     }
 
-    protected List<Parameter> determineMethodParameterList(String methodParams)
-        throws Exception {
+    private List<Parameter> determineMethodParameterList(String methodParams) {
         List<Parameter> params = new ArrayList<>();
 
         List<String> words = tokenizeWordListWithTypeParameters(methodParams, ",");
         Iterator<String> it = words.iterator();
-        while(it.hasNext()) {
+        while (it.hasNext()) {
             Parameter p = determineParameter(it.next(), true);
             params.add(p);
         }
@@ -717,8 +712,7 @@ System.err.println("ignore 3: " + dd.selectSingleNode("A").getText());
     }
 
     /** split by " \t\n\r\f" */
-    protected void extractMethodModifiers(Method m, String text)
-        throws Exception {
+    private void extractMethodModifiers(Method m, String text) {
         List<String> words = tokenizeWordListWithTypeParameters(text, " \t\n\r\f");
         Iterator<String> it = words.iterator();
         while(it.hasNext()) {
@@ -727,7 +721,7 @@ System.err.println("ignore 3: " + dd.selectSingleNode("A").getText());
     }
 
     /** split by " \t\n\r\f" */
-    protected void determineThrowsList(String throwsParams, Method m) {
+    private void determineThrowsList(String throwsParams, Method m) {
         List<String> words = tokenizeWordListWithTypeParameters(throwsParams, " ,\t\n\r\f");
         Iterator<String> it = words.iterator();
         while(it.hasNext()) {
@@ -736,8 +730,7 @@ System.err.println("ignore 3: " + dd.selectSingleNode("A").getText());
     }
 
     /** split by " \t\n\r\f" */
-    protected void extractFieldModifiers(Field f, String text)
-        throws Exception {
+    private void extractFieldModifiers(Field f, String text) {
         List<String> words = tokenizeWordListWithTypeParameters(text, " \t\n\r\f");
         Iterator<String> it = words.iterator();
         while(it.hasNext()) {
@@ -746,16 +739,13 @@ System.err.println("ignore 3: " + dd.selectSingleNode("A").getText());
     }
 
     /**
-     * DOCUMENT ME!
+     * DOCUMENT ME! (1st entry)
      *
      * @param type DOCUMENT ME!
      * @param typeXml DOCUMENT ME!
      * @param externalLinks list of externaly linked javadoc references.
-     *
-     * @throws Exception DOCUMENT ME!
      */
-    public void determineFields(Type type, Document typeXml, List<String> externalLinks )
-            throws Exception {
+    protected void determineFields(Type type, Document typeXml, List<String> externalLinks) {
         // get the method details out of the Field Summary table
         // this information is missing the modifier info which is only
         // availible in the field details
@@ -791,7 +781,7 @@ System.err.println("ignore 3: " + dd.selectSingleNode("A").getText());
 
     /** fields */
     protected void determineFields(Type type, Document typeXml, List<String> externalLinks, String nameXpath)
-        throws Exception {
+        throws ParseException {
         List<Node> fieldList = typeXml.selectNodes(getFieldsXpath());
 
         for (int i = 0; fieldList != null && i < fieldList.size(); i++) {
@@ -823,23 +813,19 @@ System.err.println("ignore 3: " + dd.selectSingleNode("A").getText());
     }
 
     /**
-     * enum constants
+     * enum constants (1st entry)
      *
      * @param type DOCUMENT ME!
      * @param typeXml DOCUMENT ME!
      * @param externalLinks list of externaly linked javadoc references.
-     *
-     * @throws Exception DOCUMENT ME!
      */
-    public void determineEnumConsts(Type type, Document typeXml, List<String> externalLinks )
-        throws Exception {
+    protected void determineEnumConsts(Type type, Document typeXml, List<String> externalLinks) {
         String enumConstsXpath = "//TR[contains(parent::TABLE/TR[1], '" + rb.getString("token.enum_constant_summary") + "')][position()>1]";
         determineEnumConsts(enumConstsXpath, type, typeXml, externalLinks, "TD[position()=1]/A");
     }
 
     /** enum constants */
-    protected void determineEnumConsts(String enumConstsXpath, Type type, Document typeXml, List<String> externalLinks, String nameXpath)
-            throws Exception {
+    protected void determineEnumConsts(String enumConstsXpath, Type type, Document typeXml, List<String> externalLinks, String nameXpath) {
         List<Node> enumConstList = typeXml.selectNodes( enumConstsXpath );
 
         for (int i = 0; (enumConstList != null) && (i < enumConstList.size()); i++) {
@@ -857,16 +843,13 @@ System.err.println("ignore 3: " + dd.selectSingleNode("A").getText());
     }
 
     /**
-     * DOCUMENT ME!
+     * DOCUMENT ME! (1st entry)
      *
      * @param type DOCUMENT ME!
      * @param typeXml DOCUMENT ME!
      * @param externalLinks list of externaly linked javadoc references.
-     *
-     * @throws Exception DOCUMENT ME!
      */
-    public void determineConstructors(Type type, Document typeXml, List<String> externalLinks)
-        throws Exception {
+    protected void determineConstructors(Type type, Document typeXml, List<String> externalLinks) {
         // get the constructor details out of the Constructor Summary table
         // the first table field pertains to the "return type" which is always blank
         // since the constructor return is the class itself.
@@ -909,8 +892,7 @@ System.err.println("ignore 3: " + dd.selectSingleNode("A").getText());
     }
 
     /** constructor */
-    protected void determineConstructors(String constructorsXpath, Type type, Document typeXml, List<String> externalLinks)
-            throws Exception {
+    protected void determineConstructors(String constructorsXpath, Type type, Document typeXml, List<String> externalLinks) {
         List<Node> methodList = typeXml.selectNodes( constructorsXpath );
 
         for (int i = 0; (methodList != null) && (i < methodList.size()); i++) {
@@ -924,8 +906,7 @@ System.err.println("ignore 3: " + dd.selectSingleNode("A").getText());
     }
 
     /** parameter */
-    protected void determineMethodParameters(Method method, List<Node> paramlistNodes, List<String> externalLinks )
-        throws Exception {
+    private void determineMethodParameters(Method method, List<Node> paramlistNodes, List<String> externalLinks) {
         Element methodNameElement = (Element) paramlistNodes.get(0); // link in the same file
         method.setName(methodNameElement.getText());
 
@@ -979,9 +960,11 @@ System.err.println("ignore 3: " + dd.selectSingleNode("A").getText());
         }
     }
 
-    /** parameter */
-    private Parameter determineParameter(String parameterText, boolean parseName)
-        throws Exception {
+    /**
+     * parameter
+     * @throws ParseException
+     */
+    private Parameter determineParameter(String parameterText, boolean parseName) {
         // parses a parameter with modifiers, type, with or without a name
         // private final java.lang.String[][] name
         // static a/b/c/D name
@@ -1021,7 +1004,7 @@ System.err.println("ignore 3: " + dd.selectSingleNode("A").getText());
             }
         } catch (Exception e) {
             warning("failed to parse parameterText: " + parameterText);
-            throw e;
+            throw new ParseException(parameterText, e);
         }
 
         if ( parseName && p.getName() == null ) {
@@ -1030,9 +1013,11 @@ System.err.println("ignore 3: " + dd.selectSingleNode("A").getText());
         return p;
     }
 
-    /** method return */
-    protected Parameter determineMethodReturnParameter(Type t, Method m, String parameterText)
-        throws Exception {
+    /**
+     * method return
+     * @throws ParseException
+     */
+    private Parameter determineMethodReturnParameter(Type t, Method m, String parameterText) {
         // parses a parameter with modifiers, type, with or without a name
         // private final java.lang.String[][] name
         // static a/b/c/D name
@@ -1064,7 +1049,7 @@ System.err.println("ignore 3: " + dd.selectSingleNode("A").getText());
             }
         } catch (Exception e) {
             warning("failed to parse method return parameter in parameterText: " + parameterText);
-            throw e;
+            throw new ParseException(parameterText, e);
         }
 
         return p;
@@ -1079,7 +1064,7 @@ System.err.println("ignore 3: " + dd.selectSingleNode("A").getText());
      *
      * @return plain text to be parsed.
      */
-    protected String convertNodesToString(Element contentElement, List<String> externalLinks ) {
+    private String convertNodesToString(Element contentElement, List<String> externalLinks ) {
         List<Node> returnparamNodes = contentElement.content();
 
         String text = "";
@@ -1118,16 +1103,13 @@ System.err.println("ignore 3: " + dd.selectSingleNode("A").getText());
     }
 
     /**
-     * DOCUMENT ME!
+     * DOCUMENT ME! (1st entry)
      *
      * @param type DOCUMENT ME!
      * @param typeXml DOCUMENT ME!
      * @param externalLinks list of externaly linked javadoc references.
-     *
-     * @throws Exception DOCUMENT ME!
      */
-    public void determineMethods(Type type, Document typeXml, List<String> externalLinks )
-        throws Exception {
+    protected void determineMethods(Type type, Document typeXml, List<String> externalLinks) {
         // get the method details out of the Method Summary table
         // this information is missing the throws info which is only
         // availible in the method details
@@ -1192,8 +1174,7 @@ System.err.println("ignore 3: " + dd.selectSingleNode("A").getText());
     }
 
     /** method */
-    protected void determineMethods(String methodXpath, Type type, Document typeXml, List<String> externalLinks )
-        throws Exception {
+    protected void determineMethods(String methodXpath, Type type, Document typeXml, List<String> externalLinks) {
 
         List<Node> methodList = typeXml.selectNodes( methodXpath );
 
@@ -1225,16 +1206,13 @@ System.err.println("ignore 3: " + dd.selectSingleNode("A").getText());
     }
 
     /**
-     * annotation elements.
+     * annotation elements (1st entry).
      *
      * @param type DOCUMENT ME!
      * @param typeXml DOCUMENT ME!
-     * @param externalLinks list of externaly linked javadoc references.
-     *
-     * @throws Exception DOCUMENT ME!
+     * @param externalLinks list of externally linked javadoc references.
      */
-    public void determineElements(Type type, Document typeXml, List<String> externalLinks )
-        throws Exception {
+    protected void determineElements(Type type, Document typeXml, List<String> externalLinks) {
 
         /* Javadoc 1.6
     <TABLE>
@@ -1261,8 +1239,7 @@ System.err.println("ignore 3: " + dd.selectSingleNode("A").getText());
     }
 
     /** annotation elements. */
-    protected void determineElements(Type type, Document typeXml, List<String> externalLinks, String nameXpath)
-            throws Exception {
+    protected void determineElements(Type type, Document typeXml, List<String> externalLinks, String nameXpath) {
         final String[] xpaths = getElementsXpaths();
         List<Node> methodList = typeXml.selectNodes(xpaths[0]);
 
@@ -1334,9 +1311,9 @@ System.err.println("ignore 3: " + dd.selectSingleNode("A").getText());
      * @param externalLinks list of externaly linked javadoc references.
      *
      * @return a classname corresponding to a relative javadoc link.
-     * @throws Exception if an absolute link is not resolved in the external links
+     * @throws UnresolvedExternalLinkException if an absolute link is not resolved in the external links
      */
-    protected String javadocLinkToTypename(String link, List<String> externalLinks) throws UnresolvedExternalLinkException {
+    private String javadocLinkToTypename(String link, List<String> externalLinks) {
         if ( link == null ) return null;
         if ( link.startsWith("http:") || link.startsWith("https:")) {
             // external link - try to resolve any java.sun.com external links
@@ -1434,7 +1411,7 @@ System.err.println("ignore 3: " + dd.selectSingleNode("A").getText());
      *
      * @return whether the HTML represents an interface.
      */
-    public boolean isInterface(Document typeXml) {
+    private boolean isInterface(Document typeXml) {
         String classHeader = typeXml.valueOf("//" + getLabelXpath());
 
         // <H2>org.jumpi.spi.component Interface SequenceGenerator</H2>
@@ -1452,7 +1429,7 @@ System.err.println("ignore 3: " + dd.selectSingleNode("A").getText());
      *
      * @return whether the HTML represents an interface.
      */
-    public boolean isAnnotation(Document typeXml) {
+    private boolean isAnnotation(Document typeXml) {
         String classHeader = typeXml.valueOf("//" + getLabelXpath());
         //<H2>org.codavaj.javadoc.input Annotation Type AnnotationClass</H2>
         if ((classHeader != null) ) {
@@ -1469,7 +1446,7 @@ System.err.println("ignore 3: " + dd.selectSingleNode("A").getText());
      *
      * @return whether the HTML represents a class.
      */
-    public boolean isClass(Document typeXml) {
+    private boolean isClass(Document typeXml) {
         String classHeader = typeXml.valueOf("//" + getLabelXpath());
 
         // <H2>org.jumpi.impl.connector.mpi11 Class MpiDestination</H2>
@@ -1486,7 +1463,7 @@ System.err.println("ignore 3: " + dd.selectSingleNode("A").getText());
      *
      * @return whether the HTML represents an enum.
      */
-    public boolean isEnum(Document typeXml) {
+    private boolean isEnum(Document typeXml) {
         String classHeader = typeXml.valueOf("//" + getLabelXpath());
 
         if ( classHeader != null ) {
@@ -1502,7 +1479,7 @@ System.err.println("ignore 3: " + dd.selectSingleNode("A").getText());
      * @param typeXml DOM of the type.
      * @param externalLinks list of externaly linked javadoc references.
      */
-    public void extendedType(Type t, Document typeXml, List<String> externalLinks ) {
+    protected void extendedType(Type t, Document typeXml, List<String> externalLinks ) {
         /* If the extended type is part of the javadoc, then it is referenced by a link
          "//DT[starts-with(normalize-space(text()),'extends')]/descendant::A/@href"
         <DL>
@@ -1548,12 +1525,12 @@ System.err.println("ignore 3: " + dd.selectSingleNode("A").getText());
     }
 
     /**
-     * DOCUMENT ME!
+     * DOCUMENT ME! (1st entry)
      *
      * @param type DOCUMENT ME!
      * @param typeXml DOCUMENT ME!
      */
-    public void determineTypeModifiers(Type type, Document typeXml, List<String> externalLinks) {
+    protected void determineTypeModifiers(Type type, Document typeXml, List<String> externalLinks) {
         Element typeDescriptorElement = (Element) typeXml.selectSingleNode("//DT[parent::DL/preceding-sibling::H2 and string-length(.) > 0 and not(contains(.,'All')) and not(contains(.,'Enclosing')) and not(contains(.,'Direct')) and not(contains(.,'Type Parameters:')) and not(contains(.,'Parameters:')) and not(contains(.,'Returns:'))]");
         if (typeDescriptorElement == null) {
             String typeDescriptorXpath = "//DT[contains(text(),'" + type.getLabelString() + " " + type.getShortName() + "')]";
@@ -1640,13 +1617,13 @@ System.err.println("ignore 3: " + dd.selectSingleNode("A").getText());
     }
 
     /**
-     * DOCUMENT ME!
+     * DOCUMENT ME! (1st entry)
      *
      * @param t DOCUMENT ME!
      * @param typeXml DOCUMENT ME!
      * @param externalLinks list of externaly linked javadoc references.
      */
-    public void determineImplementsList(Type t, Document typeXml, List<String> externalLinks) {
+    protected void determineImplementsList(Type t, Document typeXml, List<String> externalLinks) {
         /*
         "//DT[starts-with(normalize-space(text()),'implements')]/descendant::A/@href"
         <DT>implements java.lang.Runnable,
@@ -1733,7 +1710,7 @@ System.err.println("ignore 3: " + dd.selectSingleNode("A").getText());
         return Arrays.asList(parseUtils).stream().map(pu -> {
             return dir + Main.FILE_SEPARATOR + pu.getFirstIndexFileName();
         }).filter(pn -> {
-            return Files.exists(Paths.get(pn));
+            return exists(pn);
         }).findFirst().get();
     }
 
@@ -1745,10 +1722,52 @@ System.err.println("ignore 3: " + dd.selectSingleNode("A").getText());
         return classes;
     }
 
+    /** base path name */
+    private String javadocDirName;
+
+    /** */
+    private static boolean exists(String url) {
+        URI uri = null;
+        if (!url.startsWith("http")) {
+            return Files.exists(Paths.get(url));
+        } else {
+            try {
+                uri = new URI(url);
+                InputStream is = uri.toURL().openStream();
+                is.close();
+                return true;
+            } catch (IOException e) {
+                return false;
+            } catch (URISyntaxException e) {
+                throw new IllegalStateException(e);
+            }
+        }
+    }
+
+    /**
+     * @throws IllegalArgumentException url is illegal syntax
+     * @throws IOException
+     */
+    private static InputSource getInputSource(String url) throws IOException {
+        URI uri = null;
+        if (!url.startsWith("http")) {
+            uri = Paths.get(url).toUri();
+        } else {
+            try {
+                uri = new URI(url);
+            } catch (URISyntaxException e) {
+                throw new IllegalArgumentException(e);
+            }
+        }
+        return new InputSource(uri.toURL().openStream());
+    }
+
     /**
      * Creates suitable parser.
      *
      * @param dir the dir to parse.
+     * @throws IllegalStateException SAXException
+     * @throws IOException
      */
     public static ParserUtils factory(String dir) throws IOException {
 
@@ -1756,7 +1775,7 @@ System.err.println("ignore 3: " + dd.selectSingleNode("A").getText());
             Locale.setDefault(Locale.ENGLISH); // for token.properties
 
             String allclassesfilename = getFirstIndexFilePath(dir);
-            Document document = loadHtmlMetadataAsDom(new InputSource(new FileInputStream(allclassesfilename)));
+            Document document = loadHtmlMetadataAsDom(getInputSource(allclassesfilename));
             Node langNode = document.selectSingleNode("/HTML/@lang");
 
             ParserUtils parserUtil;
@@ -1778,13 +1797,87 @@ System.err.println("ignore 3: " + dd.selectSingleNode("A").getText());
                 parserUtil = new ParserUtils();
             }
 
-            Document allclasses = parserUtil.loadFileAsDom(allclassesfilename);
+            Document allclasses = parserUtil.loadHtmlAsDom(getInputSource(allclassesfilename));
             parserUtil.classes = parserUtil.getAllFqTypenames(allclasses);
 
+            parserUtil.javadocDirName = dir;
 //System.err.println(parserUtil.getClass().getName());
             return parserUtil;
-        } catch (SAXException | DocumentException e) {
-            throw new IOException(e);
+        } catch (SAXException e) {
+            throw new IllegalStateException(e);
+        }
+    }
+
+    /**
+     * processes type parsing.
+     *
+     * @param type
+     * @param externalLinks
+     * @param javadocDirName
+     * @throws IllegalStateException SAXException
+     * @throws IOException
+     */
+    public void processType(Type type, List<String> externalLinks) throws IOException {
+        Document typeXml = null;
+        try {
+            String filename = javadocDirName + Main.FILE_SEPARATOR + filenameFromTypename(type.getTypeName());
+            typeXml = loadHtmlAsDom(getInputSource(filename));
+
+            if (isAnnotation(typeXml)) {
+                type.setAnnotation(true);
+            } else if (isInterface(typeXml)) {
+                type.setInterface(true);
+            } else if (isEnum(typeXml)) {
+                type.setEnum(true);
+                extendedType(type, typeXml, externalLinks);
+            } else if (isClass(typeXml)) {
+                extendedType(type, typeXml, externalLinks);
+            } else {
+                throw new ParseException("type " + type.getTypeName()
+                    + " is neither class, interface, enum or annotation.");
+            }
+
+            determineImplementsList(type, typeXml, externalLinks);
+
+            determineTypeModifiers(type, typeXml, externalLinks);
+
+            determineElements(type, typeXml, externalLinks);
+
+            determineMethods(type, typeXml, externalLinks);
+
+            determineFields(type, typeXml, externalLinks);
+
+            determineEnumConsts(type, typeXml, externalLinks);
+
+            determineConstructors(type, typeXml, externalLinks);
+
+            determineDetails(type, typeXml, externalLinks);
+
+            determineClassComment(type, typeXml, externalLinks);
+        } catch (SAXException e) {
+            throw new IllegalStateException(e);
+        } catch (Exception e) {
+            throw new ParseException(typeXml.asXML(), e);
+        }
+    }
+
+    /**
+     * processes constants parsing.
+     *
+     * @param type
+     * @param externalLinks
+     * @param javadocDirName
+     * @throws IllegalStateException SAXException
+     * @throws IOException
+     */
+    public void processConstant(Map<String, Type> maps, List<String> externalLinks, boolean lenient) throws IOException {
+        try {
+            String allconstantsfilename = javadocDirName + Main.FILE_SEPARATOR + "constant-values.html";
+            Document allconstants = loadHtmlAsDom(getInputSource(allconstantsfilename));
+
+            determineConstants(allconstants, maps, externalLinks, lenient);
+        } catch (SAXException e) {
+            throw new IllegalStateException(e);
         }
     }
 
@@ -1799,8 +1892,7 @@ System.err.println("ignore 3: " + dd.selectSingleNode("A").getText());
      * @throws IOException DOCUMENT ME!
      * @throws DocumentException DOCUMENT ME!
      */
-    private static Document loadHtmlMetadataAsDom(InputSource html)
-        throws SAXException, IOException, DocumentException {
+    private static Document loadHtmlMetadataAsDom(InputSource html) throws SAXException, IOException {
         org.cyberneko.html.parsers.DOMParser parser = new org.cyberneko.html.parsers.DOMParser();
 
         //XMLParserConfiguration parser = new HTMLConfiguration();
@@ -1854,26 +1946,8 @@ System.err.println("ignore 3: " + dd.selectSingleNode("A").getText());
      *
      * @throws SAXException DOCUMENT ME!
      * @throws IOException DOCUMENT ME!
-     * @throws DocumentException DOCUMENT ME!
      */
-    public Document loadHtmlAsDom(String html)
-        throws SAXException, IOException, DocumentException {
-        return loadHtmlAsDom(new InputSource(new StringReader(html)));
-    }
-
-    /**
-     * DOCUMENT ME!
-     *
-     * @param html DOCUMENT ME!
-     *
-     * @return DOCUMENT ME!
-     *
-     * @throws SAXException DOCUMENT ME!
-     * @throws IOException DOCUMENT ME!
-     * @throws DocumentException DOCUMENT ME!
-     */
-    protected Document loadHtmlAsDom(InputSource html)
-        throws SAXException, IOException, DocumentException {
+    private Document loadHtmlAsDom(InputSource html) throws SAXException, IOException {
         org.cyberneko.html.parsers.DOMParser parser = new org.cyberneko.html.parsers.DOMParser();
 
         //XMLParserConfiguration parser = new HTMLConfiguration();
@@ -1942,22 +2016,6 @@ System.err.println("ignore 3: " + dd.selectSingleNode("A").getText());
         return remover;
     }
 
-    /**
-     * DOCUMENT ME!
-     *
-     * @param filename DOCUMENT ME!
-     *
-     * @return DOCUMENT ME!
-     *
-     * @throws SAXException DOCUMENT ME!
-     * @throws IOException DOCUMENT ME!
-     * @throws DocumentException DOCUMENT ME!
-     */
-    public Document loadFileAsDom(String filename)
-        throws SAXException, IOException, DocumentException {
-        return loadHtmlAsDom(new InputSource(new FileInputStream(filename)));
-    }
-
     /** */
     private Map<String, String> fqdns = new HashMap<>();
 
@@ -1995,7 +2053,7 @@ System.err.println("ignore 3: " + dd.selectSingleNode("A").getText());
      *
      * @return DOCUMENT ME!
      */
-    public String prettyPrint(Document doc) {
+    protected String prettyPrint(Document doc) {
         try {
             ByteArrayOutputStream html = new ByteArrayOutputStream();
             OutputFormat outformat = OutputFormat.createPrettyPrint();
@@ -2016,7 +2074,7 @@ System.err.println("ignore 3: " + dd.selectSingleNode("A").getText());
     /**
      * @see "https://stackoverflow.com/questions/6701948/efficient-way-to-compare-version-strings-in-java"
      */
-    static class VersionComparator implements Comparator<String> {
+    protected static class VersionComparator implements Comparator<String> {
         /**
          * Compares two version strings.
          *
