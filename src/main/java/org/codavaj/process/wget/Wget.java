@@ -41,7 +41,7 @@ import static org.codavaj.Logger.warning;
 /**
  * DOCUMENT ME!
  */
-public class Wget implements Progressive {
+public class Wget implements Progressive<Void> {
 
     private static final String CONST_INDEX_HTML = "index.html";
     private static final String CONST_INDEX_ALL_HTML = "index-all.html";
@@ -70,7 +70,7 @@ public class Wget implements Progressive {
      *
      * @throws ProcessException DOCUMENT ME!
      */
-    public void process() throws ProcessException {
+    public Void process() throws ProcessException {
         File javadocDir = new File(javadocDirName);
 
         if (!javadocDir.exists()) {
@@ -109,7 +109,7 @@ public class Wget implements Progressive {
             throw new ProcessException(e);
         }
 
-        return;
+        return null;
     }
 
     private void getPage(WebConversation wc, Stack<String> got, Stack<String> fetch)

@@ -19,8 +19,6 @@ package org.codavaj;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.codavaj.process.ProgressEvent;
-import org.codavaj.process.ProgressListener;
 import org.codavaj.process.docparser.DocParser;
 import org.codavaj.process.srcwriter.SrcWriter;
 import org.codavaj.process.wget.Wget;
@@ -44,16 +42,14 @@ public class Main {
      * @return a TypeFactory handle on the resulting api
      * @throws Exception any problem.
      */
-    public static TypeFactory analyze( String javadocdir, List<String> externalLinks ) throws Exception {
-        ProcessMonitor pm = new ProcessMonitor();
+    public static TypeFactory analyze( String javadocdir, List<String> externalLinks ) throws ProcessException {
 
         DocParser dp = new DocParser();
         dp.setJavadocDirName(javadocdir);
         dp.setExternalLinks(externalLinks);
-        dp.addProgressListener(pm);
-        dp.process();
+        dp.addProgressListener(System.err::println);
 
-        return dp.getTypeFactory();
+        return dp.process();
     }
 
     /**
@@ -81,38 +77,30 @@ public class Main {
             externalLinks.add(args[i]);
         }
 
-        ProcessMonitor pm = new ProcessMonitor();
-
         if ("wget".equals(cmd)) {
             Wget wget = new Wget();
             wget.setRootUrl(input);
             wget.setJavadocDirName(output);
-            wget.addProgressListener(pm);
+            wget.addProgressListener(System.err::println);
             wget.process();
         } else if ("codavaj".equals(cmd)) {
             DocParser dp = new DocParser();
             dp.setJavadocDirName(input);
             dp.setExternalLinks(externalLinks);
-            dp.addProgressListener(pm);
-            dp.process();
+            dp.addProgressListener(System.err::println);
+            TypeFactory tf = dp.process();
 
             SrcWriter sw = new SrcWriter();
             sw.setSrcDirName(output);
             // link the previously parsed javadocs with the writer
-            sw.setTypeFactory(dp.getTypeFactory());
-            sw.addProgressListener(pm);
+            sw.setTypeFactory(tf);
+            sw.addProgressListener(System.err::println);
             sw.process();
         } else {
             System.err.println("usage alternatives: \n\t" + usage_wget + "\n\t"
                 + usage_parse);
 
             return;
-        }
-    }
-
-    static class ProcessMonitor implements ProgressListener {
-        public void notify(ProgressEvent event) {
-            System.err.println(event);
         }
     }
 

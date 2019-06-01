@@ -35,7 +35,7 @@ import static org.codavaj.Logger.error;
 /**
  * DOCUMENT ME!
  */
-public class SrcWriter implements Progressive {
+public class SrcWriter implements Progressive<Void> {
     /**
      * DOCUMENT ME!
      */
@@ -54,7 +54,7 @@ public class SrcWriter implements Progressive {
      * @throws ProcessException DOCUMENT ME!
      * @throws MissingParameterException DOCUMENT ME!
      */
-    public void process() throws ProcessException {
+    public Void process() throws ProcessException {
         if (typeFactory == null) {
             throw new MissingParameterException("no type factory");
         }
@@ -107,6 +107,7 @@ public class SrcWriter implements Progressive {
                 error("Error processing " + type.getTypeName(), iox);
             }
         }
+        return null;
     }
 
     /**

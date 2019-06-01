@@ -16,8 +16,9 @@
 
 package org.codavaj.process.docparser;
 
-import java.io.File;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.codavaj.ProcessException;
 import org.codavaj.process.ProgressEvent;
@@ -32,7 +33,7 @@ import static org.codavaj.Logger.error;
  * representation of all it's constituent parts ( Classes, Interfaces ... ) in
  * a TypeFactory.
  */
-public class DocParser implements Progressive {
+public class DocParser implements Progressive<TypeFactory> {
 
     /**
      * directory to find javadoc root.
@@ -46,7 +47,9 @@ public class DocParser implements Progressive {
     private String javadocClassName;
     private List<String> externalLinks;
     private ParserUtils parserUtil;
-    private TypeFactory typeFactory = new TypeFactory();
+    /** */
+    private Map<Type, Exception> errors = new HashMap<>();
+
 
     /**
      * Creates a new DocParser object.
@@ -63,6 +66,7 @@ public class DocParser implements Progressive {
      */
     public TypeFactory process() throws ProcessException {
 
+        TypeFactory typeFactory = new TypeFactory();
 
         try {
             // load and then process the list of all classes javadoc
@@ -114,15 +118,6 @@ public class DocParser implements Progressive {
 
         typeFactory.link();
 
-    }
-
-    /**
-     * Return the TypeFactory representing the entire Javadoc tree. Will only
-     * provide a value after Docparser#process() has been called.
-     *
-     * @return the TypeFactory representing the entire Javadoc tree.
-     */
-    public TypeFactory getTypeFactory() {
         return typeFactory;
     }
 

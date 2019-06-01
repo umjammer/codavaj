@@ -28,7 +28,7 @@ import static org.codavaj.Logger.warning;
 /**
  * Load the complete contents of a Jar file into a TypeFactory.
  */
-public class JarLoader implements Progressive {
+public class JarLoader implements Progressive<Void> {
     private String jarFileName;
     private TypeFactory typeFactory;
 
@@ -44,7 +44,7 @@ public class JarLoader implements Progressive {
      *
      * @throws ProcessException failure to process.
      */
-    public void process() throws ProcessException {
+    public Void process() throws ProcessException {
         File jarFile = new File(jarFileName);
 
         if (!jarFile.exists()) {
@@ -55,6 +55,8 @@ public class JarLoader implements Progressive {
             JarFile jar = new JarFile(jarFileName);
 
             typeFactory = TypeFactory.getInstance(jar);
+
+            return null;
         } catch ( Exception e ) {
             warning( "JarLoader failed!", e );
             throw new ProcessException(e);

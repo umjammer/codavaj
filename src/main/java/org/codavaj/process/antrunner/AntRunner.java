@@ -19,7 +19,6 @@ package org.codavaj.process.antrunner;
 import org.apache.tools.ant.launch.Launcher;
 
 import org.codavaj.ProcessException;
-
 import org.codavaj.process.Progressive;
 
 import java.io.File;
@@ -27,23 +26,17 @@ import java.io.File;
 /**
  * DOCUMENT ME!
  */
-public class AntRunner implements Progressive {
+public class AntRunner implements Progressive<Void> {
 
     private String antFileName;
     private String antTarget;
-
-    /**
-     * Creates a new AntRunner object.
-     */
-    public AntRunner() {
-    }
 
     /**
      * DOCUMENT ME!
      *
      * @throws ProcessException DOCUMENT ME!
      */
-    public void process() throws ProcessException {
+    public Void process() throws ProcessException {
         File antFile = new File(antFileName);
 
         if (!antFile.exists()) {
@@ -56,6 +49,6 @@ public class AntRunner implements Progressive {
         String[] args = new String[] { "-v", "-f", antFileName, antTarget };
         Launcher.main(args);
 
-        return;
+        return null;
     }
 }

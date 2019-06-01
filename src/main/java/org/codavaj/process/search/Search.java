@@ -25,7 +25,7 @@ import static org.codavaj.Logger.warning;
 /**
  * DOCUMENT ME!
  */
-public class Search implements Progressive {
+public class Search implements Progressive<Void> {
 
     private TypeFactory javadocTypeFactory;
     private TypeFactory jarTypeFactory;
@@ -42,13 +42,14 @@ public class Search implements Progressive {
      *
      * @throws ProcessException DOCUMENT ME!
      */
-    public void process() throws ProcessException {
+    public Void process() throws ProcessException {
         try {
             searchResult = new SearchContext();
             SearchAlgorithm algorithm = new SearchAlgorithm( javadocTypeFactory, jarTypeFactory, searchResult);
             algorithm.search();
 
             // the ctx holds the result!
+            return null;
         } catch ( Exception e ) {
             warning( "Search failed!", e );
             throw new ProcessException(e);

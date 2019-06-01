@@ -27,9 +27,9 @@ import org.codavaj.ProcessException;
 /**
  * DOCUMENT ME!
  */
-public interface Progressive {
+public interface Progressive<T> {
     // TODO should be protected
-    static Map<Progressive, List<ProgressListener>> listeners = new HashMap<>();
+    static Map<Progressive<?>, List<ProgressListener>> listeners = new HashMap<>();
 
     /**
      * DOCUMENT ME!
@@ -75,5 +75,5 @@ public interface Progressive {
      *
      * @throws ProcessException DOCUMENT ME!
      */
-    void process() throws ProcessException;
+    T process() throws ProcessException;
 }
