@@ -56,6 +56,7 @@ import org.dom4j.io.OutputFormat;
 import org.dom4j.io.XMLWriter;
 
 import static com.rainerhahnekamp.sneakythrow.Sneaky.sneaked;
+import static org.codavaj.Logger.info;
 import static org.codavaj.Logger.warning;
 
 /**
@@ -134,7 +135,7 @@ public class ParserUtils {
         } else if (text.indexOf(rb.getString("token.overrides")) >= 0) {
             return "ignore";
         } else {
-System.err.println("ignore 2: " + text);
+info("ignore 2: " + text);
             return "ignore";
         }
     }
@@ -179,7 +180,7 @@ System.err.println("ignore 2: " + text);
             case "see":
                 if (text.contains(rb.getString("token.see.exclude.1")) ||
                     text.contains(rb.getString("token.see.exclude.2"))) {
-System.err.println("ignore 3: " + dd.selectSingleNode("A").getText());
+info("ignore 3: " + dd.selectSingleNode("A").getText());
                     continue;
                 }
                 break;

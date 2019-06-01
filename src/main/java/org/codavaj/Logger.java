@@ -20,13 +20,16 @@ package org.codavaj;
  * DOCUMENT ME!
  */
 public class Logger {
+
+    private static java.util.logging.Logger logger = java.util.logging.Logger.getLogger(Logger.class.getName());
+
     /**
      * DOCUMENT ME!
      *
      * @param message DOCUMENT ME!
      */
     public static void info(String message) {
-        System.out.println("INFO: " + message);
+        logger.info(message);
     }
 
     /**
@@ -35,7 +38,7 @@ public class Logger {
      * @param message DOCUMENT ME!
      */
     public static void debug(String message) {
-        System.out.println("DEBUG: " + message);
+        logger.fine(message);
     }
 
     /**
@@ -44,7 +47,7 @@ public class Logger {
      * @param message DOCUMENT ME!
      */
     public static void warning(String message) {
-        System.out.println("WARN: " + message);
+        logger.warning(message);
     }
 
     /**
@@ -54,8 +57,8 @@ public class Logger {
      * @param e DOCUMENT ME!
      */
     public static void warning(String message, Throwable e) {
-        System.err.println("WARN: " + message);
-        e.printStackTrace(System.out);
+        logger.warning(message);
+        e.printStackTrace();
     }
 
     /**
@@ -64,7 +67,7 @@ public class Logger {
      * @param message DOCUMENT ME!
      */
     public static void error(String message) {
-        System.out.println("ERROR: " + message);
+        logger.severe(message);
     }
 
     /**
@@ -74,7 +77,7 @@ public class Logger {
      * @param e DOCUMENT ME!
      */
     public static void error(String message, Throwable e) {
-        System.err.println("ERROR: " + message);
-        e.printStackTrace(System.out);
+        logger.severe(message);
+        e.printStackTrace();
     }
 }
