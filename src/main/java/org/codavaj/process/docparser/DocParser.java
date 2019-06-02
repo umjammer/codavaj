@@ -46,10 +46,8 @@ public class DocParser implements Progressive<TypeFactory> {
      */
     private String javadocClassName;
     private List<String> externalLinks;
-    private ParserUtils parserUtil;
     /** */
     private Map<Type, Exception> errors = new HashMap<>();
-
 
     /**
      * Creates a new DocParser object.
@@ -68,6 +66,8 @@ public class DocParser implements Progressive<TypeFactory> {
 
         TypeFactory typeFactory = new TypeFactory();
 
+        ParserUtils parserUtil;
+
         try {
             // load and then process the list of all classes javadoc
 
@@ -76,7 +76,7 @@ public class DocParser implements Progressive<TypeFactory> {
 
             for (int i = 0; i < parserUtil.getClasses().size(); i++) {
                 String typeName = parserUtil.getClasses().get(i);
-                if ( getJavadocClassName() == null || getJavadocClassName().equals(typeName)) {
+                if (getJavadocClassName() == null || getJavadocClassName().equals(typeName)) {
                     typeFactory.createType(typeName);
                 }
             }

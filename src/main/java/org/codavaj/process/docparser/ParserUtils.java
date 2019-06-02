@@ -54,6 +54,7 @@ import org.dom4j.Node;
 import org.dom4j.io.DOMReader;
 import org.dom4j.io.OutputFormat;
 import org.dom4j.io.XMLWriter;
+import org.dom4j.tree.DefaultText;
 
 import static com.rainerhahnekamp.sneakythrow.Sneaky.sneaked;
 import static org.codavaj.Logger.debug;
@@ -140,28 +141,38 @@ public class ParserUtils {
         } else if (text.indexOf(rb.getString("token.default")) >= 0) {
             return "ignore";
         } else {
-info("unhandled tag: " + text);
+debug("unhandled tag: " + text);
             return text;
         }
     }
 
+    /** with out self tag, first, last white spaces */
+    protected String tidyText(Node node) {
+        String name = node.getName();
+        return node.asXML().replace("<" + name + ">", "").replace("</" + name + ">", "").replaceAll("^\\s*", "").replaceAll("\\s*$", "");
+    }
+
     /**
+     * Processes DD... in DT
      * @param nodes nodes include dt, dd...
      * @param next index of the dt node
      * @param tag dt text
+     * @param commentText output
      * @return update index
      */
     private int processDT(Type t, List<Node> nodes, int j, String tag, List<String> commentText) {
         while (j < nodes.size() && "DD".equals(nodes.get(j).getName())) {
             Node dd = nodes.get(j++);
-            String text = dd.asXML().replace("<DD>", "").replace("</DD>", "").trim();
+            String text = tidyText(dd);
             switch (tag) { //.equals(tag)) {
             case "param":
-                text = text.replaceFirst(" - ", " ");
+                replaceA(((Element) dd), true);
+                text = tidyText(dd).replaceFirst(" - ", " ");
                 break;
             case "typeparam": // for type parameter @param at class description
                 tag = "param";
-                text = text.replaceFirst("([\\w\\$_\\.\\<\\>]+) - ", "<$1> ");
+                replaceA(((Element) dd), true);
+                text = tidyText(dd).replaceFirst("([\\w\\$_\\.\\<\\>]+) - ", "<$1> ");
                 break;
             case "exception":
                 Node typeNode = dd.selectSingleNode("A");
@@ -188,7 +199,8 @@ info("unhandled tag: " + text);
 debug("ignore 3: " + dd.asXML());
                     continue;
                 }
-                // TODO text includes <A>
+                replaceA(((Element) dd), true);
+                text = tidyText(dd);
                 break;
             default:
                 break;
@@ -202,6 +214,60 @@ debug("ignore 3: " + dd.asXML());
             }
         }
         return j;
+    }
+
+    /** Processes A */
+    private String processA(Node a) {
+debug("A: " + a.asXML());
+        String href = a.valueOf("@href");
+        if ((href.startsWith("http") || href.startsWith("../")) &&
+            href.replace(".html#", ".").indexOf(a.getText().replaceAll("\\([\\w$_\\.,\\s\\[\\]]*\\)", "")) != -1) {
+            String link = hrefToLink(href);
+            return "{@link " + link + "}";
+        } else {
+            return a.asXML().replaceAll("^\\s*", "").replaceAll("\\s*$", "");
+        }
+    }
+
+    /**
+     * @param url javadoc link
+     * @return a class name with field or method
+     */
+    private String hrefToLink(String url) {
+        if (url.startsWith("http:") || url.startsWith("https:")) {
+            if (isDefaultJavadocUrl(url) && url.indexOf("/api/") != -1) {
+                // standard sun api links - no need to explicitly mention these
+                url = url.substring(url.indexOf("/api/") + "/api/".length());
+            } else {
+                for (String externalLink : externalLinks) {
+                    if (url.startsWith(externalLink)) {
+                        url = url.substring(externalLink.length());
+                        if (url.startsWith("/")) {
+                            url = url.substring(1);
+                        }
+                        break;
+                    }
+                }
+            }
+        }
+
+        while (url.startsWith("../")) {
+            url = url.substring("../".length());
+        }
+
+        String member = "";
+        if (url.indexOf("#") != -1) {
+            member = url.substring(url.indexOf("#"));
+            url = url.substring(0, url.indexOf("#"));
+        }
+
+        if (url.indexOf("?") != -1) {
+            url = url.substring(0, url.indexOf("?"));
+        }
+
+        String typeName = typenameFromFilename(url);
+
+        return typeName + member;
     }
 
     /**
@@ -219,9 +285,9 @@ debug("ignore 3: " + dd.asXML());
                 if ("DT".equals(node.getName())) {
                     i = processDT(t, allNodes, i + 1, getTag(node.getText()), commentText);
                 } else if ("DD".equals(node.getName())) {
-                    determineComment(t, ((Element) node).content(), commentText);
+                    determineComment(t, replaceA(((Element) node), false), commentText);
                 } else if ("P".equals(node.getName())) {
-                    determineComment(t, ((Element) node).content(), commentText);
+                    determineComment(t, replaceA(((Element) node), false), commentText);
                 } else if ("DL".equals(node.getName())) {
                     List<Node> nodes = node.selectNodes("*[name()='DT' or name()='DD']");
                     int j = 0;
@@ -236,8 +302,11 @@ debug("ignore 3: " + dd.asXML());
 
                         j = processDT(t, nodes, j, getTag(dt.getText()), commentText);
                     }
+                } else if ("A".equals(node.getName())) {
+                    commentText.add(processA(node));
                 } else {
-info("unhandled node: " + node.getName() + ": " + node.asXML());
+debug("unhandled node: " + node.getName());
+                    replaceA(((Element) node), true);
                     String text = node.asXML();
                     String[] lines = text.split("\\n");
                     for (String line : lines) {
@@ -249,10 +318,10 @@ info("unhandled node: " + node.getName() + ": " + node.asXML());
                 if (text.contains(rb.getString("token.comment.exclude.1")) ||
                     text.contains(rb.getString("token.comment.exclude.2"))) {
                     if (i + 1 < allNodes.size() && "A".equals(allNodes.get(i + 1).getName())) {
-debug("ignore 1: " + text + allNodes.get(i + 1).asXML());
+debug("ignore 1.1: " + text + allNodes.get(i + 1).asXML());
                         i++;
                     } else {
-info("ignore 1: " + text);
+debug("ignore 1.2: " + text);
                     }
                 } else {
                     if (!text.isEmpty()) {
@@ -268,6 +337,41 @@ debug("ignore 5: " + node.asXML());
         }
     }
 
+    /** replace a tag to @link */
+    protected List<Node> replaceA(Element element, boolean recursive) {
+        List<Node> nodes = element.content();
+        for (Node node : nodes) {
+            if (node.getNodeType() == Node.ELEMENT_NODE) {
+                boolean ignore = false;
+                if ("A".equals(node.getName())) {
+                    int index = nodes.indexOf(node);
+debug("index: " + index);
+                    if (index > 0) {
+                        Node before = nodes.get(index - 1);
+debug("before: " + before.asXML());
+                        if (before.getNodeType() == Node.TEXT_NODE && (
+                            before.getText().contains(rb.getString("token.comment.exclude.1")) ||
+                            before.getText().contains(rb.getString("token.comment.exclude.2")))) {
+                            ignore = true;
+debug("ignore 1.0: " + before.getText() + node.asXML());
+                        }
+                    }
+                    if (!ignore) {
+                        String string = processA(node);
+                        if (string.startsWith("{@link")) {
+                            nodes.set(nodes.indexOf(node), new DefaultText(string));
+                        }
+                    }
+                } else {
+                    if (recursive) {
+                        replaceA(((Element) node), true);
+                    }
+                }
+            }
+        }
+        return nodes;
+    }
+
     /*
      * details
      * a field comment
@@ -280,10 +384,10 @@ debug("ignore 5: " + node.asXML());
 
         // LI/DL...
         List<Node> allNodes = enclosingNode.content();
-//System.out.println("comment: " + enclosingNode.asXML());
-//System.out.println("comment: " + allNodes.size());
         List<String> commentText = new ArrayList<>();
 
+//System.err.println("---------------------");
+//allNodes.forEach(n -> System.err.println(n.asXML() + " *****"));
         determineComment(t, allNodes, commentText);
 
         return commentText;
@@ -362,6 +466,8 @@ debug("ignore 5: " + node.asXML());
         }
 
         List<String> commentText = new ArrayList<>();
+//System.err.println("---------------------");
+//commentNodes.forEach(n -> System.err.println(n.asXML() + " *****"));
         determineComment(type, commentNodes, commentText);
 
         // for type parameter
@@ -1324,29 +1430,29 @@ debug("ignore 5: " + node.asXML());
      * @throws UnresolvedExternalLinkException if an absolute link is not resolved in the external links
      */
     private String javadocLinkToTypename(String link) {
-        if ( link == null ) return null;
-        if ( link.startsWith("http:") || link.startsWith("https:")) {
+        if (link == null) return null;
+        if (link.startsWith("http:") || link.startsWith("https:")) {
             // external link - try to resolve any java.sun.com external links
             // http://java.sun.com/j2se/1.3/docs/api/
             // http://java.sun.com/j2se/1.4.2/docs/api/
             // http://java.sun.com/j2se/1.5.0/docs/api/
-            if ((link.startsWith("http://java.sun.com/") || link.startsWith("https://docs.oracle.com/")) && link.indexOf("/api/") != -1) {
+            if (isDefaultJavadocUrl(link) && link.indexOf("/api/") != -1) {
                 // standard sun api links - no need to explicitly mention these
                 link = link.substring(link.indexOf("/api/") + "/api/".length());
             } else {
                 boolean found = false;
-                for( int i = 0; externalLinks != null && i < externalLinks.size(); i++ ) {
+                for (int i = 0; externalLinks != null && i < externalLinks.size(); i++) {
                     String externalLink = externalLinks.get(i);
-                    if ( link.startsWith(externalLink) ) {
+                    if (link.startsWith(externalLink)) {
                         link = link.substring(externalLink.length());
-                        if ( link.startsWith("/")) {
+                        if (link.startsWith("/")) {
                             link = link.substring(1);
                         }
                         found = true;
                         break;
                     }
                 }
-                if ( !found ) {
+                if (!found) {
                     throw new UnresolvedExternalLinkException("External link " + link + " not specified in program arguments.");
                 }
             }
@@ -1365,6 +1471,17 @@ debug("ignore 5: " + node.asXML());
         }
 
         return typenameFromFilename(link);
+    }
+
+    /** */
+    private static String[] defaultJavadocUrls = {
+        "http://java.sun.com/",
+        "https://docs.oracle.com/",
+    };
+
+    /** */
+    private boolean isDefaultJavadocUrl(String url) {
+        return Arrays.asList(defaultJavadocUrls).stream().anyMatch(s -> url.startsWith(s));
     }
 
     /**
@@ -1579,7 +1696,7 @@ debug("ignore 5: " + node.asXML());
         */
 
         // take the generics type parameters
-        if ( typeDescriptor.indexOf("<") != -1 && typeDescriptor.lastIndexOf(">") != -1 && typeDescriptor.indexOf("<") < typeDescriptor.lastIndexOf(">")) {
+        if (typeDescriptor.indexOf("<") != -1 && typeDescriptor.lastIndexOf(">") != -1 && typeDescriptor.indexOf("<") < typeDescriptor.lastIndexOf(">")) {
             String typeParameters = typeDescriptor.substring(typeDescriptor.indexOf("<"), typeDescriptor.lastIndexOf(">")+1);
             type.setTypeParameters(typeParameters);
         }
@@ -1588,8 +1705,7 @@ debug("ignore 5: " + node.asXML());
         String shortname = type.getShortName();
 
         if (typeDescriptor.indexOf(shortname) != -1) {
-            typeDescriptor = typeDescriptor.substring(0,
-                    typeDescriptor.indexOf(shortname));
+            typeDescriptor = typeDescriptor.substring(0, typeDescriptor.indexOf(shortname));
         }
 
         //info( "visibility : " + typeDescriptor);
@@ -1642,7 +1758,7 @@ debug("ignore 5: " + node.asXML());
             Node node = implementsTypeDTs.get(i);
 
             String combinedText = convertNodesToString((Element)node);
-            if ((combinedText != null) && combinedText.startsWith(extension)) {
+            if (combinedText != null && combinedText.startsWith(extension)) {
                 combinedText = combinedText.substring(extension.length());
                 combinedText = combinedText.trim();
 
@@ -1652,7 +1768,7 @@ debug("ignore 5: " + node.asXML());
                     while(it.hasNext()) {
                         String typeName = it.next();
 
-                        //debug ( "token: " + typeName);
+//                        debug("token: " + typeName);
                         t.addImplementsType(typeName);
                     }
                 }
@@ -1693,7 +1809,7 @@ debug("ignore 5: " + node.asXML());
         return versionComparator.compare(version, "1.8.0") < 0;
     }
 
-    /** */
+    /** the class name index file name */
     protected String getFirstIndexFileName() {
         return "allclasses-frame.html";
     }
@@ -1707,7 +1823,7 @@ debug("ignore 5: " + node.asXML());
         new ParserUtils(),
     };
 
-    /** */
+    /** gets a class name index file name */
     private static String getFirstIndexFilePath(final String dir) {
         return Arrays.asList(parseUtils).stream().map(pu -> {
             return dir + Main.FILE_SEPARATOR + pu.getFirstIndexFileName();
@@ -1724,11 +1840,11 @@ debug("ignore 5: " + node.asXML());
         return classes;
     }
 
-    /** */
+    /** list of s linked javadoc references. */
     protected List<String> externalLinks;
 
     /**
-     * @param externalLinks
+     * @param externalLinks list of s linked javadoc references.
      */
     public void setExternalLinks(List<String> externalLinks) {
         this.externalLinks = externalLinks;
@@ -1737,7 +1853,7 @@ debug("ignore 5: " + node.asXML());
     /** base path name */
     private String javadocDirName;
 
-    /** */
+    /** check an url (including local path) is exist or not */
     private static boolean exists(String url) {
         URI uri = null;
         if (!url.startsWith("http")) {

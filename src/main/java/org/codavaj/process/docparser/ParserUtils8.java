@@ -40,8 +40,8 @@ public class ParserUtils8 extends ParserUtils {
 
             if (node.getNodeType() == Node.ELEMENT_NODE) {
                 if ("DIV".equals(node.getName())) {
-                    // TODO {@link} a tag
-                    String text = node.asXML().replace("<DIV>", "").replace("</DIV>", "").trim();
+                    replaceA((Element) node, true);
+                    String text = tidyText(node);
                     if (!text.contains(rb.getString("token.comment.exclude.1")) &&
                         !text.contains(rb.getString("token.comment.exclude.2"))) {
                         String[] lines = text.split("\\n");
@@ -59,14 +59,16 @@ debug("ignore 1: " + text);
                         String tag = getTag(dt.getText());
                         do {
                             Node dd = nodes.get(j++);
-                            String text = dd.asXML().replace("<DD>", "").replace("</DD>", "").trim();
+                            String text = tidyText(dd);
                             switch (tag) { //.equals(tag)) {
                             case "param":
-                                text = text.replaceFirst(" - ", " ");
+                                replaceA((Element) dd, true);
+                                text = tidyText(dd).replaceFirst(" - ", " ");
                                 break;
                             case "typeparam": // for type parameter @param at class description
                                 tag = "param";
-                                text = text.replaceFirst("([\\w\\$_\\.\\<\\>]+) - ", "<$1> ");
+                                replaceA((Element) dd, true);
+                                text = tidyText(dd).replaceFirst("([\\w\\$_\\.\\<\\>]+) - ", "<$1> ");
                                 break;
                             case "exception":
                                 Node typeNode = dd.selectSingleNode("A");
@@ -93,6 +95,8 @@ debug("ignore 1: " + text);
 debug("ignore 3: " + dd.selectSingleNode("A").getText());
                                     continue;
                                 }
+                                replaceA(((Element) dd), true);
+                                text = tidyText(dd);
                                 break;
                             default:
                                 break;
