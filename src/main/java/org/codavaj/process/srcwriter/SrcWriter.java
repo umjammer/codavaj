@@ -71,11 +71,10 @@ public class SrcWriter implements Progressive<Void> {
         for (int i = 0; (alltypes != null) && (i < alltypes.size()); i++) {
             Type type = alltypes.get(i);
 
-            notifyListeners(new ProgressEvent(i + 1, alltypes.size(),
-                    type.getTypeName()));
+            notifyListeners(new ProgressEvent(i + 1, alltypes.size(), type.getTypeName()));
 
             try {
-                if ( type.getEnclosingType() != null ) {
+                if (type.getEnclosingType() != null) {
                     continue; // dont write inner types into own files
                 }
                 String packageName = type.getPackage().getName();
@@ -86,8 +85,7 @@ public class SrcWriter implements Progressive<Void> {
                     packageName = "";
                 }
 
-                String packageDirName = srcDirName + Main.FILE_SEPARATOR
-                    + packageName;
+                String packageDirName = srcDirName + Main.FILE_SEPARATOR + packageName;
 
                 //debug( packageDirName );
                 File packageDir = new File(packageDirName);
@@ -96,8 +94,7 @@ public class SrcWriter implements Progressive<Void> {
                     packageDir.mkdirs();
                 }
 
-                String filename = packageDirName + Main.FILE_SEPARATOR
-                    + type.getShortName() + ".java";
+                String filename = packageDirName + Main.FILE_SEPARATOR + type.getShortName() + ".java";
                 FileWriter fw = new FileWriter(filename);
                 BufferedWriter bw = new BufferedWriter(fw);
                 WriterUtils.print(type, bw);

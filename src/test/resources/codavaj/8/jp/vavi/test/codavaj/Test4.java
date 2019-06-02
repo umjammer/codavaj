@@ -5,7 +5,7 @@ package vavi.test.codavaj;
  * @version 0.00 2019/05/07 umjammer initial version
  * @author <A href="mailto:umjammer@gmail.com">Naohide Sano</A> (umjammer)
  */
-public @interface Test4{
+public @interface Test4 {
     /**
      * description for this field1.
      * more description.

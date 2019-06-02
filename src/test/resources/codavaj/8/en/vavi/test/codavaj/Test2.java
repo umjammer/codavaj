@@ -6,14 +6,14 @@ package vavi.test.codavaj;
  * @author <A href="mailto:umjammer@gmail.com">Naohide Sano</A> (umjammer)
  * @param <T> description for this type
  */
-public class Test2<T> extends vavi.test.codavaj.Test1 implements vavi.test.codavaj.Test5{
+public class Test2<T> extends vavi.test.codavaj.Test1 implements vavi.test.codavaj.Test5 {
     /**
      * description for this constructor.
      * more description.
      * @param arg1 description for arg1
      * @exception java.lang.Exception description for this exception.
      */
-    public Test2(java.lang.Object arg1) throws java.lang.Exception{
+    public Test2(java.lang.Object arg1) throws java.lang.Exception {
          //TODO codavaj!!
     }
 
@@ -25,7 +25,7 @@ public class Test2<T> extends vavi.test.codavaj.Test1 implements vavi.test.codav
      * @return description for this return value.
      * @exception java.io.IOException description for this exception.
      */
-    public vavi.test.codavaj.Test3 method1(T arg1, java.lang.String... arg2) throws java.io.IOException{
+    public vavi.test.codavaj.Test3 method1(T arg1, java.lang.String... arg2) throws java.io.IOException {
         return null; //TODO codavaj!!
     }
 
@@ -33,7 +33,7 @@ public class Test2<T> extends vavi.test.codavaj.Test1 implements vavi.test.codav
      * description for this method.
      * more description.
      */
-    public void method5(){
+    public void method5() {
         return; //TODO codavaj!!
     }
 

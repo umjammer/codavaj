@@ -5,7 +5,7 @@ package vavi.test.codavaj;
  * @version 0.00 2019/05/05 umjammer initial version
  * @author <A href="mailto:umjammer@gmail.com">Naohide Sano</A> (umjammer)
  */
-public class Test1 extends javax.swing.AbstractAction implements java.lang.Runnable, java.io.Serializable, java.lang.Cloneable{
+public class Test1 extends javax.swing.AbstractAction implements java.lang.Runnable, java.io.Serializable, java.lang.Cloneable {
     /**
      * description of this field.
      * more description of this field.
@@ -30,11 +30,11 @@ public class Test1 extends javax.swing.AbstractAction implements java.lang.Runna
      * @param arg1 description of arg1
      * @exception java.lang.Exception description of this exception
      */
-    public Test1(java.lang.Object arg1) throws java.lang.Exception{
+    public Test1(java.lang.Object arg1) throws java.lang.Exception {
          //TODO codavaj!!
     }
 
-    public void actionPerformed(java.awt.event.ActionEvent e){
+    public void actionPerformed(java.awt.event.ActionEvent e) {
         return; //TODO codavaj!!
     }
 
@@ -47,11 +47,11 @@ public class Test1 extends javax.swing.AbstractAction implements java.lang.Runna
      * @exception java.lang.IllegalStateException description of this exception
      * @exception java.lang.IllegalArgumentException description of this exception
      */
-    public java.lang.Object method1(java.lang.Object arg1, java.lang.Object arg2) throws java.lang.IllegalStateException, java.lang.IllegalArgumentException{
+    public java.lang.Object method1(java.lang.Object arg1, java.lang.Object arg2) throws java.lang.IllegalStateException, java.lang.IllegalArgumentException {
         return null; //TODO codavaj!!
     }
 
-    public void run(){
+    public void run() {
         return; //TODO codavaj!!
     }
 

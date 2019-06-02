@@ -139,7 +139,7 @@ public class WriterUtils {
     }
 
     protected void printComment(List<String> commentText, int indentation) throws IOException {
-        if ((commentText == null) || (commentText.size() == 0)) {
+        if (commentText == null || commentText.size() == 0) {
             return;
         }
 
@@ -165,7 +165,7 @@ public class WriterUtils {
         printIndentation(indentation);
         printModifiers(t, f);
         w.write(getSourceTypeName(f.getType()));
-        if ( f.getTypeArgumentList() != null ) {
+        if (f.getTypeArgumentList() != null) {
             w.write(getSourceTypeName(f.getTypeArgumentList()));
         }
 
@@ -180,7 +180,7 @@ public class WriterUtils {
         if (f.getValue() != null) {
             w.write("=");
             print(f.getValue());
-        } else if ( f.isFinal() ) {
+        } else if (f.isFinal()) {
             // final fields need initializing if they weren't already.
             w.write("=");
             printInitialValue(f.getType());
@@ -245,7 +245,7 @@ public class WriterUtils {
         printComment(m.getComment(), indentation);
         printIndentation(indentation);
         printModifiers(t, m);
-        if ( m.getTypeParameters() != null) {
+        if (m.getTypeParameters() != null) {
             w.write(getSourceTypeName(m.getTypeParameters()));
             w.write(" ");
         }
@@ -254,8 +254,7 @@ public class WriterUtils {
             w.write(getSourceTypeName(m.getReturnParameter().getType()));
 
             for (int degree = 0;
-                    m.getReturnParameter().isArray()
-                    && (degree < m.getReturnParameter().getDegree());
+                    m.getReturnParameter().isArray() && (degree < m.getReturnParameter().getDegree());
                     degree++) {
                 w.write("[]");
             }
@@ -268,25 +267,24 @@ public class WriterUtils {
 
         w.write("(");
 
-        for (int pi = 0; pi < m.getParameterList().size(); pi++) {
-            Parameter p = m.getParameterList().get(pi);
+        for (int i = 0; i < m.getParameterList().size(); i++) {
+            Parameter p = m.getParameterList().get(i);
 
-            if (pi != 0) {
+            if (i != 0) {
                 w.write(", ");
             }
 
             w.write(getSourceTypeName(p.getType()));
-            if ( p.getTypeArgumentList() != null ) {
+            if (p.getTypeArgumentList() != null) {
                 w.write(getSourceTypeName(p.getTypeArgumentList()));
             }
 
-            for (int degree = 0; p.isArray() && (degree < p.getDegree());
-                    degree++) {
+            for (int degree = 0; p.isArray() && (degree < p.getDegree()); degree++) {
                 w.write("[]");
             }
 
             w.write(" ");
-            if ( p.getName() != null ) {
+            if (p.getName() != null) {
                 // jd1.4 java.rmi.activation.ActivationGroup_Stub has some classes
                 // without parameter name in the list of parameters for some methods.
                 w.write(p.getName());
@@ -295,10 +293,10 @@ public class WriterUtils {
 
         w.write(")");
 
-        for (int thr = 0; thr < m.getThrowsList().size(); thr++) {
-            String throwsName = m.getThrowsList().get(thr);
+        for (int i = 0; i < m.getThrowsList().size(); i++) {
+            String throwsName = m.getThrowsList().get(i);
 
-            if (thr == 0) {
+            if (i == 0) {
                 w.write(" throws ");
             } else {
                 w.write(", ");
@@ -307,7 +305,7 @@ public class WriterUtils {
             w.write(getSourceTypeName(throwsName));
         }
 
-        if (m.getDefaultValue() != null ) {
+        if (m.getDefaultValue() != null) {
             w.write(" default ");
             w.write(m.getDefaultValue());
         }
@@ -351,7 +349,7 @@ public class WriterUtils {
             }
         }
 
-        w.write("{");
+        w.write(" {");
         printLineFeed();
         indentation += 4;
 
@@ -370,7 +368,7 @@ public class WriterUtils {
         w.write("//TODO codavaj!!");
     }
 
-    protected String getSourceTypeName( String name ) {
+    protected String getSourceTypeName(String name) {
         return name.replace('$', '.');
     }
 
@@ -391,7 +389,7 @@ public class WriterUtils {
         w.write(" ");
 
         w.write(t.getShortName());
-        if ( t.getTypeParameters() != null ) {
+        if (t.getTypeParameters() != null) {
             w.write(getSourceTypeName(t.getTypeParameters()));
         }
 
@@ -417,13 +415,13 @@ public class WriterUtils {
             }
         }
 
-        w.write("{");
+        w.write(" {");
         printLineFeed();
         indentation += 4;
 
         for (int i = 0; (t.getEnumConstList() != null) && (i < t.getEnumConstList().size()); i++) {
             EnumConst ec = t.getEnumConstList().get(i);
-            printEnumConst(ec, indentation, i == t.getEnumConstList().size()-1);
+            printEnumConst(ec, indentation, i == t.getEnumConstList().size() - 1);
             printLineFeed();
         }
 
