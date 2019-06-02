@@ -19,7 +19,8 @@ import org.dom4j.Element;
 import org.dom4j.Node;
 
 import static com.rainerhahnekamp.sneakythrow.Sneaky.sneaked;
-import static org.codavaj.Logger.info;
+import static org.codavaj.Logger.debug;
+import static org.codavaj.Logger.warning;
 
 /**
  * for version 1.8.x
@@ -48,7 +49,7 @@ public class ParserUtils8 extends ParserUtils {
                             commentText.add(line.trim());
                         }
                     } else {
-info("ignore 1: " + text);
+debug("ignore 1: " + text);
                     }
                 } else if ("DL".equals(node.getName())) {
                     List<Node> nodes = node.selectNodes("*[name()='DT' or name()='DD']");
@@ -89,7 +90,7 @@ info("ignore 1: " + text);
                             case "see":
                                 if (text.contains(rb.getString("token.see.exclude.1")) ||
                                     text.contains(rb.getString("token.see.exclude.2"))) {
-info("ignore 3: " + dd.selectSingleNode("A").getText());
+debug("ignore 3: " + dd.selectSingleNode("A").getText());
                                     continue;
                                 }
                                 break;
@@ -101,7 +102,11 @@ info("ignore 3: " + dd.selectSingleNode("A").getText());
                             commentText.add("@" + tag + " " + text);
                         } while (j < nodes.size() && "DD".equals(nodes.get(j).getName()));
                     } while (j < nodes.size());
+                } else {
+warning("ignore 4: " + node.asXML());
                 }
+            } else {
+warning("ignore 5: " + node.asXML());
             }
         }
     }
