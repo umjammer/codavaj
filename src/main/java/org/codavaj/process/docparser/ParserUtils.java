@@ -58,7 +58,6 @@ import org.dom4j.tree.DefaultText;
 
 import static com.rainerhahnekamp.sneakythrow.Sneaky.sneaked;
 import static org.codavaj.Logger.debug;
-import static org.codavaj.Logger.info;
 import static org.codavaj.Logger.warning;
 
 /**
