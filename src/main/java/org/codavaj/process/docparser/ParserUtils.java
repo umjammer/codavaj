@@ -56,6 +56,7 @@ import org.dom4j.io.OutputFormat;
 import org.dom4j.io.XMLWriter;
 
 import static com.rainerhahnekamp.sneakythrow.Sneaky.sneaked;
+import static org.codavaj.Logger.debug;
 import static org.codavaj.Logger.info;
 import static org.codavaj.Logger.warning;
 
@@ -111,7 +112,7 @@ public class ParserUtils {
         return typename += ".html";
     }
 
-    /** */
+    /** taglet */
     protected String getTag(String text) {
         if (text.indexOf(rb.getString("token.version")) >= 0) {
             return "version";
@@ -126,15 +127,21 @@ public class ParserUtils {
             return "typeparam";
         } else if (text.indexOf(rb.getString("token.parameter")) >= 0) {
             return "param";
+        } else if (text.indexOf(rb.getString("token.since")) >= 0) {
+            return "since";
         } else if (text.indexOf(rb.getString("token.exception")) >= 0) {
             return "exception";
+        } else if (text.indexOf(rb.getString("token.deprecated")) >= 0) {
+            return "deprecated";
         } else if (text.indexOf(rb.getString("token.specified_by")) >= 0) {
             return "ignore";
         } else if (text.indexOf(rb.getString("token.overrides")) >= 0) {
             return "ignore";
-        } else {
-info("ignore 2: " + text);
+        } else if (text.indexOf(rb.getString("token.default")) >= 0) {
             return "ignore";
+        } else {
+info("unhandled tag: " + text);
+            return text;
         }
     }
 
@@ -227,20 +234,36 @@ debug("ignore 3: " + dd.asXML());
                             continue;
                         }
 
-                        j = processDT(t, nodes, j, getTag(dt.getText()), commentText, externalLinks);
+                        j = processDT(t, nodes, j, getTag(dt.getText()), commentText);
                     }
-                } else if ("I".equals(node.getName())) {
-                    commentText.add("@" + node.getText());
-                }
-            } else if (node.getNodeType() == Node.TEXT_NODE) {
-                if (node.getText().replace("\n", "").startsWith(rb.getString("token.deprecated"))) {
-                    commentText.add("@deprecated");
-                } else if (!node.getText().replace("\n", "").isEmpty()) {
-                    String[] lines = node.getText().replaceAll("^\\n", "").replaceAll("\\n$", "").split("\\n");
+                } else {
+info("unhandled node: " + node.getName() + ": " + node.asXML());
+                    String text = node.asXML();
+                    String[] lines = text.split("\\n");
                     for (String line : lines) {
                         commentText.add(line.trim());
                     }
                 }
+            } else if (node.getNodeType() == Node.TEXT_NODE) {
+                String text = node.getText().replaceAll("^\\n", "").replaceAll("\\n$", "");
+                if (text.contains(rb.getString("token.comment.exclude.1")) ||
+                    text.contains(rb.getString("token.comment.exclude.2"))) {
+                    if (i + 1 < allNodes.size() && "A".equals(allNodes.get(i + 1).getName())) {
+debug("ignore 1: " + text + allNodes.get(i + 1).asXML());
+                        i++;
+                    } else {
+info("ignore 1: " + text);
+                    }
+                } else {
+                    if (!text.isEmpty()) {
+                        String[] lines = text.split("\\n");
+                        for (String line : lines) {
+                            commentText.add(line.trim());
+                        }
+                    }
+                }
+            } else {
+debug("ignore 5: " + node.asXML());
             }
         }
     }
