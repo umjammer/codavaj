@@ -2021,12 +2021,11 @@ debug("ignore 3: " + dd.asXML());
                 } catch (ClassNotFoundException e) {
 //                    debug("not found: " + typeName);
                 }
-                try {
-                    Class<?> clazz = Class.forName(type.getPackageName() + "." + typeName);
-                    String className = clazz.getName();
+                String className = (type.getPackageName() != "" ? type.getPackageName() + "." : "") + typeName;
+                if (classes.contains(className)) {
                     fqdns.put(typeName, className);
                     return className;
-                } catch (ClassNotFoundException e) {
+                } else {
                     warning("not found: " + typeName);
                 }
             }
