@@ -72,6 +72,7 @@ public class DocParser implements Progressive<TypeFactory> {
             // load and then process the list of all classes javadoc
 
             parserUtil = ParserUtils.factory(javadocDirName);
+            parserUtil.setExternalLinks(externalLinks);
 
             for (int i = 0; i < parserUtil.getClasses().size(); i++) {
                 String typeName = parserUtil.getClasses().get(i);
@@ -93,7 +94,7 @@ public class DocParser implements Progressive<TypeFactory> {
             notifyListeners(new ProgressEvent(i + 1, alltypes.size(), type.getTypeName()));
 
             try {
-                parserUtil.processType(type, externalLinks);
+                parserUtil.processType(type);
             } catch (Exception e) {
                 error("Class parsing failed on " + type.getTypeName());
                 errors.put(type, e);
@@ -110,7 +111,7 @@ public class DocParser implements Progressive<TypeFactory> {
         try {
             // try and determine all constants
             //info( parserUtil.prettyPrint(allconstants));
-            parserUtil.processConstant(typeFactory.getTypeMap(), externalLinks, getJavadocClassName() != null);
+            parserUtil.processConstant(typeFactory.getTypeMap(), getJavadocClassName() != null);
         } catch (Exception e) {
             error("All constant determination failed!", e);
             throw new ProcessException(e);

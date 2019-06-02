@@ -6,8 +6,6 @@
 
 package org.codavaj.process.docparser;
 
-import java.util.List;
-
 import org.codavaj.type.Type;
 import org.dom4j.Document;
 
@@ -22,9 +20,9 @@ public class ParserUtils12 extends ParserUtils11 {
 
     /* method (1st entry) */
     @Override
-    protected void determineMethods(Type type, Document typeXml, List<String> externalLinks) {
+    protected void determineMethods(Type type, Document typeXml) {
         String methodXpath = "//DIV[contains(text(),'" + rb.getString("token.all_methods") + "')]/../DIV[2]/TABLE/TR[position()>1]";
-        determineMethods(methodXpath, type, typeXml, externalLinks);
+        determineMethods(methodXpath, type, typeXml);
     }
 
     /**

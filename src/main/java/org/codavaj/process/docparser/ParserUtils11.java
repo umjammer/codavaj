@@ -26,8 +26,8 @@ public class ParserUtils11 extends ParserUtils8 {
 
     /* annotation (1st entry) */
     @Override
-    protected void determineElements(Type type, Document typeXml, List<String> externalLinks) {
-        determineElements(type, typeXml, externalLinks, "A");
+    protected void determineElements(Type type, Document typeXml) {
+        determineElements(type, typeXml, "A");
     }
 
     /* constructor */
@@ -49,16 +49,16 @@ public class ParserUtils11 extends ParserUtils8 {
 
     /* field (1st entry) */
     @Override
-    protected void determineFields(Type type, Document typeXml, List<String> externalLinks) {
-        determineFields(type, typeXml, externalLinks, "A");
+    protected void determineFields(Type type, Document typeXml) {
+        determineFields(type, typeXml, "A");
     }
 
     /* enum (1st entry) */
     @Override
-    protected void determineEnumConsts(Type type, Document typeXml, List<String> externalLinks) {
+    protected void determineEnumConsts(Type type, Document typeXml) {
         String keyword = rb.getString("token.enum_constant").replace(rb.getString("token.type"), ""); // umm...
         String enumConstsXpath = "//TABLE[contains(text(),'" + keyword + "')]/TR[position()>1]";
-        determineEnumConsts(enumConstsXpath, type, typeXml, externalLinks, "A");
+        determineEnumConsts(enumConstsXpath, type, typeXml, "A");
     }
 
     /* constants */
