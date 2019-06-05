@@ -22,7 +22,7 @@ import java.util.List;
 /**
  * DOCUMENT ME!
  */
-public class Method extends Modifiable {
+public class Method extends Modifiable implements Commentable {
     private String name;
     private String typeParameters; // generics, see http://java.sun.com/docs/books/jls/third_edition/html/classes.html#8.4.1
     private Parameter returnParameter; // ignore name
@@ -167,5 +167,21 @@ public class Method extends Modifiable {
      */
     public void setTypeParameters(String typeParameters) {
         this.typeParameters = typeParameters;
+    }
+
+    /** @return without package name and parent class or interface name */
+    public String getSignatureString() {
+        StringBuilder sb = new StringBuilder(name);
+        sb.append("(");
+        parameterList.forEach(p -> {
+            sb.append(p.getSignatureString());
+        });
+        sb.append(")");
+        if (returnParameter != null) {
+            // constructor
+            sb.append(returnParameter.getSignatureString());
+        }
+//System.err.println("G: " + sb.toString());
+        return sb.toString();
     }
 }

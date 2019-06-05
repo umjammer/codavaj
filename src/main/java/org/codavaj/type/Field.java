@@ -21,7 +21,7 @@ import java.util.List;
 /**
  * DOCUMENT ME!
  */
-public class Field extends Parameter {
+public class Field extends Parameter implements Commentable {
     private Object value; // if we know the constant value
     private List<String> comment = null;
 

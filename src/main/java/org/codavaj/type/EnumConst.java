@@ -23,7 +23,7 @@ import java.util.List;
  *
  * Contributed by Brian Koehmstedt.
  */
-public class EnumConst {
+public class EnumConst implements Commentable {
     private List<String> comment = null;
     private String name;
 

@@ -16,13 +16,15 @@
 
 package org.codavaj.type;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 /**
  * A reflection-like representation of java.lang.Class.
  */
-public class Type extends Modifiable {
+public class Type extends Modifiable implements Commentable {
     private String superType = null;
     private List<String> implementsList = new ArrayList<>();
     private List<Method> methodList = new ArrayList<>();
@@ -103,6 +105,11 @@ public class Type extends Modifiable {
         return "";
     }
 
+    /** */
+    public String getSourceFilename() {
+        return getPackageName().replace(".", File.separator) + File.separator + getShortName() + ".java";
+    }
+
     /**
      * The type name of the class from which this one is extending. null for
      * interfaces,  or the java.lang.Object type.
@@ -155,6 +162,20 @@ public class Type extends Modifiable {
     }
 
     /**
+     * @param methodSignature without package name, parent class or interface name
+     * @return includes a constructor
+     */
+    public Optional<Method> getMethod(String methodSignature) {
+//System.err.println("S: " + methodSignature);
+        Optional<Method> result = methodList.stream().filter(f -> f.getSignatureString().equals(methodSignature)).findAny();
+        if (result.isPresent()) {
+            return result;
+        } else {
+            return constructorList.stream().filter(f -> f.getSignatureString().equals(methodSignature)).findAny();
+        }
+    }
+
+    /**
      * DOCUMENT ME!
      *
      * @return DOCUMENT ME!
@@ -180,6 +201,16 @@ public class Type extends Modifiable {
         methodList.add(method);
 
         return method;
+    }
+
+    /** @return includes an enum constant */
+    public Optional<? extends Commentable> getField(String name) {
+        Optional<? extends Commentable> result = fieldList.stream().filter(f -> f.getName().equals(name)).findAny();
+        if (result.isPresent()) {
+            return result;
+        } else {
+            return enumConstList.stream().filter(f -> f.getName().equals(name)).findAny();
+        }
     }
 
     /**
@@ -270,6 +301,16 @@ public class Type extends Modifiable {
      */
     public void addInnerType(Type type) {
         getInnerTypeList().add(type);
+    }
+
+    /**
+     * @return unfilled type
+     */
+    public Type createInnerType() {
+        Type innerType = new Type();
+        innerTypeList.add(innerType);
+
+        return innerType;
     }
 
     /**
@@ -391,6 +432,15 @@ public class Type extends Modifiable {
         return null;
     }
 
+    /** @return includes self */
+    public Optional<Type> getType(String name) {
+        if (name.equals(getShortName())) {
+            return Optional.of(this);
+        } else {
+            return innerTypeList.stream().filter(t -> name.equals(t.getShortName())).findAny();
+        }
+    }
+
     /**
      * DOCUMENT ME!
      *
@@ -422,12 +472,15 @@ public class Type extends Modifiable {
         this.typeParameters = typeParameters;
     }
 
+    /** class */
     public static final String LABEL_CLASS = "class";
+    /** interface */
     public static final String LABEL_INTERFACE = "interface";
+    /** enum */
     public static final String LABEL_ENUM = "enum";
 
     /**
-     * @return "class" or "interface" or "enum" or "annotation".
+     * @return java key word of "class", "interface", "enum" or "annotation".
      */
     public String getLabelString() {
         if (isEnum()) {
@@ -439,5 +492,52 @@ public class Type extends Modifiable {
         } else {
             return LABEL_CLASS;
         }
+    }
+
+    /**
+     * TODO this method is special for javaparser.
+     * TODO location
+     * @param type with []
+     */
+    public static String getSignatureString(String type) {
+        // TODO should be separate [] and calc. degrees
+        return getSignatureString(type, 0);
+    }
+
+    /** TODO location */
+    public static String getSignatureString(String type, int arrayDegree) {
+        String result;
+        switch (type) {
+        case "boolean":
+            result = "Z"; break;
+        case "byte":
+            result = "B"; break;
+        case "char":
+            result = "C"; break;
+        case "double":
+            result = "D"; break;
+        case "float":
+            result = "F"; break;
+        case "int":
+            result = "I"; break;
+        case "long":
+            result = "J"; break;
+        case "short":
+            result = "S"; break;
+        case "void":
+            result = "V"; break;
+        default:
+            return "L" + type.replace(".", "/").replace("$", "/") + getArrayString(arrayDegree) + ";";
+        }
+        return result + getArrayString(arrayDegree);
+    }
+
+    /** */
+    private static String getArrayString(int degree) {
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < degree; i++) {
+            sb.append("[]");
+        }
+        return sb.toString();
     }
 }

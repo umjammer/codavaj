@@ -128,4 +128,9 @@ public class Parameter extends Modifiable {
     public void setTypeArgumentList(String typeArgumentList) {
         this.typeArgumentList = typeArgumentList;
     }
+
+    /** */
+    public String getSignatureString() {
+        return Type.getSignatureString(type, degree);
+    }
 }
