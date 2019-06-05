@@ -18,9 +18,9 @@ package org.codavaj.type;
 
 import java.util.ArrayList;
 import java.util.Enumeration;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.TreeMap;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import java.util.zip.ZipEntry;
@@ -35,8 +35,8 @@ import static org.codavaj.Logger.warning;
  */
 public class TypeFactory {
 
-    private Map<String, Type> types = new HashMap<>();
-    private Map<String, Package> packages = new HashMap<>();
+    private Map<String, Type> types = new TreeMap<>();
+    private Map<String, Package> packages = new TreeMap<>();
 
     /**
      * Creates a new TypeFactory object.
