@@ -40,22 +40,12 @@ public class DocParser implements Progressive<TypeFactory> {
      * directory to find javadoc root.
      */
     private String javadocDirName;
-    private boolean debugFlag;
 
     /**
      *  javadocClassName used by Tests to parse single classes instead of all docs
      */
     private Pattern javadocClassName;
     private List<String> externalLinks;
-    /** */
-    private Map<Type, Exception> errors = new HashMap<>();
-
-    /**
-     * Creates a new DocParser object.
-     */
-    public DocParser() {
-        debugFlag = false;
-    }
 
     /**
      * Identify all classes from the javadoc and then analyze each one in turn
@@ -68,6 +58,8 @@ public class DocParser implements Progressive<TypeFactory> {
         TypeFactory typeFactory = new TypeFactory();
 
         ParserUtils parserUtil;
+
+Map<Type, Exception> errors = new HashMap<>();
 
         try {
             // load and then process the list of all classes javadoc
@@ -98,16 +90,16 @@ public class DocParser implements Progressive<TypeFactory> {
                 parserUtil.processType(type);
             } catch (Exception e) {
                 error("Class parsing failed on " + type.getTypeName());
-                errors.put(type, e);
+errors.put(type, e);
 //                throw new ProcessException(e);
             }
         }
 
-        errors.entrySet().forEach(e -> {
-            System.err.println("******************: " + e.getKey().getShortName());
-            e.getValue().printStackTrace();
-            System.err.println(e.getValue().getMessage());
-        });
+errors.entrySet().forEach(e -> {
+ System.err.println("******************: " + e.getKey().getShortName());
+ e.getValue().printStackTrace();
+ System.err.println(e.getValue().getMessage());
+});
 
         try {
             // try and determine all constants
@@ -124,16 +116,6 @@ public class DocParser implements Progressive<TypeFactory> {
     }
 
     /**
-     * Return the list of configured external references ( links in javadoc to
-     * http://somedomain.com/ )
-     *
-     * @return the list of configured exteral references.
-     */
-    public List<String> getExternalLinks() {
-        return externalLinks;
-    }
-
-    /**
      * Set the list of externally linked references which are used to resolve
      * Type names in the javadoc.
      *
@@ -141,15 +123,6 @@ public class DocParser implements Progressive<TypeFactory> {
      */
     public void setExternalLinks(List<String> externalLinks) {
         this.externalLinks = externalLinks;
-    }
-
-    /**
-     * Return the directory where the javadoc file tree is located.
-     *
-     * @return the directory of the javadoc.
-     */
-    public String getJavadocDirName() {
-        return javadocDirName;
     }
 
     /**
@@ -165,18 +138,6 @@ public class DocParser implements Progressive<TypeFactory> {
      * @param javadocClassName the regex pattern matching javadoc class name to set
      */
     public void setJavadocClassName(String javadocClassName) {
-    /**
-     * @return the debugFlag
-     */
-    public boolean isDebugFlag() {
-        return debugFlag;
-    }
-
-    /**
-     * @param debugFlag the debugFlag to set
-     */
-    public void setDebugFlag(boolean debugFlag) {
-        this.debugFlag = debugFlag;
         this.javadocClassName = Pattern.compile(javadocClassName);
     }
 }

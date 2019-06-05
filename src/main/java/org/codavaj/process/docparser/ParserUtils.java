@@ -302,6 +302,7 @@ debug("A: " + a.asXML());
                         j = processDT(t, nodes, j, getTag(dt.getText()), commentText);
                     }
                 } else if ("A".equals(node.getName())) {
+                    // TODO this makes unexpected new lines
                     commentText.add(processA(node));
                 } else {
 debug("unhandled node: " + node.getName());
@@ -393,7 +394,7 @@ debug("ignore 1.0: " + before.getText() + node.asXML());
     }
 
     /*
-     * details
+     * details (constant)
      * a field comment
      * a method comment
      */
@@ -903,8 +904,7 @@ debug("ignore 1.0: " + before.getText() + node.asXML());
     }
 
     /** fields */
-    protected void determineFields(Type type, Document typeXml, String nameXpath)
-        throws ParseException {
+    protected void determineFields(Type type, Document typeXml, String nameXpath) {
         List<Node> fieldList = typeXml.selectNodes(getFieldsXpath());
 
         for (int i = 0; fieldList != null && i < fieldList.size(); i++) {
@@ -913,12 +913,11 @@ debug("ignore 1.0: " + before.getText() + node.asXML());
             Node fieldNode = fieldList.get(i);
 
             // get the return type description for known types
-            Element fieldtypeNode = (Element) fieldNode.selectSingleNode(
-                    "TD[position()=1]");
+            Element fieldtypeNode = (Element) fieldNode.selectSingleNode("TD[position()=1]");
 
             String fieldtypeParam = convertNodesToString(fieldtypeNode);
 
-            //debug( "fieldtype: " + fieldtypeParam);
+//            debug("fieldtype: " + fieldtypeParam);
             Parameter temp = determineParameter(fieldtypeParam, false);
             field.setType(temp.getType());
             field.setArray(temp.isArray());
@@ -930,7 +929,7 @@ debug("ignore 1.0: " + before.getText() + node.asXML());
             Element fieldNameNode = (Element) fieldNode.selectSingleNode(nameXpath);
             String fieldName = fieldNameNode.getText();
 
-            //debug( "fieldname: " + fieldName );
+//            debug("fieldname: " + fieldName);
             field.setName(fieldName);
         }
     }
@@ -1302,16 +1301,14 @@ debug("ignore 1.0: " + before.getText() + node.asXML());
             Node methodNode = methodList.get(i);
 
             // get the return type
-            Element returnparamNode = (Element) methodNode.selectSingleNode(
-                    "TD[position()=1]");
+            Element returnparamNode = (Element) methodNode.selectSingleNode("TD[position()=1]");
 
             String methodReturnParam = convertNodesToString(returnparamNode);
 
             Parameter returnType = determineMethodReturnParameter(type, method, methodReturnParam);
 
             if (returnType == null) {
-                warning("failed to determine return type: "
-                    + prettyPrint(typeXml));
+                warning("failed to determine return type: " + prettyPrint(typeXml));
             }
 
             method.setReturnParameter(returnType);
@@ -1366,16 +1363,14 @@ debug("ignore 1.0: " + before.getText() + node.asXML());
             Node methodNode = methodList.get(i);
 
             // get the return type
-            Element returnparamNode = (Element) methodNode.selectSingleNode(
-                    "TD[position()=1]");
+            Element returnparamNode = (Element) methodNode.selectSingleNode("TD[position()=1]");
 
             String methodReturnParam = convertNodesToString(returnparamNode);
 
             Parameter returnType = determineMethodReturnParameter(type, method, methodReturnParam );
 
             if (returnType == null) {
-                warning("failed to determine return type: "
-                    + prettyPrint(typeXml));
+                warning("failed to determine return type: " + prettyPrint(typeXml));
             }
 
             method.setReturnParameter(returnType);
@@ -1395,16 +1390,14 @@ debug("ignore 1.0: " + before.getText() + node.asXML());
             Node methodNode = methodList.get(i);
 
             // get the return type
-            Element returnparamNode = (Element) methodNode.selectSingleNode(
-                    "TD[position()=1]");
+            Element returnparamNode = (Element) methodNode.selectSingleNode("TD[position()=1]");
 
             String methodReturnParam = convertNodesToString(returnparamNode);
 
             Parameter returnType = determineMethodReturnParameter(type, method, methodReturnParam);
 
             if (returnType == null) {
-                warning("failed to determine return type: "
-                    + prettyPrint(typeXml));
+                warning("failed to determine return type: " + prettyPrint(typeXml));
             }
 
             method.setReturnParameter(returnType);
@@ -1645,25 +1638,12 @@ debug("ignore 1.0: " + before.getText() + node.asXML());
     }
 
     /**
-     * DOCUMENT ME! (1st entry)
+     * type modifier (1st entry)
      *
      * @param type DOCUMENT ME!
      * @param typeXml DOCUMENT ME!
      */
     protected void determineTypeModifiers(Type type, Document typeXml) {
-        Element typeDescriptorElement = (Element) typeXml.selectSingleNode("//DT[parent::DL/preceding-sibling::H2 and string-length(.) > 0 and not(contains(.,'All')) and not(contains(.,'Enclosing')) and not(contains(.,'Direct')) and not(contains(.,'Type Parameters:')) and not(contains(.,'Parameters:')) and not(contains(.,'Returns:'))]");
-        if (typeDescriptorElement == null) {
-            String typeDescriptorXpath = "//DT[contains(text(),'" + type.getLabelString() + " " + type.getShortName() + "')]";
-            typeDescriptorElement = (Element) typeXml.selectSingleNode(typeDescriptorXpath);
-//System.err.println(typeDescriptorElement.asXML());
-        }
-        String typeDescriptor = convertNodesToString(typeDescriptorElement);
-
-        determineTypeModifiers(typeDescriptor, type, typeXml);
-    }
-
-    /** type modifier */
-    protected void determineTypeModifiers(String typeDescriptor, Type type, Document typeXml) {
         // "//DT[parent::DL/preceding-sibling::H2 and not(contains(.,'All')) and not(contains(.,'Enclosing')) and not(contains(.,'Direct'))]"
 
         /*
@@ -1694,6 +1674,24 @@ debug("ignore 1.0: " + before.getText() + node.asXML());
         </DL>
         */
 
+        Element typeDescriptorElement = (Element) typeXml.selectSingleNode("//DT[parent::DL/preceding-sibling::H2 and string-length(.) > 0 and not(contains(.,'All')) and not(contains(.,'Enclosing')) and not(contains(.,'Direct')) and not(contains(.,'Type Parameters:')) and not(contains(.,'Parameters:')) and not(contains(.,'Returns:'))]");
+        if (typeDescriptorElement == null) {
+            String typeDescriptorXpath = "//DT[contains(text(),'" + type.getLabelString() + " " + type.getShortName() + "')]";
+            typeDescriptorElement = (Element) typeXml.selectSingleNode(typeDescriptorXpath);
+//System.err.println(typeDescriptorElement.asXML());
+        }
+        String typeDescriptor = convertNodesToString(typeDescriptorElement);
+
+        determineTypeModifiers(typeDescriptor, type);
+    }
+
+    /**
+     * type modifier
+     *
+     * @param typeDescriptor "public interface Handle", includes generics
+     * @param type to be modified
+     */
+    protected void determineTypeModifiers(String typeDescriptor, Type type) {
         // take the generics type parameters
         if (typeDescriptor.indexOf("<") != -1 && typeDescriptor.lastIndexOf(">") != -1 && typeDescriptor.indexOf("<") < typeDescriptor.lastIndexOf(">")) {
             String typeParameters = typeDescriptor.substring(typeDescriptor.indexOf("<"), typeDescriptor.lastIndexOf(">")+1);
@@ -1949,7 +1947,6 @@ debug("ignore 1.0: " + before.getText() + node.asXML());
      * processes type parsing.
      *
      * @param type
-     * @param javadocDirName
      * @throws IllegalStateException SAXException
      * @throws IOException
      */
@@ -2000,8 +1997,8 @@ debug("ignore 1.0: " + before.getText() + node.asXML());
     /**
      * processes constants parsing.
      *
-     * @param type
-     * @param javadocDirName
+     * @param maps
+     * @param lenient
      * @throws IllegalStateException SAXException
      * @throws IOException
      */

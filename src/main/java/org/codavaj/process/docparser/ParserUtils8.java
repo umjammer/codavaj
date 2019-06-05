@@ -352,7 +352,7 @@ warning("ignore 5: " + node.asXML());
         String typeDescriptor = typeDescriptor2.replace(type.getShortName(), typeDescriptor1);
 //System.err.println(typeDescriptor);
 
-        determineTypeModifiers(typeDescriptor, type, typeXml);
+        determineTypeModifiers(typeDescriptor, type);
     }
 
     /* implements */
