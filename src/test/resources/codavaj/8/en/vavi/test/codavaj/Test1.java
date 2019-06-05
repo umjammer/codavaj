@@ -28,7 +28,7 @@ public class Test1 extends javax.swing.AbstractAction implements java.lang.Runna
      * description of this constructor.
      * more description of this constructor.
      * @param arg1 description of arg1
-     * @exception java.lang.Exception description of this exception
+     * @throws java.lang.Exception description of this exception
      */
     public Test1(java.lang.Object arg1) throws java.lang.Exception {
          //TODO codavaj!!
@@ -44,8 +44,8 @@ public class Test1 extends javax.swing.AbstractAction implements java.lang.Runna
      * @param arg1 description of arg1
      * @param arg2 description of arg2
      * @return description of return value
-     * @exception java.lang.IllegalStateException description of this exception
-     * @exception java.lang.IllegalArgumentException description of this exception
+     * @throws java.lang.IllegalStateException description of this exception
+     * @throws java.lang.IllegalArgumentException description of this exception
      */
     public java.lang.Object method1(java.lang.Object arg1, java.lang.Object arg2) throws java.lang.IllegalStateException, java.lang.IllegalArgumentException {
         return null; //TODO codavaj!!

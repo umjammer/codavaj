@@ -11,7 +11,7 @@ public class Test2<T> extends vavi.test.codavaj.Test1 implements vavi.test.codav
      * description for this constructor.
      * more description.
      * @param arg1 description for arg1
-     * @exception java.lang.Exception description for this exception.
+     * @throws java.lang.Exception description for this exception.
      */
     public Test2(java.lang.Object arg1) throws java.lang.Exception {
          //TODO codavaj!!
@@ -23,7 +23,7 @@ public class Test2<T> extends vavi.test.codavaj.Test1 implements vavi.test.codav
      * @param arg1 description for arg1
      * @param arg2 description for arg2
      * @return description for this return value.
-     * @exception java.io.IOException description for this exception.
+     * @throws java.io.IOException description for this exception.
      */
     public vavi.test.codavaj.Test3 method1(T arg1, java.lang.String... arg2) throws java.io.IOException {
         return null; //TODO codavaj!!

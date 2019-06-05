@@ -130,7 +130,7 @@ public class ParserUtils {
         } else if (text.indexOf(rb.getString("token.since")) >= 0) {
             return "since";
         } else if (text.indexOf(rb.getString("token.exception")) >= 0) {
-            return "exception";
+            return "throws";
         } else if (text.indexOf(rb.getString("token.deprecated")) >= 0) {
             return "deprecated";
         } else if (text.indexOf(rb.getString("token.specified_by")) >= 0) {
@@ -145,10 +145,80 @@ debug("unhandled tag: " + text);
         }
     }
 
-    /** with out self tag, first, last white spaces */
-    protected String tidyText(Node node) {
+    /** without self tag, first, last white spaces */
+    protected String tidyText(Node node, boolean trim) {
         String name = node.getName();
-        return node.asXML().replace("<" + name + ">", "").replace("</" + name + ">", "").replaceAll("^\\s*", "").replaceAll("\\s*$", "");
+        if (trim) {
+            return node.asXML().replace("<" + name + ">", "").replace("</" + name + ">", "").replaceAll("^\\s*", "").replaceAll("\\s*$", "");
+        } else {
+            return node.asXML().replace("<" + name + ">", "").replace("</" + name + ">", "");
+        }
+    }
+
+    /**
+     * @return update index
+     */
+    protected void processDD(Type t, Node dd,String tag, List<String> commentText) {
+        String text = tidyText(dd, true);
+        switch (tag) { //.equals(tag)) {
+        case "param":
+            replaceA(((Element) dd), true);
+            text = tidyText(dd, true).replaceFirst(" - ", " ");
+            break;
+        case "typeparam": // for type parameter @param at class description
+            tag = "param";
+            replaceA(((Element) dd), true);
+            text = tidyText(dd, true).replaceFirst("([\\w\\$_\\.\\<\\>\\[\\]]+) - ", "<$1> ");
+            break;
+        case "exception":
+        case "throws":
+            Node typeNode = dd.selectSingleNode("*[position()=1]");
+            String comment;
+            String typeName;
+            if (typeNode != null && typeNode.getNodeType() == Node.ELEMENT_NODE && "A".equals(typeNode.getName())) {
+                typeName = convertNodesToString(typeNode);
+                typeNode.detach();
+                replaceA(((Element) dd), true);
+                text = tidyText(dd, false);
+                int p = text.indexOf(" - ");
+                if (p >= 0) {
+                    comment = text.substring(text.indexOf(" - ") + " -".length());
+                } else {
+                    comment = "";
+                }
+            } else {
+                replaceA(((Element) dd), true);
+                text = tidyText(dd, true);
+                int p = text.indexOf(" - ");
+                if (p >= 0) {
+                    comment = text.substring(text.indexOf(" - ") + " -".length());
+                    typeName = text.substring(0, p);
+                } else {
+                    comment = "";
+                    typeName = text.trim();
+                }
+            }
+            text = toFQDN(t, typeName) + comment.replaceAll("\\s$", "");
+            break;
+        case "see":
+            if (text.contains(rb.getString("token.see.exclude.1")) ||
+                text.contains(rb.getString("token.see.exclude.2"))) {
+debug("ignore 3: " + dd.asXML());
+                return;
+            }
+            replaceA(((Element) dd), true);
+            text = tidyText(dd, true);
+            break;
+        default:
+            break;
+        case "ignore":
+            return;
+        }
+        String[] lines = text.split("\\n");
+        commentText.add("@" + tag + " " + lines[0]);
+        for (int k = 1; k < lines.length; k++) {
+            commentText.add(lines[k]);
+        }
     }
 
     /**
@@ -162,55 +232,7 @@ debug("unhandled tag: " + text);
     private int processDT(Type t, List<Node> nodes, int j, String tag, List<String> commentText) {
         while (j < nodes.size() && "DD".equals(nodes.get(j).getName())) {
             Node dd = nodes.get(j++);
-            String text = tidyText(dd);
-            switch (tag) { //.equals(tag)) {
-            case "param":
-                replaceA(((Element) dd), true);
-                text = tidyText(dd).replaceFirst(" - ", " ");
-                break;
-            case "typeparam": // for type parameter @param at class description
-                tag = "param";
-                replaceA(((Element) dd), true);
-                text = tidyText(dd).replaceFirst("([\\w\\$_\\.\\<\\>]+) - ", "<$1> ");
-                break;
-            case "exception":
-                Node typeNode = dd.selectSingleNode("A");
-                String comment;
-                String typeName;
-                if (typeNode != null) {
-                    comment = dd.getText().replaceFirst(" - ", " ");
-                    typeName = convertNodesToString(typeNode);
-                } else {
-                    int p = text.indexOf(" - ");
-                    if (p >= 0) {
-                        comment = dd.getText().substring(text.indexOf(" - ") + " -".length());
-                        typeName = dd.getText().substring(0, p);
-                    } else {
-                        comment = "";
-                        typeName = dd.getText().trim();
-                    }
-                }
-                text = toFQDN(t, typeName) + comment.replaceAll("\\s$", "");
-                break;
-            case "see":
-                if (text.contains(rb.getString("token.see.exclude.1")) ||
-                    text.contains(rb.getString("token.see.exclude.2"))) {
-debug("ignore 3: " + dd.asXML());
-                    continue;
-                }
-                replaceA(((Element) dd), true);
-                text = tidyText(dd);
-                break;
-            default:
-                break;
-            case "ignore":
-                continue;
-            }
-            String[] lines = text.split("\\n");
-            commentText.add("@" + tag + " " + lines[0]);
-            for (int k = 1; k < lines.length; k++) {
-                commentText.add(lines[k]);
-            }
+            processDD(t, dd, tag, commentText);
         }
         return j;
     }
@@ -931,6 +953,35 @@ debug("ignore 1.0: " + before.getText() + node.asXML());
 
 //            debug("fieldname: " + fieldName);
             field.setName(fieldName);
+        }
+    }
+
+    /**
+     * inner types (1st entry)
+     */
+    protected void determineInnerTypes(Type type, Document typeXml) throws IOException {
+        determineInnerTypes(type, typeXml, "TD[position()=2]/A");
+    }
+
+    /** inner types */
+    protected String getInnerTypesXpath() {
+        return "//TR[contains(parent::TABLE/TR[1], '" + rb.getString("token.nested_class_summary") + "')][position()>1]";
+    }
+
+    /** inner types */
+    protected void determineInnerTypes(Type type, Document typeXml, String nameXpath) throws IOException {
+        List<Node> innerTypeNodes = typeXml.selectNodes(getInnerTypesXpath());
+
+        for (int i = 0; innerTypeNodes != null && i < innerTypeNodes.size(); i++) {
+            Node innerTypeNode = innerTypeNodes.get(i);
+
+            String innerTypeName = convertNodesToString(innerTypeNode.selectSingleNode(nameXpath));
+debug(innerTypeName);
+
+            Type innerType = type.createInnerType();
+            innerType.setTypeName(innerTypeName);
+
+            processType(innerType);
         }
     }
 
@@ -1983,6 +2034,8 @@ debug("ignore 1.0: " + before.getText() + node.asXML());
             determineEnumConsts(type, typeXml);
 
             determineConstructors(type, typeXml);
+
+            determineInnerTypes(type, typeXml);
 
             determineDetails(type, typeXml);
 

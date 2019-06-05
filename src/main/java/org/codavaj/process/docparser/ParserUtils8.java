@@ -41,7 +41,7 @@ public class ParserUtils8 extends ParserUtils {
             if (node.getNodeType() == Node.ELEMENT_NODE) {
                 if ("DIV".equals(node.getName())) {
                     replaceA((Element) node, true);
-                    String text = tidyText(node);
+                    String text = tidyText(node, true);
                     if (!text.contains(rb.getString("token.comment.exclude.1")) &&
                         !text.contains(rb.getString("token.comment.exclude.2"))) {
                         String[] lines = text.split("\\n");
@@ -59,51 +59,7 @@ debug("ignore 1: " + text);
                         String tag = getTag(dt.getText());
                         do {
                             Node dd = nodes.get(j++);
-                            String text = tidyText(dd);
-                            switch (tag) { //.equals(tag)) {
-                            case "param":
-                                replaceA((Element) dd, true);
-                                text = tidyText(dd).replaceFirst(" - ", " ");
-                                break;
-                            case "typeparam": // for type parameter @param at class description
-                                tag = "param";
-                                replaceA((Element) dd, true);
-                                text = tidyText(dd).replaceFirst("([\\w\\$_\\.\\<\\>]+) - ", "<$1> ");
-                                break;
-                            case "exception":
-                                Node typeNode = dd.selectSingleNode("A");
-                                String comment;
-                                String typeName;
-                                if (typeNode != null) {
-                                    comment = dd.getText().replaceFirst(" - ", " ");
-                                    typeName = convertNodesToString(typeNode);
-                                } else {
-                                    int p = text.indexOf(" - ");
-                                    if (p >= 0) {
-                                        comment = dd.getText().substring(text.indexOf(" - ") + " -".length());
-                                        typeName = dd.getText().substring(0, p);
-                                    } else {
-                                        comment = "";
-                                        typeName = dd.getText().trim();
-                                    }
-                                }
-                                text = toFQDN(t, typeName) + comment;
-                                break;
-                            case "see":
-                                if (text.contains(rb.getString("token.see.exclude.1")) ||
-                                    text.contains(rb.getString("token.see.exclude.2"))) {
-debug("ignore 3: " + dd.selectSingleNode("A").getText());
-                                    continue;
-                                }
-                                replaceA(((Element) dd), true);
-                                text = tidyText(dd);
-                                break;
-                            default:
-                                break;
-                            case "ignore":
-                                continue;
-                            }
-                            commentText.add("@" + tag + " " + text);
+                            processDD(t, dd, tag, commentText);
                         } while (j < nodes.size() && "DD".equals(nodes.get(j).getName()));
                     } while (j < nodes.size());
                 } else {
@@ -259,12 +215,6 @@ warning("ignore 5: " + node.asXML());
     @Override
     protected String getFieldsXpath() {
         return "//TABLE[contains(text(),'" + rb.getString("token.field") + "')]/TR[position()>1]";
-    }
-
-    /* field (1st entry) */
-    @Override
-    protected void determineFields(Type type, Document typeXml) {
-        determineFields(type, typeXml, "TD[position()=2]/A");
     }
 
     /* enum (1st entry)  */
