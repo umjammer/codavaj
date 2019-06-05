@@ -19,6 +19,7 @@ package org.codavaj.process.docparser;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Pattern;
 
 import org.codavaj.ProcessException;
 import org.codavaj.process.ProgressEvent;
@@ -44,7 +45,7 @@ public class DocParser implements Progressive<TypeFactory> {
     /**
      *  javadocClassName used by Tests to parse single classes instead of all docs
      */
-    private String javadocClassName;
+    private Pattern javadocClassName;
     private List<String> externalLinks;
     /** */
     private Map<Type, Exception> errors = new HashMap<>();
@@ -76,7 +77,7 @@ public class DocParser implements Progressive<TypeFactory> {
 
             for (int i = 0; i < parserUtil.getClasses().size(); i++) {
                 String typeName = parserUtil.getClasses().get(i);
-                if (getJavadocClassName() == null || getJavadocClassName().equals(typeName)) {
+                if (javadocClassName == null || javadocClassName.matcher(typeName).find()) {
                     typeFactory.createType(typeName);
                 }
             }
@@ -111,7 +112,7 @@ public class DocParser implements Progressive<TypeFactory> {
         try {
             // try and determine all constants
             //info( parserUtil.prettyPrint(allconstants));
-            parserUtil.processConstant(typeFactory.getTypeMap(), getJavadocClassName() != null);
+            parserUtil.processConstant(typeFactory.getTypeMap(), javadocClassName != null);
         } catch (Exception e) {
             error("All constant determination failed!", e);
             throw new ProcessException(e);
@@ -161,19 +162,9 @@ public class DocParser implements Progressive<TypeFactory> {
     }
 
     /**
-     * @return the javadocClassName
-     */
-    public String getJavadocClassName() {
-        return javadocClassName;
-    }
-
-    /**
-     * @param javadocClassName the javadocClassName to set
+     * @param javadocClassName the regex pattern matching javadoc class name to set
      */
     public void setJavadocClassName(String javadocClassName) {
-        this.javadocClassName = javadocClassName;
-    }
-
     /**
      * @return the debugFlag
      */
@@ -186,5 +177,6 @@ public class DocParser implements Progressive<TypeFactory> {
      */
     public void setDebugFlag(boolean debugFlag) {
         this.debugFlag = debugFlag;
+        this.javadocClassName = Pattern.compile(javadocClassName);
     }
 }
