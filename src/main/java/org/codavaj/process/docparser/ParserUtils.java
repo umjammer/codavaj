@@ -17,6 +17,7 @@
 package org.codavaj.process.docparser;
 
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
@@ -39,7 +40,6 @@ import java.util.function.Function;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
-import org.codavaj.Main;
 import org.codavaj.type.EnumConst;
 import org.codavaj.type.Field;
 import org.codavaj.type.Method;
@@ -1822,10 +1822,19 @@ debug("ignore 1.0: " + before.getText() + node.asXML());
         new ParserUtils(),
     };
 
+    /** */
+    private static String fileSeparator(String dir) {
+        if (dir.startsWith("http")) {
+            return "/";
+        } else {
+            return File.separator;
+        }
+    }
+
     /** gets a class name index file name */
     private static String getFirstIndexFilePath(final String dir) {
         return Arrays.asList(parseUtils).stream().map(pu -> {
-            return dir + Main.FILE_SEPARATOR + pu.getFirstIndexFileName();
+            return dir + fileSeparator(dir) + pu.getFirstIndexFileName();
         }).filter(pn -> {
             return exists(pn);
         }).findFirst().get();
@@ -1947,7 +1956,7 @@ debug("ignore 1.0: " + before.getText() + node.asXML());
     public void processType(Type type) throws IOException {
         Document typeXml = null;
         try {
-            String filename = javadocDirName + Main.FILE_SEPARATOR + filenameFromTypename(type.getTypeName());
+            String filename = javadocDirName + fileSeparator(javadocDirName) + filenameFromTypename(type.getTypeName());
             typeXml = loadHtmlAsDom(getInputSource(filename));
 
             if (isAnnotation(typeXml)) {
@@ -1998,7 +2007,7 @@ debug("ignore 1.0: " + before.getText() + node.asXML());
      */
     public void processConstant(Map<String, Type> maps, boolean lenient) throws IOException {
         try {
-            String allconstantsfilename = javadocDirName + Main.FILE_SEPARATOR + "constant-values.html";
+            String allconstantsfilename = javadocDirName + fileSeparator(javadocDirName) + "constant-values.html";
             Document allconstants = loadHtmlAsDom(getInputSource(allconstantsfilename));
 
             determineConstants(allconstants, maps, lenient);

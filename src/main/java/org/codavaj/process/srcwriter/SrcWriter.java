@@ -22,11 +22,10 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.List;
 
-import org.codavaj.Main;
 import org.codavaj.MissingParameterException;
 import org.codavaj.ProcessException;
-import org.codavaj.process.Progressive;
 import org.codavaj.process.ProgressEvent;
+import org.codavaj.process.Progressive;
 import org.codavaj.type.Type;
 import org.codavaj.type.TypeFactory;
 
@@ -85,7 +84,7 @@ public class SrcWriter implements Progressive<Void> {
                     packageName = "";
                 }
 
-                String packageDirName = srcDirName + Main.FILE_SEPARATOR + packageName;
+                String packageDirName = srcDirName + File.separator + packageName;
 
                 //debug( packageDirName );
                 File packageDir = new File(packageDirName);
@@ -94,7 +93,7 @@ public class SrcWriter implements Progressive<Void> {
                     packageDir.mkdirs();
                 }
 
-                String filename = packageDirName + Main.FILE_SEPARATOR + type.getShortName() + ".java";
+                String filename = packageDirName + File.separator + type.getShortName() + ".java";
                 FileWriter fw = new FileWriter(filename);
                 BufferedWriter bw = new BufferedWriter(fw);
                 WriterUtils.print(type, bw);

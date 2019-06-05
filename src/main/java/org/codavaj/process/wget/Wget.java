@@ -21,10 +21,9 @@ import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.util.Stack;
 
-import org.codavaj.Main;
 import org.codavaj.ProcessException;
-import org.codavaj.process.Progressive;
 import org.codavaj.process.ProgressEvent;
+import org.codavaj.process.Progressive;
 
 import com.meterware.httpunit.GetMethodWebRequest;
 import com.meterware.httpunit.HTMLElement;
@@ -227,7 +226,7 @@ public class Wget implements Progressive<Void> {
 
         // make sure the directory we want to write to exists
         String directoryName = linkUtil.relativeDirectoryOfLink(relativePath);
-        String fullDirName = javadocDirName + Main.FILE_SEPARATOR
+        String fullDirName = javadocDirName + File.separator
             + directoryName;
         File directory = new File(fullDirName);
 
@@ -238,7 +237,7 @@ public class Wget implements Progressive<Void> {
         }
 
         String baseName = linkUtil.basenameOfLink(relativePath);
-        String fullFilename = fullDirName + Main.FILE_SEPARATOR + baseName;
+        String fullFilename = fullDirName + File.separator + baseName;
         File outputFile = new File(fullFilename);
 
         if (outputFile.exists() && !overwriteFiles) {

@@ -103,10 +103,4 @@ public class Main {
             return;
         }
     }
-
-    /**
-     * DOCUMENT ME!
-     */
-    public static final String FILE_SEPARATOR = System.getProperty(
-            "file.separator");
 }
