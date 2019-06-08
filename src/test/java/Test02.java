@@ -18,37 +18,31 @@ import com.github.javaparser.StaticJavaParser;
 import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
 import com.github.javaparser.ast.body.ConstructorDeclaration;
-import com.github.javaparser.ast.body.EnumDeclaration;
 import com.github.javaparser.ast.body.FieldDeclaration;
 import com.github.javaparser.ast.body.MethodDeclaration;
 import com.github.javaparser.ast.body.VariableDeclarator;
 import com.github.javaparser.ast.comments.JavadocComment;
 import com.github.javaparser.ast.visitor.VoidVisitorAdapter;
+import com.github.javaparser.utils.Pair;
+import com.google.common.collect.Streams;
 
 
 /**
- * Test01. using java parser (replace comment)
+ * Test02. using java parser (replace comment, refactoring parameter name: failed)
+ *
+ * <li> java parser doesn't handle fully qualified name
+ * <li> refactoring is not easy
  *
  * @author <a href="mailto:umjammer@gmail.com">Naohide Sano</a> (umjammer)
  * @version 0.00 2019/05/10 umjammer initial version <br>
  */
-public class Test01 {
+public class Test02 {
 
-    /**
-     * Derive a reflection-like API from a javadoc source tree. Resolve any type names
-     * to external javadoc links. External links to Sun's JDK javadoc apis are
-     * automatically resolved ( i.e. http://java.sun.com/j2se/X/docs/api/ )
-     *
-     * @param javadocdir the javadoc tree root
-     * @param externaLinks a list of 'http://..' strings representing external javadoc refs.
-     *
-     * @return a TypeFactory handle on the resulting api
-     * @throws Exception any problem.
-     */
+    /** */
     public TypeFactory analyze(String javadocdir, List<String> externalLinks) throws Exception {
         DocParser dp = new DocParser();
+        dp.setJavadocClassName("quicktime\\.[A-Z]\\w+$");
         dp.setJavadocDirName(javadocdir);
-//        dp.setJavadocClassName("com.amazon.kindle.kindlet.net.Connectivity");
         dp.setExternalLinks(externalLinks);
         dp.addProgressListener(System.err::println);
 
@@ -69,7 +63,7 @@ public class Test01 {
         List<String> el = new ArrayList<>();
         el.add(externalLink);
 
-        Test01 app = new Test01();
+        Test02 app = new Test02();
         TypeFactory tf = app.analyze(javadocDir, el);
 
         for (Type type : tf.getTypes()) {
@@ -125,24 +119,12 @@ System.err.println("RC: " + "CLASS: " + n.getNameAsString());
 //                                    System.out.println(s);
 
                                         n.setComment(new JavadocComment(f.getInnerCommentAsString().get()));
-System.err.println("RC: " + "FIELD: " + v.getName());
+System.err.println("RC: " + "FIELD: " + v.getNameAsString());
                                     });
                                 });
                             });
-                        } else if (EnumDeclaration.class.isInstance(n.getParentNode().get())) {
-
-                            type.getType(EnumDeclaration.class.cast(n.getParentNode().get()).getNameAsString()).ifPresent(t -> {
-                                t.getField(v.getNameAsString()).ifPresent(f -> {
-                                    f.getCommentAsString().ifPresent(s -> {
-//                                    System.out.println("--");
-//                                    System.out.println("NEW:");
-//                                    System.out.println(s);
-
-                                        n.setComment(new JavadocComment(f.getInnerCommentAsString().get()));
-System.err.println("RC: " + "ENUM: " + v.getName());
-                                    });
-                                });
-                            });
+                        } else {
+System.err.println("IG: " + "FIELD: " + v.getNameAsString());
                         }
                     }
 
@@ -158,45 +140,60 @@ System.err.println("RC: " + "ENUM: " + v.getName());
 //                        System.out.println(v);
 //                    });
 
-                    type.getType(ClassOrInterfaceDeclaration.class.cast(n.getParentNode().get()).getNameAsString()).ifPresent(t -> {
+                    if (ClassOrInterfaceDeclaration.class.isInstance(n.getParentNode().get())) {
+                        type.getType(ClassOrInterfaceDeclaration.class.cast(n.getParentNode().get()).getNameAsString()).ifPresent(t -> {
 
-                        t.getMethod(getSignatureString(n)).ifPresent(m -> {
-                            m.getCommentAsString().ifPresent(s -> {
+                            t.getMethod(getSignatureString(n)).ifPresent(m -> {
+                                m.getCommentAsString().ifPresent(s -> {
 //                                System.out.println("--");
 //                                System.out.println("NEW:");
 //                                System.out.println(s);
 
-                                n.setComment(new JavadocComment(m.getInnerCommentAsString().get()));
+                                    n.setComment(new JavadocComment(m.getInnerCommentAsString().get()));
 System.err.println("RC: " + "METHOD: " + getSignatureString(n));
+                                });
+
+                                // fix parameter names (only names at declaration)
+                                Streams.zip(m.getParameterList().stream(), n.getParameters().stream(),
+                                    (a, b) -> new Pair<>(a, b)
+                                ).filter(p -> !p.a.getName().equals(p.b.getNameAsString())).forEach(p -> {
+System.err.println("RN: " + "PARAM: " + p.b.getNameAsString() + " -> " + p.a.getName());
+//                                    p.b.setName(p.a.getName()); // TODO currently OFF
+                                });
                             });
                         });
-                    });
+                    } else {
+System.err.println("IG: " + "METHOD: " + getSignatureString(n));
+                    }
 
                     super.visit(n, arg);
                 }
 
                 @Override
                 public void visit(ConstructorDeclaration n, Void arg) {
-//                    System.out.println("----");
-//                    System.out.println("METHOD: " + n.getDeclarationAsString());
-//                    n.getComment().ifPresent(v -> {
-//                        System.out.println("OLD:");
-//                        System.out.println(v);
-//                    });
 
-                    type.getType(ClassOrInterfaceDeclaration.class.cast(n.getParentNode().get()).getNameAsString()).ifPresent(t -> {
+                    if (ClassOrInterfaceDeclaration.class.isInstance(n.getParentNode().get())) {
+                        type.getType(ClassOrInterfaceDeclaration.class.cast(n.getParentNode().get()).getNameAsString()).ifPresent(t -> {
 
-                        t.getMethod(getSignatureString(n)).ifPresent(m -> {
-                            m.getCommentAsString().ifPresent(s -> {
-//                                System.out.println("--");
-//                                System.out.println("NEW:");
-//                                System.out.println(s);
+                            t.getMethod(getSignatureString(n)).ifPresent(m -> {
+                                m.getCommentAsString().ifPresent(s -> {
 
-                                n.setComment(new JavadocComment(m.getInnerCommentAsString().get()));
+                                    n.setComment(new JavadocComment(m.getInnerCommentAsString().get()));
 System.err.println("RC: " + "CONSTRUCTOR: " + getSignatureString(n));
+                                });
+
+                                // fix parameter names (only names at declaration)
+                                Streams.zip(m.getParameterList().stream(), n.getParameters().stream(),
+                                    (a, b) -> new Pair<>(a, b)
+                                ).filter(p -> !p.a.getName().equals(p.b.getNameAsString())).forEach(p -> {
+System.err.println("RN: " + "PARAM: " + p.b.getNameAsString() + " -> " + p.a.getName());
+//                                    p.b.setName(p.a.getName()); // TODO
+                                });
                             });
                         });
-                    });
+                    } else {
+System.err.println("IG: " + "CONSTRUCTOR: " + getSignatureString(n));
+                    }
 
                     super.visit(n, arg);
                 }
@@ -209,7 +206,9 @@ System.err.println("RC: " + "CONSTRUCTOR: " + getSignatureString(n));
                         sb.append(Type.getSignatureString(tf.getFullyQualifiedName(p.getType().toString())));
                     });
                     sb.append(")");
+//System.err.println("RT: " + n.getType());
                     sb.append(Type.getSignatureString(tf.getFullyQualifiedName(n.getType().toString())));
+//System.err.println("SG: " + sb.toString());
                     return sb.toString();
                 }
 
@@ -221,6 +220,7 @@ System.err.println("RC: " + "CONSTRUCTOR: " + getSignatureString(n));
                         sb.append(Type.getSignatureString(tf.getFullyQualifiedName(p.getType().toString())));
                     });
                     sb.append(")");
+//System.err.println("SG: " + sb.toString());
                     return sb.toString();
                 }
 
@@ -230,7 +230,7 @@ System.err.println("RC: " + "CONSTRUCTOR: " + getSignatureString(n));
             if (!Files.exists(result.getParent())) {
                 Files.createDirectories(result.getParent());
             }
-System.err.println("WR: " + result);
+System.err.println("WT: "+ result);
             Files.write(result, unit.toString().getBytes());
         }
     }

@@ -2,25 +2,11 @@
 
 # CODAVAJ - ( javadoc in reverse ) README
 
-## Download
+## Convert Javadoc to Java Source
 
-to download an entire javadoc tree for further processing use:
-
-```
-codavaj.cmd wget <URL> <destination-dir>
-```
-
-i.e.
-
-```
-codavaj.cmd wget http://jumpi.sourceforge.net/javadoc/j2se tmp/jumpi/javadoc
-```
-
-## Convert
-
-to convert local javadoc tree into java source ( external references to Sun's 
+to convert javadoc tree into java source (external references to Sun's 
 standard javadocs are automatically resolved 
-i.e. http://java.sun.com/j2se/1.5.0/docs/api/ )
+i.e. `http://java.sun.com/j2se/1.5.0/docs/api/`)
 
 ```
 codavaj.cmd codavaj <javadoc-dir> <javasource-dir> {<external-link-url>}*
@@ -38,11 +24,37 @@ or
 codavaj.cmd codavaj tmp/jumpi/javadoc tmp/jumpi/src http://external.link.com/api
 ```
 
-## for information see
+or
 
- http://codavaj.sourceforge.net
+```
+codavaj.cmd codavaj http://jumpi.sourceforge.net/javadoc/j2se tmp/jumpi/src
+```
+
+## Cooperate with [Javaparser](https://github.com/javaparser/javaparser)
+
+ * set javadoc to decompiled source.
+
+
+## Download (obsoleted, use convert)
+
+to download an entire javadoc tree for further processing use:
+
+```
+codavaj.cmd wget <URL> <destination-dir>
+```
+
+i.e.
+
+```
+codavaj.cmd wget http://jumpi.sourceforge.net/javadoc/j2se tmp/jumpi/javadoc
+```
 
 ## change history
+
+version 1.4.x
+
+ * update v6 parsing and rendering
+ * enable to parse javadoc on www directly
 
 version 1.4.0
 
