@@ -199,6 +199,10 @@ debug("ignore 3: " + dd.asXML());
             replaceA(((Element) dd), true);
             text = tidyText(dd, true);
             break;
+        case "return":
+            replaceA(((Element) dd), true);
+            text = tidyText(dd, true);
+            break;
         default:
             break;
         case "ignore":
@@ -467,18 +471,21 @@ debug("ignore 1.0: " + before.getText() + node.asXML());
             }
 
             if (parseOn) {
-                if ((node.getNodeType() == Node.ELEMENT_NODE)
-                        && "P".equals(node.getName())) {
+                if (node.getNodeType() == Node.ELEMENT_NODE) {
+                    if ("P".equals(node.getName())) {
+                        commentNodes.add(node);
+                    } else if ("HR".equals(node.getName())) {
+                        parseOn = false;
+                    }
+                } if (node.getNodeType() == Node.TEXT_NODE) {
                     commentNodes.add(node);
-                } else if ((node.getNodeType() == Node.ELEMENT_NODE)
-                        && "HR".equals(node.getName())) {
-                    parseOn = false;
                 }
             }
         }
 
         List<String> commentText = new ArrayList<>();
 //System.err.println("---------------------");
+//System.err.println(typeXml.asXML());
 //commentNodes.forEach(n -> System.err.println(n.asXML() + " *****"));
         determineComment(type, commentNodes, commentText);
 
