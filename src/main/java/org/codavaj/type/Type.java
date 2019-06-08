@@ -298,9 +298,14 @@ public class Type extends Modifiable implements Commentable {
      * Add the name of an inner type to the instance.
      *
      * @param type the inner type
+     * @throws IllegalArgumentException the type already defined
      */
     public void addInnerType(Type type) {
-        getInnerTypeList().add(type);
+        if (getType(type.getTypeName()).isPresent()) {
+            throw new IllegalArgumentException("already defined");
+        } else {
+            innerTypeList.add(type);
+        }
     }
 
     /**
@@ -432,7 +437,10 @@ public class Type extends Modifiable implements Commentable {
         return null;
     }
 
-    /** @return includes self */
+    /**
+     * @param name short name
+     * @return includes self
+     */
     public Optional<Type> getType(String name) {
         if (name.equals(getShortName())) {
             return Optional.of(this);

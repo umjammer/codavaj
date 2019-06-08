@@ -29,6 +29,7 @@ import org.codavaj.process.docparser.FullyQualifiedNameMap;
 import org.codavaj.type.reflection.ReflectionUtils;
 import org.codavaj.type.reflection.SingleJarClassLoader;
 
+import static org.codavaj.Logger.info;
 import static org.codavaj.Logger.warning;
 
 /**
@@ -46,25 +47,26 @@ public class TypeFactory {
         packages.put(Package.defaultPackageName, new Package(Package.defaultPackageName));
     }
 
-    private void linkPackage( Package pckg ) {
-        // link packages to themselves heirarchicaly
+    /** link packages to themselves hierarchically */
+    private void linkPackage(Package pckg) {
         while( !Package.defaultPackageName.equals(pckg.getName())) {
             String parentName = pckg.getParentPackageName();
 
             Package parentPckg = packages.get(parentName);
-            if ( parentPckg == null ) {
+            if (parentPckg == null) {
                 parentPckg = new Package( parentName );
                 packages.put(parentPckg.getName(), parentPckg);
             }
             parentPckg.addPackage(pckg);
             pckg.setParentPackage(parentPckg);
 
-            // go up the heirarchy to the default package - adding it.
+            // go up the hierarchy to the default package - adding it.
             pckg = parentPckg;
         }
     }
-    private Package linkPackage( Type type ) {
-        // link the type to it's package and vice versa
+
+    /** link the type to it's package and vice versa */
+    private Package linkPackage(Type type) {
         Package pckg = packages.get(type.getPackageName());
         if ( pckg == null ) {
             pckg = new Package( type.getPackageName());
@@ -114,9 +116,7 @@ public class TypeFactory {
      * Lookup a Type given it's fully qualified Type name.
      *
      * @param typeName the fully qualified Type name.
-     *
      * @return a Type with the given fully qualified name, or null if not found.
-     *
      * @see Type#getTypeName()
      */
     public Map<String, Type> getTypeMap() {
@@ -168,10 +168,13 @@ public class TypeFactory {
                 Type enclosingType = types.get(type.getEnclosingType());
 
                 if (enclosingType != null) {
-                    enclosingType.addInnerType(type);
+                    try {
+                        enclosingType.addInnerType(type);
+                    } catch (IllegalArgumentException e) {
+                        info("type " + type.getShortName() + " was already defined in type " + enclosingType.getTypeName());
+                    }
                 } else {
-                    warning("enclosing type " + type.getEnclosingType()
-                        + " was not found in type " + type.getTypeName());
+                    warning("enclosing type " + type.getEnclosingType() + " was not found in type " + type.getTypeName());
                 }
             }
 
@@ -189,7 +192,7 @@ public class TypeFactory {
      * @param jar the Jar file to load.
      * @return the class contents of a Jar file as a TypeFactory.
      */
-    public static TypeFactory getInstance( JarFile jar ) {
+    public static TypeFactory getInstance(JarFile jar) {
         TypeFactory tf = new TypeFactory();
 
         SingleJarClassLoader cl = new SingleJarClassLoader(jar);
@@ -200,7 +203,7 @@ public class TypeFactory {
             String filename = entry.getName();
 
             String classname = filename.replace('/','.');
-            if ( classname.indexOf(".class") == -1 ) {
+            if (classname.indexOf(".class") == -1) {
                 continue; // not a .class file
             }
 

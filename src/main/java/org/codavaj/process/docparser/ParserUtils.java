@@ -1850,7 +1850,7 @@ debug(innerTypeName);
     /** version comparator like 1.8.3 */
     protected static VersionComparator versionComparator = new VersionComparator();
 
-    /** should compare from bigger version */
+    /** */
     protected boolean isSuitableVersion(String version) {
         return versionComparator.compare(version, "1.8.0") < 0;
     }
@@ -1860,7 +1860,7 @@ debug(innerTypeName);
         return "allclasses-frame.html";
     }
 
-    /** should be compared this order */
+    /** */
     private static ParserUtils[] parseUtils = new ParserUtils[] {
         new ParserUtils13(),
         new ParserUtils12(),
@@ -2080,22 +2080,15 @@ debug(innerTypeName);
         org.cyberneko.html.parsers.DOMParser parser = new org.cyberneko.html.parsers.DOMParser();
 
         //XMLParserConfiguration parser = new HTMLConfiguration();
-        parser.setFeature("http://cyberneko.org/html/features/augmentations",
-            true);
-        parser.setFeature("http://cyberneko.org/html/features/report-errors",
-            false);
-        parser.setProperty("http://cyberneko.org/html/properties/names/elems",
-            "lower");
-        parser.setProperty("http://cyberneko.org/html/properties/names/attrs",
-            "lower");
+        parser.setFeature("http://cyberneko.org/html/features/augmentations", true);
+        parser.setFeature("http://cyberneko.org/html/features/report-errors", false);
+        parser.setProperty("http://cyberneko.org/html/properties/names/elems", "lower");
+        parser.setProperty("http://cyberneko.org/html/properties/names/attrs", "lower");
 
-        parser.setFeature("http://apache.org/xml/features/scanner/notify-char-refs",
-            true);
-        parser.setFeature("http://cyberneko.org/html/features/scanner/notify-builtin-refs",
-            true);
+        parser.setFeature("http://apache.org/xml/features/scanner/notify-char-refs", true);
+        parser.setFeature("http://cyberneko.org/html/features/scanner/notify-builtin-refs", true);
 
-        parser.setFeature("http://apache.org/xml/features/dom/defer-node-expansion",
-            false);
+        parser.setFeature("http://apache.org/xml/features/dom/defer-node-expansion", false);
 
         org.cyberneko.html.filters.ElementRemover remover = new org.cyberneko.html.filters.ElementRemover();
 
@@ -2107,11 +2100,10 @@ debug(innerTypeName);
         remover.removeElement("link");
 
         org.apache.xerces.xni.parser.XMLDocumentFilter[] filters = new org.apache.xerces.xni.parser.XMLDocumentFilter[] {
-                new org.cyberneko.html.filters.Purifier(),
-                remover,
-            };
-        parser.setProperty("http://cyberneko.org/html/properties/filters",
-            filters);
+            new org.cyberneko.html.filters.Purifier(),
+            remover,
+        };
+        parser.setProperty("http://cyberneko.org/html/properties/filters", filters);
         parser.parse(html);
 
         DOMReader xmlReader = new DOMReader();
@@ -2135,32 +2127,24 @@ debug(innerTypeName);
         org.cyberneko.html.parsers.DOMParser parser = new org.cyberneko.html.parsers.DOMParser();
 
         //XMLParserConfiguration parser = new HTMLConfiguration();
-        parser.setFeature("http://cyberneko.org/html/features/augmentations",
-            true);
-        parser.setFeature("http://cyberneko.org/html/features/report-errors",
-            false);
-        parser.setProperty("http://cyberneko.org/html/properties/names/elems",
-            "lower");
-        parser.setProperty("http://cyberneko.org/html/properties/names/attrs",
-            "lower");
+        parser.setFeature("http://cyberneko.org/html/features/augmentations", true);
+        parser.setFeature("http://cyberneko.org/html/features/report-errors", false);
+        parser.setProperty("http://cyberneko.org/html/properties/names/elems", "lower");
+        parser.setProperty("http://cyberneko.org/html/properties/names/attrs", "lower");
 
-        parser.setFeature("http://apache.org/xml/features/scanner/notify-char-refs",
-            true);
-        parser.setFeature("http://cyberneko.org/html/features/scanner/notify-builtin-refs",
-            true);
+        parser.setFeature("http://apache.org/xml/features/scanner/notify-char-refs", true);
+        parser.setFeature("http://cyberneko.org/html/features/scanner/notify-builtin-refs", true);
 
-        parser.setFeature("http://apache.org/xml/features/dom/defer-node-expansion",
-            false);
+        parser.setFeature("http://apache.org/xml/features/dom/defer-node-expansion", false);
 
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
 
         org.apache.xerces.xni.parser.XMLDocumentFilter[] filters = new org.apache.xerces.xni.parser.XMLDocumentFilter[] {
-                new org.cyberneko.html.filters.Purifier(),
-                getRemover(),
-                new org.cyberneko.html.filters.Writer(baos, "UTF-8")
-            };
-        parser.setProperty("http://cyberneko.org/html/properties/filters",
-            filters);
+            new org.cyberneko.html.filters.Purifier(),
+            getRemover(),
+            new org.cyberneko.html.filters.Writer(baos, "UTF-8")
+        };
+        parser.setProperty("http://cyberneko.org/html/properties/filters", filters);
         parser.parse(html);
 
         //String html = new String( baos.toByteArray(), "UTF-8");
@@ -2212,8 +2196,7 @@ debug(innerTypeName);
      * Pretty print the XML to a String
      *
      * @param doc DOCUMENT ME!
-     *
-     * @return DOCUMENT ME!
+     * @return formatted xml string
      */
     protected String prettyPrint(Document doc) {
         try {
