@@ -1858,6 +1858,7 @@ debug(innerTypeName);
         new ParserUtils13(),
         new ParserUtils12(),
         new ParserUtils11(),
+        new ParserUtils10(),
         new ParserUtils8(),
         new ParserUtils(),
     };
