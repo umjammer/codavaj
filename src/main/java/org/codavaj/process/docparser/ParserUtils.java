@@ -27,7 +27,6 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
@@ -69,15 +68,6 @@ public class ParserUtils {
      * Creates a new ParserUtils object.
      */
     protected ParserUtils() {
-        fqdns.put(Void.TYPE.toString(), Void.TYPE.toString());
-        fqdns.put(Boolean.TYPE.toString(), Boolean.TYPE.toString());
-        fqdns.put(Integer.TYPE.toString(), Integer.TYPE.toString());
-        fqdns.put(Short.TYPE.toString(), Short.TYPE.toString());
-        fqdns.put(Byte.TYPE.toString(), Byte.TYPE.toString());
-        fqdns.put(Long.TYPE.toString(), Long.TYPE.toString());
-        fqdns.put(Float.TYPE.toString(), Float.TYPE.toString());
-        fqdns.put(Double.TYPE.toString(), Double.TYPE.toString());
-        fqdns.put(Character.TYPE.toString(), Character.TYPE.toString());
     }
 
     /**
@@ -198,7 +188,7 @@ debug("unhandled tag: " + text);
                     typeName = text.trim();
                 }
             }
-            text = toFQDN(t, typeName) + comment.replaceAll("\\s$", "");
+            text = fqnm.toFullyQualifiedName(t, typeName) + comment.replaceAll("\\s$", "");
             break;
         case "see":
             if (text.contains(rb.getString("token.see.exclude.1")) ||
@@ -1215,7 +1205,7 @@ debug(innerTypeName);
                 } else if ( word.startsWith("<") ){
                     m.setTypeParameters(word);
                 } else {
-                    p.setType(toFQDN(t, word));
+                    p.setType(fqnm.toFullyQualifiedName(t, word));
                 }
             }
         } catch (Exception e) {
@@ -1547,6 +1537,7 @@ debug(innerTypeName);
             String file = classes.get(i).getText();
             String typeName = typenameFromFilename(file);
 
+            fqnm.add(typeName);
             result.add(typeName);
         }
 
@@ -1889,10 +1880,10 @@ debug(innerTypeName);
         }).findFirst().get();
     }
 
-    /** from the index file */
+    /** from the index file, TODO TypeFactory */
     private List<String> classes;
 
-    /** classes listed in the index file */
+    /** classes listed in the index file, TODO TypeFactory */
     public List<String> getClasses() {
         return classes;
     }
@@ -2202,32 +2193,11 @@ debug(innerTypeName);
     }
 
     /** */
-    private Map<String, String> fqdns = new HashMap<>();
+    protected FullyQualifiedNameMap fqnm = new FullyQualifiedNameMap();
 
     /** */
-    protected String toFQDN(Type type, String typeName) {
-        if (typeName.indexOf(".") == -1) {
-            if (fqdns.containsKey(typeName)) {
-                return fqdns.get(typeName);
-            } else {
-                try {
-                    Class<?> clazz = Class.forName("java.lang." + typeName);
-                    String className = clazz.getName();
-                    fqdns.put(typeName, className);
-                    return className;
-                } catch (ClassNotFoundException e) {
-//                    debug("not found: " + typeName);
-                }
-                String className = (type.getPackageName() != "" ? type.getPackageName() + "." : "") + typeName;
-                if (classes.contains(className)) {
-                    fqdns.put(typeName, className);
-                    return className;
-                } else {
-                    warning("not found: " + typeName);
-                }
-            }
-        }
-        return typeName;
+    public FullyQualifiedNameMap getFullyQualifiedNameMap() {
+        return fqnm;
     }
 
     /**

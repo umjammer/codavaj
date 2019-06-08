@@ -278,7 +278,7 @@ warning("ignore 5: " + node.asXML());
             }
             combinedText = combinedText.trim().replaceFirst("^.+\\s*" + keyword + "\\s+([\\w_\\$\\.\\<\\>]+)\\s*.*$", "$1");
             if (!combinedText.isEmpty()) {
-                String typeName = toFQDN(t, combinedText);
+                String typeName = fqnm.toFullyQualifiedName(t, combinedText);
                 t.setSuperType(typeName);
             }
         } else {
@@ -322,7 +322,7 @@ warning("ignore 5: " + node.asXML());
                     if (!combinedText.isEmpty()) {
                         List<String> words = tokenizeWordListWithTypeParameters(combinedText, " ,\t\n\r\f");
                         for (String typeName : words) {
-                            typeName = toFQDN(t, typeName);
+                            typeName = fqnm.toFullyQualifiedName(t, typeName);
                             t.addImplementsType(typeName);
                         }
                     } else {

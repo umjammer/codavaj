@@ -25,6 +25,7 @@ import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import java.util.zip.ZipEntry;
 
+import org.codavaj.process.docparser.FullyQualifiedNameMap;
 import org.codavaj.type.reflection.ReflectionUtils;
 import org.codavaj.type.reflection.SingleJarClassLoader;
 
@@ -223,4 +224,19 @@ public class TypeFactory {
         return tf;
     }
 
+    /** */
+    private FullyQualifiedNameMap fqnm;
+
+    /** */
+    public void setFullyQualifiedNameMap(FullyQualifiedNameMap fqnm) {
+        this.fqnm = fqnm;
+    }
+
+    /**
+     * @param type short name
+     * @return fully qualified name, returns self if there is not a fully qualified name.
+     */
+    public String getFullyQualifiedName(String type) {
+        return fqnm.containsKey(type) ? fqnm.get(type) : type;
+    }
 }

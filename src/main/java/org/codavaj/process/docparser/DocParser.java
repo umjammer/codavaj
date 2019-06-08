@@ -111,6 +111,7 @@ errors.entrySet().forEach(e -> {
         }
 
         typeFactory.link();
+        typeFactory.setFullyQualifiedNameMap(parserUtil.getFullyQualifiedNameMap());
 
         return typeFactory;
     }
