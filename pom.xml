@@ -27,6 +27,31 @@ TODO
   </issueManagement>
   <name>codavaj</name>
 
+  <profiles>
+    <profile>
+      <id>local (not on jitpack)</id>
+      <activation>
+        <property>
+          <name>env.JITPACK</name>
+          <value>!true</value>
+        </property>
+      </activation>
+      <properties>
+        <!-- for netflix rewrite -->
+        <jre8.home>/Library/Java/JavaVirtualMachines/jdk1.8.0_202.jdk/Contents/Home/jre</jre8.home>
+      </properties>
+      <dependencies>
+        <dependency>
+          <groupId>com.sun</groupId>
+          <artifactId>tools</artifactId>
+          <version>1.8.0</version>
+          <scope>system</scope>
+          <systemPath>${jre8.home}/../lib/tools.jar</systemPath>
+        </dependency>
+      </dependencies>
+    </profile>
+  </profiles>
+
   <build>
     <plugins>
       <plugin>
@@ -170,13 +195,6 @@ TODO
       <version>1.7.2</version>
       <scope>test</scope>
     </dependency>
-    <dependency>
-      <groupId>com.sun</groupId>
-      <artifactId>tools</artifactId>
-      <version>1.8.0</version>
-      <scope>system</scope>
-      <systemPath>${jre8.home}/../lib/tools.jar</systemPath>
-    </dependency>
 
     <dependency>
       <groupId>org.eclipse.jdt</groupId>
@@ -192,10 +210,5 @@ TODO
       <scope>test</scope>
     </dependency>
   </dependencies>
-
-  <properties>
-    <!-- for netflix rewrite -->
-    <jre8.home>/Library/Java/JavaVirtualMachines/jdk1.8.0_202.jdk/Contents/Home/jre</jre8.home>
-  </properties>
 
 </project>
