@@ -41,7 +41,7 @@ public class Test02 {
     /** */
     public TypeFactory analyze(String javadocdir, List<String> externalLinks) throws Exception {
         DocParser dp = new DocParser();
-        dp.setJavadocClassName("quicktime\\.[A-Z]\\w+$");
+//        dp.setJavadocClassName("quicktime\\.[A-Z]\\w+$");
         dp.setJavadocDirName(javadocdir);
         dp.setExternalLinks(externalLinks);
         dp.addProgressListener(System.err::println);

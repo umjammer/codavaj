@@ -115,7 +115,6 @@ public class TypeFactory {
     /**
      * Lookup a Type given it's fully qualified Type name.
      *
-     * @param typeName the fully qualified Type name.
      * @return a Type with the given fully qualified name, or null if not found.
      * @see Type#getTypeName()
      */
@@ -236,10 +235,31 @@ public class TypeFactory {
     }
 
     /**
-     * @param type short name
+     * @param type anything
      * @return fully qualified name, returns self if there is not a fully qualified name.
      */
     public String getFullyQualifiedName(String type) {
-        return fqnm.containsKey(type) ? fqnm.get(type) : type;
+        type = type.replaceAll("<[\\w\\.\\[\\]\\$\\_\\s,\\*\\?]+>", "");
+        String array = "";
+        if (type.indexOf("[]") > 0) {
+            array = type.substring(type.indexOf("[]"));
+            type = type.replace("[]", "");
+        }
+        String result;
+        if (type.indexOf(".") > 0) {
+            if (fqnm.containsValue(type)) {
+                result = type;
+            } else {
+                fqnm.add(type);
+                result = type;
+            }
+        } else {
+            if (fqnm.containsKey(type)) {
+                result = fqnm.get(type);
+            } else {
+                result = fqnm.guess(type);
+            }
+        }
+        return result + array;
     }
 }

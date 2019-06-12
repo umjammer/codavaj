@@ -754,7 +754,7 @@ debug("ignore 1.0: " + before.getText() + node.asXML());
 
         text = text.substring(0, text.indexOf("("));
 
-        List<Parameter> params = determineMethodParameterList(methodParams);
+        List<Parameter> params = determineMethodParameterList(type, methodParams);
         Method m = type.lookupMethodByName(name, params);
 
         if (m == null) {
@@ -803,13 +803,13 @@ debug("ignore 1.0: " + before.getText() + node.asXML());
         }
     }
 
-    private List<Parameter> determineMethodParameterList(String methodParams) {
+    private List<Parameter> determineMethodParameterList(Type t, String methodParams) {
         List<Parameter> params = new ArrayList<>();
 
         List<String> words = tokenizeWordListWithTypeParameters(methodParams, ",");
         Iterator<String> it = words.iterator();
         while (it.hasNext()) {
-            Parameter p = determineParameter(it.next(), true);
+            Parameter p = determineParameter(t, it.next(), true);
             params.add(p);
         }
 
@@ -933,7 +933,7 @@ debug("ignore 1.0: " + before.getText() + node.asXML());
             String fieldtypeParam = convertNodesToString(fieldtypeNode);
 
 //            debug("fieldtype: " + fieldtypeParam);
-            Parameter temp = determineParameter(fieldtypeParam, false);
+            Parameter temp = determineParameter(type, fieldtypeParam, false);
             field.setType(temp.getType());
             field.setArray(temp.isArray());
             field.setDegree(temp.getDegree());
@@ -1065,12 +1065,12 @@ debug(innerTypeName);
             Node methodNode = methodList.get(i);
 
             List<Node> paramlistNodes = getConstructorParamlistNodes(methodNode);
-            determineMethodParameters(method, paramlistNodes);
+            determineMethodParameters(type, method, paramlistNodes);
         }
     }
 
     /** parameter */
-    private void determineMethodParameters(Method method, List<Node> paramlistNodes) {
+    private void determineMethodParameters(Type t, Method method, List<Node> paramlistNodes) {
         Element methodNameElement = (Element) paramlistNodes.get(0); // link in the same file
         method.setName(methodNameElement.getText());
 
@@ -1118,7 +1118,7 @@ debug(innerTypeName);
         }
 
         // now we parse "type name" comma separated pairs from the result
-        List<Parameter> params = determineMethodParameterList(methodParams);
+        List<Parameter> params = determineMethodParameterList(t, methodParams);
         for(int i = 0; i < params.size(); i++) {
             method.addParameter(params.get(i));
         }
@@ -1128,7 +1128,7 @@ debug(innerTypeName);
      * parameter
      * @throws ParseException
      */
-    private Parameter determineParameter(String parameterText, boolean parseName) {
+    private Parameter determineParameter(Type t, String parameterText, boolean parseName) {
         // parses a parameter with modifiers, type, with or without a name
         // private final java.lang.String[][] name
         // static a/b/c/D name
@@ -1152,12 +1152,12 @@ debug(innerTypeName);
                 if (Modifiable.isModifier(word)) {
                     // skip modifiers
                     continue;
-                } else if ( word.indexOf("<") != -1 ){
+                } else if (word.indexOf("<") != -1) {
                     // parameterized type with type parameter arguments
                     p.setTypeArgumentList(word.substring(word.indexOf("<"), word.length()));
-                    p.setType(word.substring(0, word.indexOf("<")));
+                    p.setType(fqnm.toFullyQualifiedName(t, word.substring(0, word.indexOf("<"))));
                 } else {
-                    p.setType(word);
+                    p.setType(fqnm.toFullyQualifiedName(t, word));
                 }
 
                 if (parseName && it.hasNext()) {
@@ -1360,7 +1360,7 @@ debug(innerTypeName);
             //if ( paramlistNode == null ) continue; // no method
             List<Node> paramlistNodes = getMethodParamlistNodes(methodNode);
 
-            determineMethodParameters(method, paramlistNodes);
+            determineMethodParameters(type, method, paramlistNodes);
         }
     }
 

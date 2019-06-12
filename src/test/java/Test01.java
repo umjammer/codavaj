@@ -40,7 +40,7 @@ public class Test01 {
      * automatically resolved ( i.e. http://java.sun.com/j2se/X/docs/api/ )
      *
      * @param javadocdir the javadoc tree root
-     * @param externaLinks a list of 'http://..' strings representing external javadoc refs.
+     * @param externalLinks a list of 'http://..' strings representing external javadoc refs.
      *
      * @return a TypeFactory handle on the resulting api
      * @throws Exception any problem.
@@ -48,7 +48,7 @@ public class Test01 {
     public TypeFactory analyze(String javadocdir, List<String> externalLinks) throws Exception {
         DocParser dp = new DocParser();
         dp.setJavadocDirName(javadocdir);
-//        dp.setJavadocClassName("com.amazon.kindle.kindlet.net.Connectivity");
+//        dp.setJavadocClassName("org.benf.cfr.reader.api.OutputSinkFactory");
         dp.setExternalLinks(externalLinks);
         dp.addProgressListener(System.err::println);
 
@@ -158,19 +158,35 @@ System.err.println("RC: " + "ENUM: " + v.getName());
 //                        System.out.println(v);
 //                    });
 
-                    type.getType(ClassOrInterfaceDeclaration.class.cast(n.getParentNode().get()).getNameAsString()).ifPresent(t -> {
+                    if (ClassOrInterfaceDeclaration.class.isInstance(n.getParentNode().get())) {
+                        type.getType(ClassOrInterfaceDeclaration.class.cast(n.getParentNode().get()).getNameAsString()).ifPresent(t -> {
 
-                        t.getMethod(getSignatureString(n)).ifPresent(m -> {
-                            m.getCommentAsString().ifPresent(s -> {
+                            t.getMethod(getSignatureString(n)).ifPresent(m -> {
+                                m.getCommentAsString().ifPresent(s -> {
 //                                System.out.println("--");
 //                                System.out.println("NEW:");
 //                                System.out.println(s);
 
-                                n.setComment(new JavadocComment(m.getInnerCommentAsString().get()));
+                                    n.setComment(new JavadocComment(m.getInnerCommentAsString().get()));
 System.err.println("RC: " + "METHOD: " + getSignatureString(n));
+                                });
                             });
                         });
-                    });
+                    } else if (EnumDeclaration.class.isInstance(n.getParentNode().get())) {
+                        type.getType(EnumDeclaration.class.cast(n.getParentNode().get()).getNameAsString()).ifPresent(t -> {
+
+                            t.getMethod(getSignatureString(n)).ifPresent(m -> {
+                                m.getCommentAsString().ifPresent(s -> {
+//                                System.out.println("--");
+//                                System.out.println("NEW:");
+//                                System.out.println(s);
+
+                                    n.setComment(new JavadocComment(m.getInnerCommentAsString().get()));
+System.err.println("RC: " + "METHOD: " + getSignatureString(n));
+                                });
+                            });
+                        });
+                    }
 
                     super.visit(n, arg);
                 }
@@ -184,19 +200,35 @@ System.err.println("RC: " + "METHOD: " + getSignatureString(n));
 //                        System.out.println(v);
 //                    });
 
-                    type.getType(ClassOrInterfaceDeclaration.class.cast(n.getParentNode().get()).getNameAsString()).ifPresent(t -> {
+                    if (ClassOrInterfaceDeclaration.class.isInstance(n.getParentNode().get())) {
+                        type.getType(ClassOrInterfaceDeclaration.class.cast(n.getParentNode().get()).getNameAsString()).ifPresent(t -> {
 
-                        t.getMethod(getSignatureString(n)).ifPresent(m -> {
-                            m.getCommentAsString().ifPresent(s -> {
+                            t.getMethod(getSignatureString(n)).ifPresent(m -> {
+                                m.getCommentAsString().ifPresent(s -> {
 //                                System.out.println("--");
 //                                System.out.println("NEW:");
 //                                System.out.println(s);
 
-                                n.setComment(new JavadocComment(m.getInnerCommentAsString().get()));
+                                    n.setComment(new JavadocComment(m.getInnerCommentAsString().get()));
 System.err.println("RC: " + "CONSTRUCTOR: " + getSignatureString(n));
+                                });
                             });
                         });
-                    });
+                    } else if (EnumDeclaration.class.isInstance(n.getParentNode().get())) {
+                        type.getType(EnumDeclaration.class.cast(n.getParentNode().get()).getNameAsString()).ifPresent(t -> {
+
+                            t.getMethod(getSignatureString(n)).ifPresent(m -> {
+                                m.getCommentAsString().ifPresent(s -> {
+//                                System.out.println("--");
+//                                System.out.println("NEW:");
+//                                System.out.println(s);
+
+                                    n.setComment(new JavadocComment(m.getInnerCommentAsString().get()));
+System.err.println("RC: " + "CONSTRUCTOR: " + getSignatureString(n));
+                                });
+                            });
+                        });
+                    }
 
                     super.visit(n, arg);
                 }

@@ -18,6 +18,7 @@ package org.codavaj.type;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
@@ -467,10 +468,15 @@ public class Type extends Modifiable implements Commentable {
     }
 
     /**
-     * @return the typeParameters
+     * @return the typeParameters ("<>" included)
      */
     public String getTypeParameters() {
         return typeParameters;
+    }
+
+    /** */
+    public boolean isTypeParameter(String typeParameter) {
+        return typeParameters == null ? false : Arrays.asList(typeParameters.split("[\\s,<>]")).stream().anyMatch(tp -> typeParameter.equals(tp));
     }
 
     /**
@@ -503,13 +509,17 @@ public class Type extends Modifiable implements Commentable {
     }
 
     /**
-     * TODO this method is special for javaparser.
      * TODO location
      * @param type with []
      */
     public static String getSignatureString(String type) {
-        // TODO should be separate [] and calc. degrees
-        return getSignatureString(type, 0);
+        int degree = 0;
+        while (type.indexOf("[]") > 0) {
+            degree ++;
+            type = type.substring(0, type.indexOf("[]"));
+        }
+
+        return getSignatureString(type, degree);
     }
 
     /** TODO location */
@@ -535,17 +545,21 @@ public class Type extends Modifiable implements Commentable {
         case "void":
             result = "V"; break;
         default:
-            return "L" + type.replace(".", "/").replace("$", "/") + getArrayString(arrayDegree) + ";";
+            return getPrefix(arrayDegree, "L") + type.replace(".", "/").replace("$", "/") + ";";
         }
-        return result + getArrayString(arrayDegree);
+        return getPrefix(arrayDegree, "") + result;
     }
 
     /** */
-    private static String getArrayString(int degree) {
-        StringBuilder sb = new StringBuilder();
-        for (int i = 0; i < degree; i++) {
-            sb.append("[]");
+    private static String getPrefix(int degree, String prefix) {
+        if (degree > 0) {
+            StringBuilder sb = new StringBuilder();
+            for (int i = 0; i < degree; i++) {
+                sb.append("[");
+            }
+            return prefix + sb.toString();
+        } else {
+            return prefix;
         }
-        return sb.toString();
     }
 }
