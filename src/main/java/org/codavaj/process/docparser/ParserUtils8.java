@@ -115,8 +115,7 @@ warning("ignore 5: " + node.asXML());
         determineComment(type, allNodes, commentText);
 
         // for type parameter
-        allNodes = typeXml.selectNodes("//DL/DT[contains(text(),'" + rb.getString("token.type_parameter") + "')]/..");
-//allNodes.forEach(System.err::println);
+        allNodes = typeXml.selectNodes("/HTML/DIV/DIV/LI/DL/DT[contains(text(),'" + rb.getString("token.type_parameter") + "')]/..");
         determineComment(type, allNodes, commentText);
 
         type.setComment(commentText);
