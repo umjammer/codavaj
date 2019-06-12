@@ -234,7 +234,7 @@ debug("A: " + a.asXML());
         if ((href.startsWith("http") || href.startsWith("../")) &&
             href.replace(".html#", ".").indexOf(a.getText().replaceAll("\\([\\w$_\\.,\\s\\[\\]]*\\)", "")) != -1) {
             String link = hrefToLink(href);
-            return "{@link " + link + "}";
+            return "{@link " + link.replace("$", ".") + "}";
         } else {
             return a.asXML().replaceAll("^\\s*", "").replaceAll("\\s*$", "");
         }
