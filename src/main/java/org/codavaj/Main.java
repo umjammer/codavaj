@@ -40,7 +40,7 @@ public class Main {
      * @param externalLinks a list of 'http://..' strings representing external javadoc refs.
      *
      * @return a TypeFactory handle on the resulting api
-     * @throws Exception any problem.
+     * @throws ProcessException any problem.
      */
     public static TypeFactory analyze( String javadocdir, List<String> externalLinks ) throws ProcessException {
 

@@ -47,7 +47,6 @@ import org.codavaj.type.Parameter;
 import org.codavaj.type.Type;
 import org.cyberneko.html.filters.ElementRemover;
 import org.dom4j.Document;
-import org.dom4j.DocumentException;
 import org.dom4j.Element;
 import org.dom4j.Node;
 import org.dom4j.io.DOMReader;
@@ -145,9 +144,7 @@ debug("unhandled tag: " + text);
         }
     }
 
-    /**
-     * @return update index
-     */
+    /** */
     protected void processDD(Type t, Node dd,String tag, List<String> commentText) {
         String text = tidyText(dd, true);
         switch (tag) { //.equals(tag)) {
@@ -196,7 +193,7 @@ debug("unhandled tag: " + text);
 debug("ignore 3: " + dd.asXML());
                 return;
             }
-            replaceA(((Element) dd), true);
+            replaceA(((Element) dd), true); // TODO no need to replace?
             text = tidyText(dd, true);
             break;
         case "return":
@@ -218,7 +215,6 @@ debug("ignore 3: " + dd.asXML());
     /**
      * Processes DD... in DT
      * @param nodes nodes include dt, dd...
-     * @param next index of the dt node
      * @param tag dt text
      * @param commentText output
      * @return update index
@@ -2074,7 +2070,6 @@ debug(innerTypeName);
      *
      * @throws SAXException DOCUMENT ME!
      * @throws IOException DOCUMENT ME!
-     * @throws DocumentException DOCUMENT ME!
      */
     private static Document loadHtmlMetadataAsDom(InputSource html) throws SAXException, IOException {
         org.cyberneko.html.parsers.DOMParser parser = new org.cyberneko.html.parsers.DOMParser();

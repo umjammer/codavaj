@@ -193,7 +193,7 @@ public class Modifiable {
     /**
      * DOCUMENT ME!
      *
-     * @param enumType DOCUMENT ME!
+     * @param annoType DOCUMENT ME!
      */
     public void setAnnotation(boolean annoType) {
         if (annoType && !isAnnotation()) {

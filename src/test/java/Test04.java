@@ -137,6 +137,7 @@ System.err.println("IG: " + "FIELD: " + v.getName());
                     return true;
                 }
 
+                // TODO native not comes
                 @Override
                 public boolean visit(MethodDeclaration n) {
 //                    System.out.println("----");

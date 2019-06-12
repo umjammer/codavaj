@@ -24,7 +24,7 @@ public class ParseException extends RuntimeException {
     /**
      * Creates a new UnresolvedExternalLinkException object.
      *
-     * @param arg0 problem description.
+     * @param m problem description.
      */
     public ParseException(String m) {
         super(m);
