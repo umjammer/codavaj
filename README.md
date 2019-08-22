@@ -30,9 +30,14 @@ or
 codavaj.cmd codavaj http://jumpi.sourceforge.net/javadoc/j2se tmp/jumpi/src
 ```
 
-## Cooperate with [Javaparser](https://github.com/javaparser/javaparser)
+## Cooperate with Java Parser
 
- * set javadoc to decompiled source.
+| parser | set javadoc to decompiled source | rename argument names as javadoc documented |
+|--------------------------------------------------------|---|---|
+| [JavaParser](https://github.com/javaparser/javaparser) | ✅ | 🚫 |
+| [rewrite](https://github.com/Netflix-Skunkworks/rewrite) | ✅ | 🚧 |
+| [JDT](https://www.eclipse.org/jdt/) | ✅ | 🚫 |
+| [spoon](https://github.com/INRIA/spoon) | ✅ | 🚫 |
 
 
 ## Download (obsoleted, use convert)

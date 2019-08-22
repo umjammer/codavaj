@@ -59,7 +59,7 @@ import static org.codavaj.Logger.debug;
 import static org.codavaj.Logger.warning;
 
 /**
- * for veersion ~ 1.6.x
+ * for version ~ 1.6.x
  */
 public class ParserUtils {
 
