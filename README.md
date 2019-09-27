@@ -35,8 +35,7 @@ codavaj.cmd codavaj http://jumpi.sourceforge.net/javadoc/j2se tmp/jumpi/src
 | **parser** | **set javadoc to decompiled source** | **rename argument names as javadoc documented** | **code** |
 |:-----------|:------------------------------------:|:-----------------------------------------------:|----------|
 | [JavaParser](https://github.com/javaparser/javaparser) | ✅ | 🚫 | [📄](https://github.com/umjammer/codavaj/blob/master/src/test/java/Test02.java) |
-| [rewrite](https://github.com/Netflix-Skunkworks/rewrite) | ✅ | 🚧 | [📄](https://github.com/umjammer/codavaj/blob/master/src/test/java/Test01
-3.java) |
+| [rewrite](https://github.com/Netflix-Skunkworks/rewrite) | ✅ | 🚧 | [📄](https://github.com/umjammer/codavaj/blob/master/src/test/java/Test03.java) |
 | [JDT](https://www.eclipse.org/jdt/) | ✅ | 🚫 | [📄](https://github.com/umjammer/codavaj/blob/master/src/test/java/Test04.java) |
 | [spoon](https://github.com/INRIA/spoon) | ✅ | 🚫 | [📄](https://github.com/umjammer/codavaj/blob/master/src/test/java/Test05.java) |
 
