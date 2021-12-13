@@ -1,13 +1,14 @@
 package org.codavaj.process.search;
 
 import java.util.List;
+import java.util.logging.Logger;
 
 import org.codavaj.type.Package;
 import org.codavaj.type.TypeFactory;
 
-import static org.codavaj.Logger.info;
-
 public class SearchAlgorithm {
+
+    private static final Logger logger = Logger.getLogger(SearchAlgorithm.class.getName());
 
     private TypeFactory docFactory;
     private TypeFactory jarFactory;
@@ -23,13 +24,13 @@ public class SearchAlgorithm {
         Package javadocRoot = docFactory.getDefaultPackage();
         Package jarRoot = jarFactory.getDefaultPackage();
 
-        info( "Attempting " + javadocRoot.getName() + " -> " + jarRoot.getName());
+        logger.info("Attempting " + javadocRoot.getName() + " -> " + jarRoot.getName());
         ctx.setMap(javadocRoot, jarRoot);
 
-        if ( matchAll( javadocRoot, jarRoot ) ) {
-            info( "Matched All " + javadocRoot.getName() +" -> "  + jarRoot.getName());
+        if ( matchAll(javadocRoot, jarRoot )) {
+            logger.info( "Matched All " + javadocRoot.getName() +" -> "  + jarRoot.getName());
         } else {
-            info( "NOT Matched All " + javadocRoot.getName() +" -> "  + jarRoot.getName());
+            logger.info("NOT Matched All " + javadocRoot.getName() +" -> "  + jarRoot.getName());
             ctx.removeMap(javadocRoot, jarRoot);
         }
 
@@ -42,11 +43,11 @@ public class SearchAlgorithm {
         List<Package> docsubPackages = javadocPackage.getPackages();
 
         boolean matchesAllSubPackages = true;
-        for( int i = 0; i < docsubPackages.size(); i++ ) {
+        for( int i = 0; i < docsubPackages.size(); i++) {
             Package docsubPackage = docsubPackages.get(i);
 
-            if ( !matchAny( docsubPackage, jarsubPackages)) {
-                info( "Package " + docsubPackage.getName() + " doesn't match any sub packages of " + jarPackage.getName());
+            if (!matchAny(docsubPackage, jarsubPackages)) {
+                logger.info("Package " + docsubPackage.getName() + " doesn't match any sub packages of " + jarPackage.getName());
                 matchesAllSubPackages = false;
                 break;
             }
@@ -59,15 +60,15 @@ public class SearchAlgorithm {
         for( int i=0; i < jarPackages.size(); i++ ) {
             Package jarPackage = jarPackages.get(i);
 
-            if ( ctx.getMap(jarPackage) != null ) {
-                info("Already mapped " + jarPackage.getName());
+            if (ctx.getMap(jarPackage) != null) {
+                logger.info("Already mapped " + jarPackage.getName());
                 continue;
             }
 
-            info( "Attempting " + javadocPackage.getName() + " -> " + jarPackage.getName());
-            ctx.setMap(javadocPackage, jarPackage );
-            if ( matchAll( javadocPackage, jarPackage ) ) {
-                info( "Matched ALL " + javadocPackage.getName() + " -> " + jarPackage.getName());
+            logger.info("Attempting " + javadocPackage.getName() + " -> " + jarPackage.getName());
+            ctx.setMap(javadocPackage, jarPackage);
+            if (matchAll(javadocPackage, jarPackage)) {
+                logger.info("Matched ALL " + javadocPackage.getName() + " -> " + jarPackage.getName());
                 return true;
             }
             ctx.removeMap(javadocPackage, jarPackage);

@@ -18,6 +18,7 @@ package org.codavaj;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Logger;
 
 import org.codavaj.process.docparser.DocParser;
 import org.codavaj.process.srcwriter.SrcWriter;
@@ -28,6 +29,9 @@ import org.codavaj.type.TypeFactory;
  * DOCUMENT ME!
  */
 public class Main {
+
+    private static final Logger logger = Logger.getLogger(Main.class.getName());
+
     private static final String usage_wget = "wget <url> <output-dir>";
     private static final String usage_parse = "codavaj <input-dir> <output-dir> {<external-link>}*";
 

@@ -38,6 +38,8 @@ import java.util.function.Function;
 
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import org.codavaj.type.EnumConst;
 import org.codavaj.type.Field;
@@ -55,13 +57,13 @@ import org.dom4j.io.XMLWriter;
 import org.dom4j.tree.DefaultText;
 
 import static com.rainerhahnekamp.sneakythrow.Sneaky.sneaked;
-import static org.codavaj.Logger.debug;
-import static org.codavaj.Logger.warning;
 
 /**
  * for version ~ 1.6.x
  */
 public class ParserUtils {
+
+    private static final Logger logger = Logger.getLogger(ParserUtils.class.getName());
 
     /**
      * Creates a new ParserUtils object.
@@ -129,7 +131,7 @@ public class ParserUtils {
         } else if (text.indexOf(rb.getString("token.default")) >= 0) {
             return "ignore";
         } else {
-debug("unhandled tag: " + text);
+logger.fine("unhandled tag: " + text);
             return text;
         }
     }
@@ -190,7 +192,7 @@ debug("unhandled tag: " + text);
         case "see":
             if (text.contains(rb.getString("token.see.exclude.1")) ||
                 text.contains(rb.getString("token.see.exclude.2"))) {
-debug("ignore 3: " + dd.asXML());
+logger.fine("ignore 3: " + dd.asXML());
                 return;
             }
             replaceA(((Element) dd), true); // TODO no need to replace?
@@ -229,7 +231,7 @@ debug("ignore 3: " + dd.asXML());
 
     /** Processes A */
     private String processA(Node a) {
-debug("A: " + a.asXML());
+logger.fine("A: " + a.asXML());
         String href = a.valueOf("@href");
         if ((href.startsWith("http") || href.startsWith("../")) &&
             href.replace(".html#", ".").indexOf(a.getText().replaceAll("\\([\\w$_\\.,\\s\\[\\]]*\\)", "")) != -1) {
@@ -317,7 +319,7 @@ debug("A: " + a.asXML());
                     // TODO this makes unexpected new lines
                     commentText.add(processA(node));
                 } else {
-debug("unhandled node: " + node.getName());
+logger.fine("unhandled node: " + node.getName());
                     replaceA(((Element) node), true);
                     String text = node.asXML();
                     String[] lines = text.split("\\n");
@@ -330,10 +332,10 @@ debug("unhandled node: " + node.getName());
                 if (text.contains(rb.getString("token.comment.exclude.1")) ||
                     text.contains(rb.getString("token.comment.exclude.2"))) {
                     if (i + 1 < allNodes.size() && "A".equals(allNodes.get(i + 1).getName())) {
-debug("ignore 1.1: " + text + allNodes.get(i + 1).asXML());
+logger.fine("ignore 1.1: " + text + allNodes.get(i + 1).asXML());
                         i++;
                     } else {
-debug("ignore 1.2: " + text);
+logger.fine("ignore 1.2: " + text);
                     }
                 } else {
                     if (!text.isEmpty()) {
@@ -344,7 +346,7 @@ debug("ignore 1.2: " + text);
                     }
                 }
             } else {
-debug("ignore 5: " + node.asXML());
+logger.fine("ignore 5: " + node.asXML());
             }
         }
     }
@@ -357,15 +359,15 @@ debug("ignore 5: " + node.asXML());
                 boolean ignore = false;
                 if ("A".equals(node.getName())) {
                     int index = nodes.indexOf(node);
-debug("index: " + index);
+logger.fine("index: " + index);
                     if (index > 0) {
                         Node before = nodes.get(index - 1);
-debug("before: " + before.asXML());
+logger.fine("before: " + before.asXML());
                         if (before.getNodeType() == Node.TEXT_NODE && (
                             before.getText().contains(rb.getString("token.comment.exclude.1")) ||
                             before.getText().contains(rb.getString("token.comment.exclude.2")))) {
                             ignore = true;
-debug("ignore 1.0: " + before.getText() + node.asXML());
+logger.fine("ignore 1.0: " + before.getText() + node.asXML());
                         }
                     }
                     if (!ignore) {
@@ -538,12 +540,12 @@ debug("ignore 1.0: " + before.getText() + node.asXML());
             String fieldName = constantNode.valueOf(xpaths[1]);
             String constantValue = constantNode.valueOf(xpaths[2]);
 
-            //debug( typeName + "#" + fieldName +"=" +constantValue );
+            //logger.fine( typeName + "#" + fieldName +"=" +constantValue );
             Type type = types.get(typeName);
 
             if (type == null) {
                 if ( !lenient ) {
-                    warning("Unable to find type " + typeName);
+                    logger.log(Level.WARNING, "Unable to find type " + typeName);
                 }
 
                 continue;
@@ -552,7 +554,7 @@ debug("ignore 1.0: " + before.getText() + node.asXML());
             Field field = type.lookupFieldByName(fieldName);
 
             if (field == null) {
-                warning("Unable to find field " + typeName + "#" + fieldName);
+                logger.log(Level.WARNING, "Unable to find field " + typeName + "#" + fieldName);
 
                 continue;
             }
@@ -576,7 +578,7 @@ debug("ignore 1.0: " + before.getText() + node.asXML());
         if ("java.lang.String".equals(typeName)) {
             if ((constantvalue.charAt(0) != '"')
                     && (constantvalue.charAt(constantvalue.length()) != '"')) {
-                warning(
+                logger.log(Level.WARNING, 
                     "expect constant string value to start and end with quotes "
                     + typeName + " value " + constantvalue);
                 value = constantvalue;
@@ -625,7 +627,7 @@ debug("ignore 1.0: " + before.getText() + node.asXML());
             return Short.valueOf(constantvalue);
         }
 
-        warning("unknown constant type: " + typeName);
+        logger.log(Level.WARNING, "unknown constant type: " + typeName);
 
         return value;
     }
@@ -769,7 +771,7 @@ debug("ignore 1.0: " + before.getText() + node.asXML());
             determineThrowsList(throwsParams, m);
             m.setComment(determineComment(type, commentNode));
         } else {
-            warning(
+            logger.log(Level.WARNING, 
                 "failed to find method or constructor with name "
                 + name + " in type " + type.getTypeName());
          }
@@ -797,7 +799,7 @@ debug("ignore 1.0: " + before.getText() + node.asXML());
                     m.setComment(determineComment(type, commentNode));
                     m.setDefaultValue(determineDefault(commentNode));
                 } else {
-                    warning("No field, enum constant, or annotation element with name " + name + " in type " + type.getTypeName());
+                    logger.log(Level.WARNING, "No field, enum constant, or annotation element with name " + name + " in type " + type.getTypeName());
                 }
             }
         }
@@ -932,7 +934,7 @@ debug("ignore 1.0: " + before.getText() + node.asXML());
 
             String fieldtypeParam = convertNodesToString(fieldtypeNode);
 
-//            debug("fieldtype: " + fieldtypeParam);
+//            logger.fine("fieldtype: " + fieldtypeParam);
             Parameter temp = determineParameter(type, fieldtypeParam, false);
             field.setType(temp.getType());
             field.setArray(temp.isArray());
@@ -944,7 +946,7 @@ debug("ignore 1.0: " + before.getText() + node.asXML());
             Element fieldNameNode = (Element) fieldNode.selectSingleNode(nameXpath);
             String fieldName = fieldNameNode.getText();
 
-//            debug("fieldname: " + fieldName);
+//            logger.fine("fieldname: " + fieldName);
             field.setName(fieldName);
         }
     }
@@ -969,7 +971,7 @@ debug("ignore 1.0: " + before.getText() + node.asXML());
             Node innerTypeNode = innerTypeNodes.get(i);
 
             String innerTypeName = convertNodesToString(innerTypeNode.selectSingleNode(nameXpath));
-debug(innerTypeName);
+logger.fine(innerTypeName);
 
             Type innerType = type.createInnerType();
             innerType.setTypeName(innerTypeName);
@@ -1002,7 +1004,7 @@ debug(innerTypeName);
             Element enumConstNameNode = (Element) enumConstNode.selectSingleNode(nameXpath);
             String enumConstName = enumConstNameNode.getText();
 
-            //debug( "enumConstName: " + enumConstName );
+            //logger.fine( "enumConstName: " + enumConstName );
             enumConst.setName(enumConstName);
         }
     }
@@ -1074,7 +1076,7 @@ debug(innerTypeName);
         Element methodNameElement = (Element) paramlistNodes.get(0); // link in the same file
         method.setName(methodNameElement.getText());
 
-        //debug(" methodname: " + method.getMethodName());
+        //logger.fine(" methodname: " + method.getMethodName());
         String methodParams = "";
 
         for (int paramIdx = 1;
@@ -1083,7 +1085,7 @@ debug(innerTypeName);
             //expect the methodName in the first parameter, so skip it
             Node paramNode = paramlistNodes.get(paramIdx);
 
-            // debug( paramNode.getNodeTypeName()+" "+paramNode.getStringValue() );
+            // logger.fine( paramNode.getNodeTypeName()+" "+paramNode.getStringValue() );
             // need to combine method description into a single text which can then
             // be parsed easily. TypeVariables tend to have length 1 ( E, V, K etc ) which can easily match one character of the link to the generic parent
             if (paramNode.getNodeType() == Node.ELEMENT_NODE && "A".equals(paramNode.getName()) && paramNode.getText().length() > 1 && paramNode.valueOf("@href").indexOf(paramNode.getText()) != -1 ) {
@@ -1167,12 +1169,12 @@ debug(innerTypeName);
                 }
             }
         } catch (Exception e) {
-            warning("failed to parse parameterText: " + parameterText);
+            logger.log(Level.WARNING, "failed to parse parameterText: " + parameterText);
             throw new ParseException(parameterText, e);
         }
 
         if ( parseName && p.getName() == null ) {
-            warning("failed to parse parameter name from : " + parameterText);
+            logger.log(Level.WARNING, "failed to parse parameter name from : " + parameterText);
         }
         return p;
     }
@@ -1212,7 +1214,7 @@ debug(innerTypeName);
                 }
             }
         } catch (Exception e) {
-            warning("failed to parse method return parameter in parameterText: " + parameterText);
+            logger.log(Level.WARNING, "failed to parse method return parameter in parameterText: " + parameterText);
             throw new ParseException(parameterText, e);
         }
 
@@ -1352,7 +1354,7 @@ debug(innerTypeName);
             Parameter returnType = determineMethodReturnParameter(type, method, methodReturnParam);
 
             if (returnType == null) {
-                warning("failed to determine return type: " + prettyPrint(typeXml));
+                logger.log(Level.WARNING, "failed to determine return type: " + prettyPrint(typeXml));
             }
 
             method.setReturnParameter(returnType);
@@ -1414,7 +1416,7 @@ debug(innerTypeName);
             Parameter returnType = determineMethodReturnParameter(type, method, methodReturnParam );
 
             if (returnType == null) {
-                warning("failed to determine return type: " + prettyPrint(typeXml));
+                logger.log(Level.WARNING, "failed to determine return type: " + prettyPrint(typeXml));
             }
 
             method.setReturnParameter(returnType);
@@ -1441,7 +1443,7 @@ debug(innerTypeName);
             Parameter returnType = determineMethodReturnParameter(type, method, methodReturnParam);
 
             if (returnType == null) {
-                warning("failed to determine return type: " + prettyPrint(typeXml));
+                logger.log(Level.WARNING, "failed to determine return type: " + prettyPrint(typeXml));
             }
 
             method.setReturnParameter(returnType);
@@ -1663,7 +1665,7 @@ debug(innerTypeName);
         List<Node> extendedTypeDTs = typeXml.selectNodes(xpath);
         // there should only be one
         if (extendedTypeDTs != null && extendedTypeDTs.size() > 1) {
-            warning("There should only be one extends");
+            logger.log(Level.WARNING, "There should only be one extends");
         }
         for (int i = 0; (extendedTypeDTs != null) && (i < extendedTypeDTs.size()); i++) {
             Node node = extendedTypeDTs.get(i);
@@ -1810,7 +1812,7 @@ debug(innerTypeName);
                     while(it.hasNext()) {
                         String typeName = it.next();
 
-//                        debug("token: " + typeName);
+logger.finest("token: " + typeName);
                         t.addImplementsType(typeName);
                     }
                 }
@@ -1840,6 +1842,7 @@ debug(innerTypeName);
     /** determines language */
     protected boolean isLanguageOf(Locale locale) {
         // umm...
+logger.finer("lang: " + rb.getLocale().getLanguage());
         return rb.getLocale().getLanguage().equals(locale.getLanguage());
     }
 
@@ -2205,7 +2208,7 @@ debug(innerTypeName);
 
             return new String(html.toByteArray(), "UTF-8");
         } catch (Exception e) {
-            warning("Unable to pretty print.", e);
+           logger.log(Level.WARNING, "Unable to pretty print.", e);
         }
 
         return doc.asXML();

@@ -10,6 +10,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 import org.codavaj.type.Type;
@@ -19,8 +21,6 @@ import org.dom4j.Element;
 import org.dom4j.Node;
 
 import static com.rainerhahnekamp.sneakythrow.Sneaky.sneaked;
-import static org.codavaj.Logger.debug;
-import static org.codavaj.Logger.warning;
 
 /**
  * for version 1.8.x
@@ -31,6 +31,8 @@ import static org.codavaj.Logger.warning;
  * @version 0.00 2019/05/06 umjammer initial version <br>
  */
 public class ParserUtils8 extends ParserUtils {
+
+    private static final Logger logger = Logger.getLogger(ParserUtils8.class.getName());
 
     /* details */
     @Override
@@ -49,7 +51,7 @@ public class ParserUtils8 extends ParserUtils {
                             commentText.add(line.trim());
                         }
                     } else {
-debug("ignore 1: " + text);
+logger.fine("ignore 1: " + text);
                     }
                 } else if ("DL".equals(node.getName())) {
                     List<Node> nodes = node.selectNodes("*[name()='DT' or name()='DD']");
@@ -63,10 +65,10 @@ debug("ignore 1: " + text);
                         } while (j < nodes.size() && "DD".equals(nodes.get(j).getName()));
                     } while (j < nodes.size());
                 } else {
-warning("ignore 4: " + node.asXML());
+logger.log(Level.WARNING, "ignore 4: " + node.asXML());
                 }
             } else {
-warning("ignore 5: " + node.asXML());
+logger.log(Level.WARNING, "ignore 5: " + node.asXML());
             }
         }
     }

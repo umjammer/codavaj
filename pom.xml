@@ -134,10 +134,19 @@ TODO
             <goals>
               <goal>resources</goal>
             </goals>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <version>3.0.0-M5</version>
             <configuration>
               <includes>
                 <include>**/*_ja.properties</include>
               </includes>
+          <forkMode>once</forkMode>
+          <argLine>
+            -Xms2048m -Xmx4096m
+            -Djava.util.logging.config.file=${project.build.testOutputDirectory}/logging.properties
+          </argLine>
+          <trimStackTrace>false</trimStackTrace>
             </configuration>
           </execution>
         </executions>
@@ -239,8 +248,8 @@ TODO
     </dependency>
     <dependency>
       <groupId>org.slf4j</groupId>
-      <artifactId>slf4j-log4j12</artifactId>
-      <version>1.7.2</version>
+      <artifactId>slf4j-jdk14</artifactId>
+      <version>1.7.32</version>
       <scope>test</scope>
     </dependency>
 

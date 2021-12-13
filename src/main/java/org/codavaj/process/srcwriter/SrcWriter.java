@@ -21,6 +21,8 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import org.codavaj.MissingParameterException;
 import org.codavaj.ProcessException;
@@ -29,12 +31,13 @@ import org.codavaj.process.Progressive;
 import org.codavaj.type.Type;
 import org.codavaj.type.TypeFactory;
 
-import static org.codavaj.Logger.error;
-
 /**
  * DOCUMENT ME!
  */
 public class SrcWriter implements Progressive<Void> {
+
+    private static final Logger logger = Logger.getLogger(SrcWriter.class.getName());
+
     /**
      * DOCUMENT ME!
      */
@@ -100,7 +103,7 @@ public class SrcWriter implements Progressive<Void> {
                 bw.flush();
                 bw.close();
             } catch (IOException iox) {
-                error("Error processing " + type.getTypeName(), iox);
+                logger.log(Level.SEVERE, "Error processing " + type.getTypeName(), iox);
             }
         }
         return null;

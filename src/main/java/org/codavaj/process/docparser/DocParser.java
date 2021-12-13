@@ -19,6 +19,8 @@ package org.codavaj.process.docparser;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.regex.Pattern;
 
 import org.codavaj.ProcessException;
@@ -27,14 +29,14 @@ import org.codavaj.process.Progressive;
 import org.codavaj.type.Type;
 import org.codavaj.type.TypeFactory;
 
-import static org.codavaj.Logger.error;
-
 /**
  * Read an entire javadoc file tree and construct a reflection-like
  * representation of all it's constituent parts ( Classes, Interfaces ... ) in
  * a TypeFactory.
  */
 public class DocParser implements Progressive<TypeFactory> {
+
+    private static final Logger logger = Logger.getLogger(DocParser.class.getName());
 
     /**
      * directory to find javadoc root.
@@ -74,7 +76,7 @@ Map<Type, Exception> errors = new HashMap<>();
                 }
             }
         } catch (Exception e) {
-            error("All class determination failed!", e);
+            logger.log(Level.SEVERE, "All class determination failed!", e);
             throw new ProcessException(e);
         }
 
@@ -89,7 +91,7 @@ Map<Type, Exception> errors = new HashMap<>();
             try {
                 parserUtil.processType(type);
             } catch (Exception e) {
-                error("Class parsing failed on " + type.getTypeName());
+                logger.severe("Class parsing failed on " + type.getTypeName());
 errors.put(type, e);
 //                throw new ProcessException(e);
             }
@@ -106,7 +108,7 @@ errors.entrySet().forEach(e -> {
             //info( parserUtil.prettyPrint(allconstants));
             parserUtil.processConstant(typeFactory.getTypeMap(), javadocClassName != null);
         } catch (Exception e) {
-            error("All constant determination failed!", e);
+            logger.log(Level.SEVERE, "All constant determination failed!", e);
             throw new ProcessException(e);
         }
 

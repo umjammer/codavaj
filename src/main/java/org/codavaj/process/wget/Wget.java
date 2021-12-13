@@ -20,6 +20,8 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.util.Stack;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import org.codavaj.ProcessException;
 import org.codavaj.process.ProgressEvent;
@@ -33,14 +35,12 @@ import com.meterware.httpunit.WebLink;
 import com.meterware.httpunit.WebRequest;
 import com.meterware.httpunit.WebResponse;
 
-import static org.codavaj.Logger.debug;
-import static org.codavaj.Logger.info;
-import static org.codavaj.Logger.warning;
-
 /**
  * DOCUMENT ME!
  */
 public class Wget implements Progressive<Void> {
+
+    private static final Logger logger = Logger.getLogger(LinkUtils.class.getName());
 
     private static final String CONST_INDEX_HTML = "index.html";
     private static final String CONST_INDEX_ALL_HTML = "index-all.html";
@@ -127,19 +127,19 @@ public class Wget implements Progressive<Void> {
             saveContent(relativePath, response);
 
             if (!HTML_CONTENT.equalsIgnoreCase(response.getContentType())) {
-                debug("not html " + url);
+                logger.fine("not html " + url);
 
                 return;
             }
 
-            debug("The page " + relativePath + " contains "
+            logger.fine("The page " + relativePath + " contains "
                 + response.getLinks().length + " links");
 
             if (response.getFrameNames() != null) {
                 // we have frames, so we need to put the link to each frame onto the
                 for (int i = 0; i < response.getFrameNames().length; i++) {
                     String framename = response.getFrameNames()[i];
-                    debug("Frame " + framename);
+                    logger.fine("Frame " + framename);
 
                     HTMLElement[] frame = response.getElementsWithName(framename);
 
@@ -150,7 +150,7 @@ public class Wget implements Progressive<Void> {
                         addRelativeUrl(url, src, got, fetch);
                     }
 
-                    info(frame[0].toString());
+                    logger.info(frame[0].toString());
                 }
             }
 
@@ -174,7 +174,7 @@ public class Wget implements Progressive<Void> {
                 addRelativeUrl(url, response.getExternalStyleSheet(), got, fetch);
             }
         } catch (Exception e) {
-            warning("Failed to get " + relativePath, e);
+            logger.log(Level.WARNING, "Failed to get " + relativePath, e);
         }
     }
 
@@ -192,7 +192,7 @@ public class Wget implements Progressive<Void> {
                 lastException = e;
 
                 if (i < retryCount) {
-                    debug("Failed to get page " + url + " ... retrying"
+                    logger.fine("Failed to get page " + url + " ... retrying"
                         + e.getMessage());
                     Thread.sleep(retryWait);
                 }
@@ -211,18 +211,18 @@ public class Wget implements Progressive<Void> {
 
         if (got.contains(relativeUrl)) {
             // link will be retrieved
-            debug("skipping fetched link " + relativeUrl);
+            logger.fine("skipping fetched link " + relativeUrl);
         } else if (fetch.contains(relativeUrl)) {
-            debug("skipping planned link " + relativeUrl);
+            logger.fine("skipping planned link " + relativeUrl);
         } else {
-            debug("adding link " + relativeUrl);
+            logger.fine("adding link " + relativeUrl);
             fetch.push(relativeUrl);
         }
     }
 
     private void saveContent(String relativePath, WebResponse response)
         throws Exception {
-        debug("saving " + relativePath);
+        logger.fine("saving " + relativePath);
 
         // make sure the directory we want to write to exists
         String directoryName = linkUtil.relativeDirectoryOfLink(relativePath);
@@ -232,7 +232,7 @@ public class Wget implements Progressive<Void> {
 
         if (!directory.exists()) {
             if (!directory.mkdirs()) {
-                warning("Unable to create directory " + fullDirName);
+                logger.warning("Unable to create directory " + fullDirName);
             }
         }
 
@@ -241,7 +241,7 @@ public class Wget implements Progressive<Void> {
         File outputFile = new File(fullFilename);
 
         if (outputFile.exists() && !overwriteFiles) {
-            debug(fullFilename + " skipped since exists locally.");
+            logger.fine(fullFilename + " skipped since exists locally.");
 
             return;
         }

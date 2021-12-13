@@ -16,14 +16,15 @@
 
 package org.codavaj.process.wget;
 
-import static org.codavaj.Logger.debug;
-import static org.codavaj.Logger.info;
-import static org.codavaj.Logger.warning;
+import java.util.logging.Logger;
 
 /**
  * A utility set for working with URL's from javadocs.
  */
 public class LinkUtils {
+
+    private static final Logger logger = Logger.getLogger(LinkUtils.class.getName());
+
     /** Separator in URL's within javadocs. */
     protected static final String URL_SEPARATOR = "/";
 
@@ -57,7 +58,7 @@ public class LinkUtils {
         }
 
         if (!rootUrl.endsWith(URL_SEPARATOR)) {
-            warning("Root url " + rootUrl + " is not normalized");
+            logger.warning("Root url " + rootUrl + " is not normalized");
 
             return null;
         }
@@ -91,7 +92,7 @@ public class LinkUtils {
         //         : ./f/g
         //         : ../../f/g -> http://a/b/c/d/e/../../f/g
         if (link.startsWith(URL_SEPARATOR)) {
-            debug("link absolute " + link);
+            logger.fine("link absolute " + link);
 
             return null;
         }
@@ -116,20 +117,20 @@ public class LinkUtils {
         if (link.startsWith(path)) { // a
 
             String rel = link.substring(path.length());
-            debug("(a)link: " + link + " -> " + rel);
+            logger.fine("(a)link: " + link + " -> " + rel);
             link = rel;
         }
 
         if (link.startsWith("http") || link.startsWith("ftp")
                 || link.startsWith("email")) {
             // link is not relative
-            debug("link " + link + " is not relative - skipping.");
+            logger.fine("link " + link + " is not relative - skipping.");
 
             return null;
         }
 
         if (link.indexOf("../") != -1) {
-            debug("cannot handle relative links with ../ - " + link);
+            logger.fine("cannot handle relative links with ../ - " + link);
 
             return null;
         }
@@ -137,7 +138,7 @@ public class LinkUtils {
         String absoluteUrl = path + link;
         String relativeUrl = absoluteUrl.substring(rootUrl.length());
 
-        info("relativeUrl " + relativeUrl);
+        logger.info("relativeUrl " + relativeUrl);
 
         return relativeUrl;
     }
