@@ -58,12 +58,6 @@ public class Wget implements Progressive<Void> {
     private LinkUtils linkUtil = new LinkUtils();
 
     /**
-     * Creates a new Wget object.
-     */
-    public Wget() {
-    }
-
-    /**
      * Wget processes the project by downloading the javadoc tree and  saving
      * it into the javadoc directory of the basedir
      *

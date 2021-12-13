@@ -21,11 +21,15 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
+import java.util.logging.Logger;
 
 /**
  * A reflection-like representation of java.lang.Class.
  */
 public class Type extends Modifiable implements Commentable {
+
+    private static final Logger logger = Logger.getLogger(Type.class.getName());
+
     private String superType = null;
     private List<String> implementsList = new ArrayList<>();
     private List<Method> methodList = new ArrayList<>();
@@ -37,12 +41,6 @@ public class Type extends Modifiable implements Commentable {
     private String typeName;
     private String typeParameters; // generics
     private Package pckg;
-
-    /**
-     * Creates a new Type object.
-     */
-    public Type() {
-    }
 
     /**
      * Get the fully qualified type name - a.b.c.d.E for an interface or class
@@ -75,17 +73,17 @@ public class Type extends Modifiable implements Commentable {
         if ( getEnclosingType() != null ) {
             // inner classes - their short name is after the $ of the enclosing type
             // name a.b.c.E$F is a.b.c.E and F
-            int idx = getTypeName().indexOf(getEnclosingType());
+            int idx = typeName.indexOf(getEnclosingType());
             if ( idx != -1 ) {
-                return getTypeName().substring(idx + getEnclosingType().length() + 1);
+                return typeName.substring(idx + getEnclosingType().length() + 1);
             }
         } else {
-            if (getTypeName() != null) {
-                if (getTypeName().lastIndexOf(".") != -1) {
-                    return getTypeName().substring(getTypeName().lastIndexOf(".")
-                        + 1, getTypeName().length());
+            if (typeName != null) {
+                if (typeName.lastIndexOf(".") != -1) {
+                    return typeName.substring(typeName.lastIndexOf(".")
+                        + 1, typeName.length());
                 } else {
-                    return getTypeName();
+                    return typeName;
                 }
             }
         }
@@ -99,8 +97,8 @@ public class Type extends Modifiable implements Commentable {
      * @return the package name of the type, "" if in default package
      */
     public String getPackageName() {
-        if ((getTypeName() != null) && (getTypeName().indexOf(".") != -1)) {
-            return getTypeName().substring(0, getTypeName().lastIndexOf("."));
+        if ((typeName != null) && (typeName.indexOf(".") != -1)) {
+            return typeName.substring(0, typeName.lastIndexOf("."));
         }
 
         return "";
@@ -137,9 +135,9 @@ public class Type extends Modifiable implements Commentable {
      * @return the enclosing typename - a.b.D$E returns a.b.D
      */
     public String getEnclosingType() {
-        if (getTypeName().indexOf("$") != -1) {
+        if (typeName.indexOf("$") != -1) {
             // it is an inner class
-            return getTypeName().substring(0, getTypeName().lastIndexOf("$"));
+            return typeName.substring(0, typeName.lastIndexOf("$"));
         }
         return null;
     }
@@ -302,7 +300,7 @@ public class Type extends Modifiable implements Commentable {
      * @throws IllegalArgumentException the type already defined
      */
     public void addInnerType(Type type) {
-        if (getType(type.getTypeName()).isPresent()) {
+        if (getType(type.typeName).isPresent()) {
             throw new IllegalArgumentException("already defined");
         } else {
             innerTypeList.add(type);
@@ -327,9 +325,7 @@ public class Type extends Modifiable implements Commentable {
      * @return DOCUMENT ME!
      */
     public Field lookupFieldByName(String name) {
-        for (int i = 0;
-                (getFieldList() != null) && (i < getFieldList().size()); i++) {
-            Field f = getFieldList().get(i);
+        for (Field f : fieldList) {
 
             if (name.equals(f.getName())) {
                 return f;
@@ -347,9 +343,7 @@ public class Type extends Modifiable implements Commentable {
      * @return DOCUMENT ME!
      */
     public EnumConst lookupEnumConstByName(String name) {
-        for (int i = 0;
-                (getEnumConstList() != null) && (i < getEnumConstList().size()); i++) {
-            EnumConst ec = getEnumConstList().get(i);
+        for (EnumConst ec : enumConstList) {
 
             if (name.equals(ec.getName())) {
                 return ec;
@@ -367,29 +361,9 @@ public class Type extends Modifiable implements Commentable {
      * @return a method if found, otherwise null.
      */
     public Method lookupConstructor(List<Parameter> params) {
-        for (int i = 0;
-                (getConstructorList() != null)
-                && (i < getConstructorList().size()); i++) {
-            Method m = getConstructorList().get(i);
+        for (Method m : constructorList) {
 
-            if (m.getParameterList().size() != params.size()) {
-                continue;
-            }
-
-            boolean matchedAll = true;
-
-            for (int j = 0; j < params.size(); j++) {
-                Parameter p1 = m.getParameterList().get(j);
-                Parameter p2 = params.get(j);
-
-                if (!p1.getType().equals(p2.getType())) {
-                    matchedAll = false;
-
-                    break;
-                }
-            }
-
-            if (matchedAll) {
+            if (m.matchesParams(params)) {
                 return m;
             }
         }
@@ -406,30 +380,12 @@ public class Type extends Modifiable implements Commentable {
      * @return a method if found, otherwise null.
      */
     public Method lookupMethodByName(String name, List<Parameter> params) {
-        for (int i = 0;
-                (getMethodList() != null) && (i < getMethodList().size());
-                i++) {
-            Method m = getMethodList().get(i);
+logger.finer(methodList.toString());
+        for (Method m : methodList) {
 
             if (name.equals(m.getName())) {
-                if (m.getParameterList().size() != params.size()) {
-                    continue;
-                }
 
-                boolean matchedAll = true;
-
-                for (int j = 0; j < params.size(); j++) {
-                    Parameter p1 = m.getParameterList().get(j);
-                    Parameter p2 = params.get(j);
-
-                    if (!p1.getType().equals(p2.getType())) {
-                        matchedAll = false;
-
-                        break;
-                    }
-                }
-
-                if (matchedAll) {
+                if (m.matchesParams(params)) {
                     return m;
                 }
             }

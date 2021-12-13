@@ -35,12 +35,6 @@ public class Search implements Progressive<Void> {
     private SearchContext searchResult;
 
     /**
-     * Creates a new Search object.
-     */
-    public Search() {
-    }
-
-    /**
      * DOCUMENT ME!
      *
      * @throws ProcessException DOCUMENT ME!
@@ -78,5 +72,4 @@ public class Search implements Progressive<Void> {
     public SearchContext getSearchResult() {
         return searchResult;
     }
-
 }

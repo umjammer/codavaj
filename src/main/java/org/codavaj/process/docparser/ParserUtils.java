@@ -21,7 +21,6 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -35,7 +34,6 @@ import java.util.ResourceBundle;
 import java.util.StringTokenizer;
 import java.util.function.Consumer;
 import java.util.function.Function;
-import org.xml.sax.SAXException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -54,6 +52,7 @@ import org.dom4j.io.OutputFormat;
 import org.dom4j.io.XMLWriter;
 import org.dom4j.tree.DefaultText;
 import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
 
 import static com.rainerhahnekamp.sneakythrow.Sneaky.sneaked;
 
@@ -1947,18 +1946,16 @@ logger.finer("lang: " + rb.getLocale().getLanguage());
     /** check an url (including local path) is exist or not */
     private static boolean exists(String url) {
         URI uri = null;
-        if (!url.startsWith("http")) {
+        if (!url.startsWith("http:")) {
             return Files.exists(Paths.get(url));
         } else {
             try {
-                uri = new URI(url);
+                uri = URI.create(url);
                 InputStream is = uri.toURL().openStream();
                 is.close();
                 return true;
             } catch (IOException e) {
                 return false;
-            } catch (URISyntaxException e) {
-                throw new IllegalStateException(e);
             }
         }
     }
@@ -1969,13 +1966,10 @@ logger.finer("lang: " + rb.getLocale().getLanguage());
      */
     private static InputSource getInputSource(String url) throws IOException {
         URI uri = null;
-        if (!url.startsWith("http")) {
+        if (!url.startsWith("http:")) {
             uri = Paths.get(url).toUri();
         } else {
-            try {
-                uri = new URI(url);
-            } catch (URISyntaxException e) {
-                throw new IllegalArgumentException(e);
+            uri = URI.create(url);
         }
         InputSource is = new InputSource(uri.toURL().openStream());
         String encoding = System.getProperty("codavaj.file.encoding", System.getProperty("file.encoding"));
@@ -2043,8 +2037,8 @@ logger.info("lang =6: " + rb.getLocale().getLanguage());
      * processes type parsing.
      *
      * @param type
-     * @throws IllegalStateException SAXException
-     * @throws IOException
+     * @throws ParseException something wrong, see {@link Exception#getCause()}
+     * @throws IllegalStateException when a SAXException occurs
      */
     public void processType(Type type) throws IOException {
         Document typeXml = null;
@@ -2088,6 +2082,7 @@ logger.info("lang =6: " + rb.getLocale().getLanguage());
         } catch (SAXException e) {
             throw new IllegalStateException(e);
         } catch (Exception e) {
+e.printStackTrace();
             throw new ParseException(typeXml.asXML(), e);
         }
     }
@@ -2095,10 +2090,9 @@ logger.info("lang =6: " + rb.getLocale().getLanguage());
     /**
      * processes constants parsing.
      *
-     * @param maps
-     * @param lenient
-     * @throws IllegalStateException SAXException
-     * @throws IOException
+     * @param maps constants
+     * @param lenient whether to warn when type not found
+     * @throws IllegalStateException when a SAXException occurs
      */
     public void processConstant(Map<String, Type> maps, boolean lenient) throws IOException {
         try {
@@ -2161,12 +2155,7 @@ logger.info("lang =6: " + rb.getLocale().getLanguage());
     /**
      * DOCUMENT ME!
      *
-     * @param html DOCUMENT ME!
-     *
-     * @return DOCUMENT ME!
-     *
-     * @throws SAXException DOCUMENT ME!
-     * @throws IOException DOCUMENT ME!
+     * @return dom
      */
     private Document loadHtmlAsDom(InputSource html) throws SAXException, IOException {
         org.cyberneko.html.parsers.DOMParser parser = new org.cyberneko.html.parsers.DOMParser();
@@ -2201,7 +2190,7 @@ logger.info("lang =6: " + rb.getLocale().getLanguage());
         return result;
     }
 
-    /** add dd */
+    /** lists elements to be removed */
     protected ElementRemover getRemover() {
         ElementRemover remover = new ElementRemover();
 
@@ -2240,7 +2229,7 @@ logger.info("lang =6: " + rb.getLocale().getLanguage());
     /**
      * Pretty print the XML to a String
      *
-     * @param doc DOCUMENT ME!
+     * @param doc source xml
      * @return formatted xml string
      */
     protected String prettyPrint(Document doc) {
@@ -2263,6 +2252,7 @@ logger.info("lang =6: " + rb.getLocale().getLanguage());
 
     /**
      * @see "https://stackoverflow.com/questions/6701948/efficient-way-to-compare-version-strings-in-java"
+     * TODO vavi-commons
      */
     protected static class VersionComparator implements Comparator<String> {
         /**

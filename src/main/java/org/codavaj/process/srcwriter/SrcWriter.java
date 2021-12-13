@@ -45,12 +45,6 @@ public class SrcWriter implements Progressive<Void> {
     private TypeFactory typeFactory = null;
 
     /**
-     * Creates a new SrcWriter object.
-     */
-    public SrcWriter() {
-    }
-
-    /**
      * Write all parsed javadoc files back as java source files.
      *
      * @throws ProcessException DOCUMENT ME!
