@@ -125,9 +125,9 @@ logger.log(Level.WARNING, "ignore 5: " + node.asXML());
 
     /* constants (1st entry) */
     @Override
-    protected void determineConstants(Document allconstants, Map<String, Type> types, boolean lenient) {
+    protected void determineConstants(Document allConstants, Map<String, Type> types, boolean lenient) {
         String xpath = "//TABLE/TR[position() != 1]";
-        determineConstants(xpath, allconstants, types, lenient);
+        determineConstants(xpath, allConstants, types, lenient);
     }
 
     /** details */
@@ -270,16 +270,16 @@ logger.log(Level.WARNING, "ignore 5: " + node.asXML());
                             n.getNodeType() == Node.ENTITY_REFERENCE_NODE)
                     .collect(Collectors.toList());
 
-            String combinedText = "";
+            StringBuilder combinedText = new StringBuilder();
             for (Node n : nodes) {
                 if ("DIV".equals(n.getName())) {
                     break;
                 }
-                combinedText += convertNodesToString(n);
+                combinedText.append(convertNodesToString(n));
             }
-            combinedText = combinedText.trim().replaceFirst("^.+\\s*" + keyword + "\\s+([\\w_\\$\\.\\<\\>]+)\\s*.*$", "$1");
-            if (!combinedText.isEmpty()) {
-                String typeName = fqnm.toFullyQualifiedName(t, combinedText);
+            String text = combinedText.toString().trim().replaceFirst("^.+\\s*" + keyword + "\\s+([\\w_\\$\\.\\<\\>]+)\\s*.*$", "$1");
+            if (text.length() > 0) {
+                String typeName = fqnm.toFullyQualifiedName(t, text);
                 t.setSuperType(typeName);
             }
         } else {
@@ -313,8 +313,8 @@ logger.log(Level.WARNING, "ignore 5: " + node.asXML());
 
         List<?> implementsTypeAs = typeXml.selectNodes("//LI/text()[contains(.,'" + extension + "')]/following-sibling::A");
         if (implementsTypeAs != null && implementsTypeAs.size() > 0) {
-            for (int i = 0; i < implementsTypeAs.size(); i++) {
-                Node node = (Node) implementsTypeAs.get(i);
+            for (Object implementsTypeA : implementsTypeAs) {
+                Node node = (Node) implementsTypeA;
 
                 String combinedText = convertNodesToString(node);
                 if (combinedText != null) {
@@ -376,7 +376,7 @@ logger.log(Level.WARNING, "ignore 5: " + node.asXML());
     }
 
     @Override
-    protected boolean isSuitableVersion(String version) {
+    public boolean isSuitableVersion(String version) {
         return versionComparator.compare(version, "1.8.0") >= 0 && versionComparator.compare(version, "11.0.0") < 0;
     }
 }

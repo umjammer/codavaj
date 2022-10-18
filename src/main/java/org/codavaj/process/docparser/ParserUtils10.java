@@ -81,7 +81,7 @@ public class ParserUtils10 extends ParserUtils8 { // i don't have v10 javadoc, s
     }
 
     @Override
-    protected boolean isSuitableVersion(String version) {
+    public boolean isSuitableVersion(String version) {
         return versionComparator.compare(version, "10.0.0") >= 0 && versionComparator.compare(version, "11.0.0") < 0;
     }
 }

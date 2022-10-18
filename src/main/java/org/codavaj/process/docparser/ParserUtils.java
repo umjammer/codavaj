@@ -30,7 +30,9 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.NoSuchElementException;
 import java.util.ResourceBundle;
+import java.util.ServiceLoader;
 import java.util.StringTokenizer;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -53,21 +55,16 @@ import org.dom4j.io.XMLWriter;
 import org.dom4j.tree.DefaultText;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
+import vavix.io.Streams;
 
 import static com.rainerhahnekamp.sneakythrow.Sneaky.sneaked;
 
 /**
  * for version ~ 1.6.x
  */
-public class ParserUtils {
+public class ParserUtils implements Parser {
 
     private static final Logger logger = Logger.getLogger(ParserUtils.class.getName());
-
-    /**
-     * Creates a new ParserUtils object.
-     */
-    protected ParserUtils() {
-    }
 
     /**
      * Return the classname from a filename.
@@ -1857,24 +1854,14 @@ logger.finer("lang: " + rb.getLocale().getLanguage());
     protected static VersionComparator versionComparator = new VersionComparator();
 
     /** */
-    protected boolean isSuitableVersion(String version) {
+    public boolean isSuitableVersion(String version) {
         return versionComparator.compare(version, "1.8.0") < 0;
     }
 
     /** the class name index file name */
-    protected String getFirstIndexFileName() {
+    public String getFirstIndexFileName() {
         return "allclasses-frame.html";
     }
-
-    /** */
-    private static ParserUtils[] parseUtils = new ParserUtils[] {
-        new ParserUtils13(),
-        new ParserUtils12(),
-        new ParserUtils11(),
-        new ParserUtils10(),
-        new ParserUtils8(),
-        new ParserUtils(),
-    };
 
     /** */
     private static String fileSeparator(String dir) {
@@ -1887,11 +1874,25 @@ logger.finer("lang: " + rb.getLocale().getLanguage());
 
     /** gets a class name index file name */
     private static String getFirstIndexFilePath(final String dir) {
-        return Arrays.asList(parseUtils).stream().map(pu -> {
-            return dir + fileSeparator(dir) + pu.getFirstIndexFileName();
-        }).filter(pn -> {
-            return exists(pn);
-        }).findFirst().get();
+        ServiceLoader<Parser> loader = ServiceLoader.load(Parser.class);
+        for (Parser parser : loader) {
+            String file = dir + fileSeparator(dir) + parser.getFirstIndexFileName();
+            if (exists(file)) {
+                return file;
+            }
+        }
+        throw new NoSuchElementException(dir);
+    }
+
+    /** factory */
+    private static Parser getParser(final String version) {
+        ServiceLoader<Parser> loader = ServiceLoader.load(Parser.class);
+        for (Parser parser : loader) {
+            if (parser.isSuitableVersion(version)) {
+                return parser;
+            }
+        }
+        throw new NoSuchElementException(version);
     }
 
     /** from the index file, TODO TypeFactory */

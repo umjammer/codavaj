@@ -87,12 +87,12 @@ public class ParserUtils11 extends ParserUtils8 {
     }
 
     @Override
-    protected boolean isSuitableVersion(String version) {
+    public boolean isSuitableVersion(String version) {
         return versionComparator.compare(version, "11.0.0") >= 0 && versionComparator.compare(version, "12.0.0") < 0;
     }
 
     @Override
-    protected String getFirstIndexFileName() {
+    public String getFirstIndexFileName() {
         return "allclasses-index.html";
     }
 }
