@@ -449,7 +449,7 @@ logger.finer("ignore 1.0: " + before.getText() + node.asXML());
             if (!parseOn && (node.getNodeType() == Node.ELEMENT_NODE)
                     && "H2".equals(node.getName())) {
                 // H2 starts the parsing off
-                while (i < allNodes.size()) {
+                while (i < allNodes.size() - 1) {
                     i++;
                     node = allNodes.get(i);
 
@@ -573,7 +573,7 @@ logger.finer("ignore 1.0: " + before.getText() + node.asXML());
 
         if ("java.lang.String".equals(typeName)) {
             if ((constantvalue.charAt(0) != '"')
-                    && (constantvalue.charAt(constantvalue.length()) != '"')) {
+                    && (constantvalue.charAt(constantvalue.length() - 1) != '"')) {
                 logger.log(Level.WARNING, 
                     "expect constant string value to start and end with quotes "
                     + typeName + " value " + constantvalue);
