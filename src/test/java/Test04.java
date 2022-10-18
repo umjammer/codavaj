@@ -114,10 +114,10 @@ System.err.println("RC: " + "CLASS: " + n.getName());
                 @Override
                 public boolean visit(FieldDeclaration n) {
                     for (Object o : n.fragments()) {
-                        VariableDeclarationFragment v = VariableDeclarationFragment.class.cast(o);
+                        VariableDeclarationFragment v = (VariableDeclarationFragment) o;
 
-                        if (TypeDeclaration.class.isInstance(n.getParent())) {
-                            type.getType(TypeDeclaration.class.cast(n.getParent()).getName().getIdentifier()).ifPresent(t -> {
+                        if (n.getParent() instanceof TypeDeclaration) {
+                            type.getType(((TypeDeclaration) n.getParent()).getName().getIdentifier()).ifPresent(t -> {
                                 t.getField(v.getName().toString()).ifPresent(f -> {
                                     f.getCommentAsString().ifPresent(s -> {
 //                                    System.out.println("--");
@@ -147,8 +147,8 @@ System.err.println("IG: " + "FIELD: " + v.getName());
 //                        System.out.println(v);
 //                    });
 
-                    if (TypeDeclaration.class.isInstance(n.getParent())) {
-                        type.getType(TypeDeclaration.class.cast(n.getParent()).getName().getIdentifier()).ifPresent(t -> {
+                    if (n.getParent() instanceof TypeDeclaration) {
+                        type.getType(((TypeDeclaration) n.getParent()).getName().getIdentifier()).ifPresent(t -> {
 
                             t.getMethod(getSignatureString(n)).ifPresent(m -> {
                                 m.getCommentAsString().ifPresent(s -> {

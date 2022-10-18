@@ -3,15 +3,9 @@
 
   <groupId>org.codavaj</groupId>
   <artifactId>codavaj</artifactId>
-  <version>1.4.4</version>
+  <version>1.4.5-SNAPSHOT</version>
 
-  <description>1.4.4
-
-    eliminate wget
-        deal url directly
-
-    refactor ParseUtils for v6
-
+  <description>
 TODO
 
     use vavi-util-screenscraping?
@@ -52,6 +46,7 @@ TODO
           <plugin>
             <groupId>org.codehaus.mojo</groupId>
             <artifactId>exec-maven-plugin</artifactId>
+            <version>3.0.0</version>
             <executions>
               <execution>
                 <id>retrieve-config</id>
@@ -70,6 +65,7 @@ TODO
           <plugin>
             <groupId>org.codehaus.mojo</groupId>
             <artifactId>properties-maven-plugin</artifactId>
+            <version>1.0.0</version>
             <executions>
               <execution>
                 <id>read-properties</id>
@@ -103,12 +99,31 @@ TODO
   <build>
     <plugins>
       <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-compiler-plugin</artifactId>
-        <version>3.8.0</version>
+        <version>3.10.1</version>
         <configuration>
           <source>1.8</source>
           <target>1.8</target>
+          <encoding>utf-8</encoding>
         </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>native2ascii-maven-plugin</artifactId>
+        <version>2.0.1</version>
+        <executions>
+          <execution>
+            <goals>
+              <goal>resources</goal>
+            </goals>
+            <configuration>
+              <includes>
+                <include>**/*_ja.properties</include>
+              </includes>
+            </configuration>
+          </execution>
+        </executions>
       </plugin>
       <plugin>
         <!-- for test purpose only -->
@@ -126,21 +141,10 @@ TODO
         </configuration>
       </plugin>
       <plugin>
-        <groupId>org.codehaus.mojo</groupId>
-        <artifactId>native2ascii-maven-plugin</artifactId>
-        <version>2.0.1</version>
-        <executions>
-          <execution>
-            <goals>
-              <goal>resources</goal>
-            </goals>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-surefire-plugin</artifactId>
-        <version>3.0.0-M5</version>
+        <version>3.0.0-M7</version>
             <configuration>
-              <includes>
-                <include>**/*_ja.properties</include>
-              </includes>
           <forkMode>once</forkMode>
           <argLine>
             -Xms2048m -Xmx4096m
@@ -148,8 +152,6 @@ TODO
           </argLine>
           <trimStackTrace>false</trimStackTrace>
             </configuration>
-          </execution>
-        </executions>
       </plugin>
     </plugins>
   </build>
@@ -166,7 +168,7 @@ TODO
       <dependency>
         <groupId>org.junit</groupId>
         <artifactId>junit-bom</artifactId>
-        <version>5.8.1</version>
+        <version>5.8.2</version>
         <type>pom</type>
         <scope>import</scope>
       </dependency>
@@ -197,12 +199,12 @@ TODO
     <dependency>
       <groupId>net.sourceforge.nekohtml</groupId>
       <artifactId>nekohtml</artifactId>
-      <version>1.9.16</version>
+      <version>1.9.16</version> <!-- TODO 1.9.22 causes error for v6 perser-->
     </dependency>
     <dependency>
       <groupId>org.apache.ant</groupId>
       <artifactId>ant</artifactId>
-      <version>1.10.11</version>
+      <version>1.10.12</version>
     </dependency>
     <dependency>
       <groupId>com.github.jaxen-xpath</groupId>
@@ -217,7 +219,7 @@ TODO
     <dependency>
       <groupId>com.github.umjammer</groupId>
       <artifactId>vavi-commons</artifactId>
-      <version>1.0.7</version>
+      <version>1.1.6</version>
     </dependency>
 
     <dependency>
@@ -239,14 +241,14 @@ TODO
     <dependency>
       <groupId>com.github.javaparser</groupId>
       <artifactId>javaparser-symbol-solver-core</artifactId>
-      <version>3.14.3</version>
+      <version>3.24.4</version>
       <scope>test</scope>
     </dependency>
 
     <dependency>
       <groupId>com.netflix.devinsight.rewrite</groupId>
       <artifactId>rewrite-core</artifactId>
-      <version>1.2.0</version>
+      <version>1.4.0</version>
       <scope>test</scope>
       <exclusions>
         <exclusion>
@@ -258,21 +260,21 @@ TODO
     <dependency>
       <groupId>org.slf4j</groupId>
       <artifactId>slf4j-jdk14</artifactId>
-      <version>1.7.32</version>
+      <version>1.7.36</version>
       <scope>test</scope>
     </dependency>
 
     <dependency>
       <groupId>org.eclipse.jdt</groupId>
       <artifactId>org.eclipse.jdt.core</artifactId>
-      <version>3.17.0</version>
+      <version>3.29.0</version>
       <scope>test</scope>
     </dependency>
 
     <dependency>
       <groupId>fr.inria.gforge.spoon</groupId>
       <artifactId>spoon-core</artifactId>
-      <version>7.5.0-beta-21</version>
+      <version>10.1.1</version>
       <scope>test</scope>
     </dependency>
   </dependencies>
