@@ -1,4 +1,6 @@
-[![](https://jitpack.io/v/umjammer/codavaj.svg)](https://jitpack.io/#umjammer/codavaj) [![Actions Status](https://github.com/umjammer/codavaj/workflows/Java%20CI/badge.svg)](https://github.com/umjammer/codavaj/actions)
+[![](https://jitpack.io/v/umjammer/codavaj.svg)](https://jitpack.io/#umjammer/codavaj)
+[![Actions Status](https://github.com/umjammer/codavaj/workflows/Java%20CI/badge.svg)](https://github.com/umjammer/codavaj/actions)
+![Java](https://img.shields.io/badge/Java-8-b07219)
 
 # CODAVAJ - ( javadoc in reverse ) README
 
