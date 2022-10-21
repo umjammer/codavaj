@@ -61,9 +61,9 @@ TODO
     </profile>
 
     <profile>
-      <id>use jdk11 above</id>
+      <id>use jdk17 above</id>
       <activation>
-        <jdk>(1.4, 10]</jdk>
+        <jdk>(1.4, 16]</jdk>
       </activation>
       <build>
         <plugins>
@@ -78,7 +78,7 @@ TODO
                 <configuration>
                   <target>
                     <echo message="🚫🚫🚫🚫🚫🚫🚫🚫🚫🚫🚫🚫🚫🚫🚫🚫🚫🚫🚫🚫🚫🚫🚫🚫🚫🚫" />
-                    <echo message="use jdk11 above !!!!" />
+                    <echo message="use jdk17 above !!!!" />
                     <echo message="🚫🚫🚫🚫🚫🚫🚫🚫🚫🚫🚫🚫🚫🚫🚫🚫🚫🚫🚫🚫🚫🚫🚫🚫🚫🚫" />
                     <fail />
                   </target>
@@ -168,9 +168,8 @@ TODO
         <artifactId>maven-compiler-plugin</artifactId>
         <version>3.10.1</version>
         <configuration>
-          <source>1.8</source>
-          <target>1.8</target>
-          <encoding>utf-8</encoding>
+          <source>17</source>
+          <target>17</target>
         </configuration>
       </plugin>
       <plugin>
@@ -242,6 +241,11 @@ TODO
 
   <dependencies>
     <dependency>
+      <groupId>xerces</groupId>
+      <artifactId>xercesImpl</artifactId>
+      <version>2.12.2</version>
+    </dependency>
+    <dependency>
       <groupId>org.httpunit</groupId>
       <artifactId>httpunit</artifactId>
       <version>1.7.3</version>
@@ -249,6 +253,10 @@ TODO
         <exclusion>
           <groupId>nekohtml</groupId>
           <artifactId>nekohtml</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>xerces</groupId>
+          <artifactId>xmlParserAPIs</artifactId>
         </exclusion>
         <exclusion>
           <groupId>xerces</groupId>
@@ -265,6 +273,12 @@ TODO
       <groupId>net.sourceforge.nekohtml</groupId>
       <artifactId>nekohtml</artifactId>
       <version>1.9.16</version> <!-- TODO 1.9.22 causes error for v6 perser-->
+      <exclusions>
+        <exclusion>
+          <groupId>xerces</groupId>
+          <artifactId>xercesImpl</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
     <dependency>
       <groupId>org.apache.ant</groupId>
@@ -325,7 +339,7 @@ TODO
     <dependency>
       <groupId>org.slf4j</groupId>
       <artifactId>slf4j-jdk14</artifactId>
-      <version>1.7.36</version>
+      <version>2.0.3</version>
       <scope>test</scope>
     </dependency>
 
@@ -343,5 +357,4 @@ TODO
       <scope>test</scope>
     </dependency>
   </dependencies>
-
 </project>

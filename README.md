@@ -42,65 +42,18 @@ codavaj.cmd codavaj http://jumpi.sourceforge.net/javadoc/j2se tmp/jumpi/src
 | [JDT](https://www.eclipse.org/jdt/) | ✅ | 🚫 | [📄](https://github.com/umjammer/codavaj/blob/master/src/test/java/Test04.java) |
 | [spoon](https://github.com/INRIA/spoon) | ✅ | 🚫 | [📄](https://github.com/umjammer/codavaj/blob/master/src/test/java/Test05.java) |
 
-## Download (obsoleted, use convert)
-
-to download an entire javadoc tree for further processing use:
-
-```
-codavaj.cmd wget <URL> <destination-dir>
-```
-
-i.e.
-
-```
-codavaj.cmd wget http://jumpi.sourceforge.net/javadoc/j2se tmp/jumpi/javadoc
-```
-
-## change history
-
-version 1.4.x
-
- * update v6 parsing and rendering
- * enable to parse javadoc on www directly
-
-version 1.4.0
-
- * java8 support
- * java11 support
- * java12 support
- * java13 support
- * i18n support
- * add unit test
-
-version 1.3.0
-
- * java1.5 support for Enums and Generics
- * java1.6 support for Annotations
-
-version 1.2.0
-
- * java1.5 support (except enum and generics)
-
-version 1.1.0
-
- * resolve type names to externally linked javadocs. Links to Sun's
-   reference apis are resolved automatically 
-   ( i.e. http://java.sun.com/j2se/X/docs/api/ ). 
-   Any other links will need to be given as extra parameters for the 
-   codavaj command.
- * significant extentions to the reflection-like API to represent Packages
-   and link Types to their respective Packages and back, and also represent
-   package heirarchy.
- * fix wrong determination of a class as Interface if "Interface" part of
-   classname.
-
-initial version 1.0.0
-
 ## known issues
 
-codavaj does not introduce default constructor's if they weren't found
+* codavaj does not introduce default constructor's if they weren't found
 in the javadoc. This leads to compile problems if there are subclasses
 which use the class's default constructor through the implicit super(). 
+
+* hekohtml ~1.19.22
+   * https://mvnrepository.com/artifact/net.sourceforge.nekohtml/nekohtml/1.9.22
+      * https://mvnrepository.com/artifact/xerces/xercesImpl/2.11.0
+   * but 1.19.22 doesn't work with this project currently
+   * so i excluded xerces from dependencies, and add xerces 2.12.2 individually. idk how codeql detect those.
+   * https://sourceforge.net/p/nekohtml/bugs/167/#fdcc
 
 ## TODO
 
@@ -108,3 +61,5 @@ which use the class's default constructor through the implicit super().
  * javadoc html5
  * ~~javadoc 11~~
  * ~~en test case~~
+ * https://github.com/HtmlUnit/htmlunit-neko
+   * https://github.com/HtmlUnit/htmlunit-neko/security/advisories/GHSA-6jmm-mp6w-4rrg
