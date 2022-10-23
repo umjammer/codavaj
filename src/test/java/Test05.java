@@ -10,15 +10,13 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.google.common.collect.Streams;
+import kotlin.Pair;
 import org.codavaj.process.docparser.DocParser;
 import org.codavaj.type.Type;
 import org.codavaj.type.TypeFactory;
-
-import com.google.common.collect.Streams;
-
 import spoon.Launcher;
 import spoon.SpoonAPI;
-import spoon.javadoc.internal.Pair;
 import spoon.processing.AbstractProcessor;
 import spoon.reflect.declaration.CtConstructor;
 import spoon.reflect.declaration.CtMethod;
@@ -78,17 +76,16 @@ System.err.println("SK: " + sourcePath);
             api.addProcessor(new AbstractProcessor<CtMethod<?>>() {
                 @Override
                 public void process(CtMethod<?> element) {
-                    if (CtClassImpl.class.isInstance(element.getParent())) {
-                        type.getType(CtClassImpl.class.cast(element.getParent()).getSimpleName()).ifPresent(t -> {
+                    if (element.getParent() instanceof CtClassImpl) {
+                        type.getType(((CtClassImpl<?>) element.getParent()).getSimpleName()).ifPresent(t -> {
 System.err.println("CM: METHOD: " + getSignatureString(element));
                             t.getMethod(getSignatureString(element)).ifPresent(m -> {
-                                Streams.zip(m.getParameterList().stream(), element.getParameters().stream(),
-                                    (a, b) -> new Pair<>(a, b)
-                                ).filter(p -> {
-                                    return !p.a.getName().equals(p.b.getSimpleName());
+                                Streams.zip(m.getParameterList().stream(), element.getParameters().stream(), Pair::new)
+                                .filter(p -> {
+                                    return !p.getFirst().getName().equals(p.getSecond().getSimpleName());
                                 }).forEach(p -> {
-System.err.println("RN: " + "PARAM: " + p.b.getSimpleName() + " -> " + p.a.getName() + " \t\t/ " + getSignatureString(element));
-                                    p.b.setSimpleName(p.a.getName()); // TODO this is not refactoring
+System.err.println("RN: " + "PARAM: " + p.getSecond().getSimpleName() + " -> " + p.getFirst().getName() + " \t\t/ " + getSignatureString(element));
+                                    p.getSecond().setSimpleName(p.getFirst().getName()); // TODO this is not refactoring
                                 });
                             });
                         });
@@ -111,17 +108,14 @@ System.err.println("RN: " + "PARAM: " + p.b.getSimpleName() + " -> " + p.a.getNa
             api.addProcessor(new AbstractProcessor<CtConstructor<?>>() {
                 @Override
                 public void process(CtConstructor<?> element) {
-                    if (CtClassImpl.class.isInstance(element.getParent())) {
-                        type.getType(CtClassImpl.class.cast(element.getParent()).getSimpleName()).ifPresent(t -> {
+                    if (element.getParent() instanceof CtClassImpl) {
+                        type.getType(((CtClassImpl<?>) element.getParent()).getSimpleName()).ifPresent(t -> {
 System.err.println("CM: CONSTRUCTOR: " + getSignatureString(element));
                             t.getMethod(getSignatureString(element)).ifPresent(m -> {
-                                Streams.zip(m.getParameterList().stream(), element.getParameters().stream(),
-                                    (a, b) -> new Pair<>(a, b)
-                                ).filter(p -> {
-                                    return !p.a.getName().equals(p.b.getSimpleName());
-                                }).forEach(p -> {
-System.err.println("RN: " + "PARAM: " + p.b.getSimpleName() + " -> " + p.a.getName() + " \t\t/ " + getSignatureString(element));
-                                    p.b.setSimpleName(p.a.getName()); // TODO this is not refactoring
+                                Streams.zip(m.getParameterList().stream(), element.getParameters().stream(), Pair::new)
+                                .filter(p -> !p.getFirst().getName().equals(p.getSecond().getSimpleName())).forEach(p -> {
+System.err.println("RN: " + "PARAM: " + p.getSecond().getSimpleName() + " -> " + p.getFirst().getName() + " \t\t/ " + getSignatureString(element));
+                                    p.getSecond().setSimpleName(p.getFirst().getName()); // TODO this is not refactoring
                                 });
                             });
                         });
@@ -130,7 +124,7 @@ System.err.println("RN: " + "PARAM: " + p.b.getSimpleName() + " -> " + p.a.getNa
 
                 /** */
                 String getSignatureString(CtConstructor<?> n) {
-                    StringBuilder sb = new StringBuilder(CtClassImpl.class.cast(n.getParent()).getSimpleName());
+                    StringBuilder sb = new StringBuilder(((CtClassImpl<?>) n.getParent()).getSimpleName());
                     sb.append("(");
                     n.getParameters().forEach(p -> {
                         sb.append(Type.getSignatureString(tf.getFullyQualifiedName(p.getType().toString())));

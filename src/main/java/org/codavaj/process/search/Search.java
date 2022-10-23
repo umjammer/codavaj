@@ -16,26 +16,23 @@
 
 package org.codavaj.process.search;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 import org.codavaj.ProcessException;
 import org.codavaj.process.Progressive;
 import org.codavaj.type.TypeFactory;
-
-import static org.codavaj.Logger.warning;
 
 /**
  * DOCUMENT ME!
  */
 public class Search implements Progressive<Void> {
 
+    private static final Logger logger = Logger.getLogger(Search.class.getName());
+
     private TypeFactory javadocTypeFactory;
     private TypeFactory jarTypeFactory;
     private SearchContext searchResult;
-
-    /**
-     * Creates a new Search object.
-     */
-    public Search() {
-    }
 
     /**
      * DOCUMENT ME!
@@ -51,7 +48,7 @@ public class Search implements Progressive<Void> {
             // the ctx holds the result!
             return null;
         } catch ( Exception e ) {
-            warning( "Search failed!", e );
+            logger.log(Level.WARNING,  "Search failed!", e);
             throw new ProcessException(e);
         }
     }
@@ -75,5 +72,4 @@ public class Search implements Progressive<Void> {
     public SearchContext getSearchResult() {
         return searchResult;
     }
-
 }

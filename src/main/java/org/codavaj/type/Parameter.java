@@ -37,13 +37,6 @@ public class Parameter extends Modifiable {
     }
 
     /**
-     * Creates a new Parameter object.
-     */
-    public Parameter() {
-        super();
-    }
-
-    /**
      * DOCUMENT ME!
      *
      * @return DOCUMENT ME!

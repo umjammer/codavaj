@@ -8,10 +8,10 @@ package org.codavaj.process.docparser;
 
 import java.util.HashMap;
 import java.util.Optional;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import org.codavaj.type.Type;
-
-import static org.codavaj.Logger.warning;
 
 /**
  * FullyQualifiedNameMap.
@@ -20,6 +20,8 @@ import static org.codavaj.Logger.warning;
  * @version 0.00 2019/06/07 umjammer initial version <br>
  */
 public class FullyQualifiedNameMap extends HashMap<String, String> {
+
+    private static final Logger logger = Logger.getLogger(FullyQualifiedNameMap.class.getName());
 
     /** { short name, fully qualified name } */
     public FullyQualifiedNameMap() {
@@ -93,7 +95,7 @@ public class FullyQualifiedNameMap extends HashMap<String, String> {
             if (found.isPresent()) {
                 return found.get();
             } else {
-                warning("not found: " + typeName);
+                logger.log(Level.WARNING, "not found: " + typeName);
                 return typeName;
             }
         }

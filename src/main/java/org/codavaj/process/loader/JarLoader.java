@@ -18,17 +18,20 @@ package org.codavaj.process.loader;
 
 import java.io.File;
 import java.util.jar.JarFile;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import org.codavaj.ProcessException;
 import org.codavaj.process.Progressive;
 import org.codavaj.type.TypeFactory;
 
-import static org.codavaj.Logger.warning;
-
 /**
  * Load the complete contents of a Jar file into a TypeFactory.
  */
 public class JarLoader implements Progressive<Void> {
+
+    private static final Logger logger = Logger.getLogger(JarLoader.class.getName());
+
     private String jarFileName;
     private TypeFactory typeFactory;
 
@@ -58,7 +61,7 @@ public class JarLoader implements Progressive<Void> {
 
             return null;
         } catch ( Exception e ) {
-            warning( "JarLoader failed!", e );
+            logger.log(Level.WARNING,  "JarLoader failed!", e );
             throw new ProcessException(e);
         }
     }

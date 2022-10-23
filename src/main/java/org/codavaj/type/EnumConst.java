@@ -28,7 +28,6 @@ public class EnumConst implements Commentable {
     private String name;
 
     EnumConst() {
-        super();
     }
 
     /**

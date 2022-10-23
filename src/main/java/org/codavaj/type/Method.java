@@ -184,4 +184,21 @@ public class Method extends Modifiable implements Commentable {
 //System.err.println("G: " + sb.toString());
         return sb.toString();
     }
+
+    public boolean matchesParams(List<Parameter> params) {
+        if (parameterList.size() != params.size()) {
+            return false;
+        }
+
+        for (int j = 0; j < params.size(); j++) {
+            Parameter p1 = parameterList.get(j);
+            Parameter p2 = params.get(j);
+
+            if (!p1.getType().equals(p2.getType())) {
+                return false; 
+            }
+        }
+
+        return true; 
+    }
 }

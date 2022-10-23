@@ -39,7 +39,7 @@ public class ParserUtils12 extends ParserUtils11 {
     }
 
     @Override
-    protected boolean isSuitableVersion(String version) {
+    public boolean isSuitableVersion(String version) {
         return versionComparator.compare(version, "12.0.0") >= 0 && versionComparator.compare(version, "13.0.0") < 0;
     }
 }

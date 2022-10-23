@@ -47,7 +47,7 @@ class Testcase {
             "vavi/test/codavaj/Test5.java",
         };
 
-        Main.main(new String[] { "codavaj", String.format("src/test/resources/javadoc/%s/apidocs", version), "tmp/test" });
+        Main.main(new String[] { "codavaj", String.format("src/test/resources/javadoc/%s/apidocs", version), "tmp/test/" + version });
 
         for (String name : names) {
             Checksum checksum1 = new CRC32();
@@ -57,7 +57,7 @@ class Testcase {
             byte[] bytes1 = Files.readAllBytes(path1);
             checksum1.update(bytes1, 0, bytes1.length);
 
-            Path path2 = Paths.get("tmp/test", name);
+            Path path2 = Paths.get("tmp/test", version, name);
             byte[] bytes2 = Files.readAllBytes(path2);
             checksum2.update(bytes2, 0, bytes2.length);
 
@@ -65,7 +65,8 @@ class Testcase {
 System.err.println(path1 + ", " + path2 + " (" + version + ")");
 System.err.println(checksum1.getValue() + ", " + checksum2.getValue());
 
-                ProcessBuilder pb = new ProcessBuilder().command("diff", "-ru", "-x", ".DS_Store", "src/test/resources/codavaj/" + expected, "tmp/test");
+                ProcessBuilder pb = new ProcessBuilder().command("diff", "-ru", "-x", ".DS_Store", "src/test/resources/codavaj/" + expected, "tmp/test/" + version);
+System.err.println(String.join(" ", pb.command()));
                 pb.inheritIO();
                 pb.start();
             }

@@ -26,7 +26,6 @@ public class Field extends Parameter implements Commentable {
     private List<String> comment = null;
 
     Field() {
-        super();
     }
 
     /**

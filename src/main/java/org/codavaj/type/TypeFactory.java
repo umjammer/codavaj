@@ -23,19 +23,20 @@ import java.util.Map;
 import java.util.TreeMap;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.zip.ZipEntry;
 
 import org.codavaj.process.docparser.FullyQualifiedNameMap;
 import org.codavaj.type.reflection.ReflectionUtils;
 import org.codavaj.type.reflection.SingleJarClassLoader;
 
-import static org.codavaj.Logger.info;
-import static org.codavaj.Logger.warning;
-
 /**
  * A container for Types.
  */
 public class TypeFactory {
+
+    private static final Logger logger = Logger.getLogger(TypeFactory.class.getName());
 
     private Map<String, Type> types = new TreeMap<>();
     private Map<String, Package> packages = new TreeMap<>();
@@ -75,7 +76,7 @@ public class TypeFactory {
         type.setPackage(pckg);
         pckg.addType(type);
 
-        linkPackage( pckg );
+        linkPackage(pckg);
         return pckg;
     }
 
@@ -170,10 +171,10 @@ public class TypeFactory {
                     try {
                         enclosingType.addInnerType(type);
                     } catch (IllegalArgumentException e) {
-                        info("type " + type.getShortName() + " was already defined in type " + enclosingType.getTypeName());
+                        logger.info("type " + type.getShortName() + " was already defined in type " + enclosingType.getTypeName());
                     }
                 } else {
-                    warning("enclosing type " + type.getEnclosingType() + " was not found in type " + type.getTypeName());
+                    logger.warning("enclosing type " + type.getEnclosingType() + " was not found in type " + type.getTypeName());
                 }
             }
 
@@ -216,10 +217,10 @@ public class TypeFactory {
                 Type clazz = ReflectionUtils.getType(c);
                 tf.addType(clazz);
 
-            } catch ( ClassNotFoundException e ) {
-                warning("TypeFactory class not found!",e);
-            } catch ( NoClassDefFoundError ncdfe ) {
-                warning("TypeFactory no class definition found!", ncdfe);
+            } catch (ClassNotFoundException e) {
+                logger.log(Level.WARNING, "TypeFactory class not found!", e);
+            } catch (NoClassDefFoundError ncdfe) {
+                logger.log(Level.WARNING, "TypeFactory no class definition found!", ncdfe);
             }
         }
         tf.link();

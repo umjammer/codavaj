@@ -18,6 +18,7 @@ package org.codavaj;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Logger;
 
 import org.codavaj.process.docparser.DocParser;
 import org.codavaj.process.srcwriter.SrcWriter;
@@ -25,9 +26,18 @@ import org.codavaj.process.wget.Wget;
 import org.codavaj.type.TypeFactory;
 
 /**
- * DOCUMENT ME!
+ * The program entry point.
+ * <p>
+ * system property
+ * <ul>
+ * <li> codavaj.file.encoding ... encoding for input javadoc, e.g. "ms932"
+ * <li> codavaj.language ... language for input javadoc for version 6 (not necessary above v6), e.g. "ja"
+ * </ul>
  */
 public class Main {
+
+    private static final Logger logger = Logger.getLogger(Main.class.getName());
+
     private static final String usage_wget = "wget <url> <output-dir>";
     private static final String usage_parse = "codavaj <input-dir> <output-dir> {<external-link>}*";
 
@@ -53,11 +63,11 @@ public class Main {
     }
 
     /**
-     * DOCUMENT ME!
-     *
-     * @param args
-     *
-     * @throws Exception DOCUMENT ME!
+     * The program entry point.
+     * <p>
+     * command is "wget" or "codavaj".
+     * </p>
+     * @param args 0: command, 1: source url, 2: output dir, [3: encoding], [4: language]
      */
     public static void main(String[] args) throws Exception {
         if (args.length < 3) {
@@ -70,6 +80,20 @@ public class Main {
         String cmd = args[0];
         String input = args[1];
         String output = args[2];
+        if (args.length > 3) {
+            // reluctantly, cause "exec-maven-plugin" cannot pass system properties as jvm arguments.
+            // "exec-maven-plugin" doesn't have "fork" option.
+            // usually, use a jvmarg like "-Dcodavaj.file.encoding=MS932"
+            System.setProperty("codavaj.file.encoding", args[3]);
+logger.info("encoding: " + System.getProperty("codavaj.file.encoding"));
+        }
+        if (args.length > 4) {
+            // reluctantly, cause "exec-maven-plugin" cannot pass system properties as jvm arguments.
+            // "exec-maven-plugin" doesn't have "fork" option.
+            // usually, use a jvmarg like "-Dcodavaj.language=JAPANESE"
+            System.setProperty("codavaj.language", args[4]);
+logger.info("language: " + System.getProperty("codavaj.language"));
+        }
 
         // all subsequent arguments become external javadoc URL references
         List<String> externalLinks = new ArrayList<>();
