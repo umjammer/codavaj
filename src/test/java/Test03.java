@@ -47,8 +47,8 @@ public class Test03 {
     }
 
     /**
-     * 
-     * @param args
+     *
+     * @param args 0: javadocDir, 1: externalLink, 2: sourceDir, 3: outputDir
      */
     public static void main(String[] args) throws Exception {
 
@@ -85,21 +85,21 @@ System.err.println("SK: " + sourcePath);
                             Streams.zip(m.getParameterList().stream(), n.getParams().getParams().stream(),
                                 (a, b) -> new Pair<>(a, b)
                             ).filter(p -> {
-                                if (Empty.class.isInstance(p.b)) {
+                                if (p.b instanceof Empty) {
                                     return false;
-                                } else if (VariableDecls.class.isInstance(p.b)) {
+                                } else if (p.b instanceof VariableDecls) {
                                     // parameter must have one variable
-                                    String name = VariableDecls.class.cast(p.b).getVars().get(0).getSimpleName().toString();
+                                    String name = ((VariableDecls) p.b).getVars().get(0).getSimpleName().toString();
                                     return !p.a.getName().equals(name);
                                 } else {
 System.err.println("?1: " + p.b);
                                     return false;
                                 }
                             }).forEach(p -> {
-                                String name = VariableDecls.class.cast(p.b).getVars().get(0).getSimpleName().toString();
+                                String name = ((VariableDecls) p.b).getVars().get(0).getSimpleName().toString();
 System.err.println("RN: " + "PARAM: " + name + " -> " + p.a.getName() + " \t\t/ " + getSignatureString(n));
                                 // TODO this only rename a parameter name...
-                                String diff = unit.refactor().changeFieldName(VariableDecls.class.cast(p.b), p.a.getName()).diff();
+                                String diff = unit.refactor().changeFieldName((VariableDecls) p.b, p.a.getName()).diff();
 System.out.println(diff);
                             });
                         });
@@ -113,9 +113,9 @@ System.out.println(diff);
                     sb.append("(");
                     n.getParams().getParams().forEach(p -> {
 //System.err.println("MP: "+ p);
-                        if (Empty.class.isInstance(p)) {
-                        } else if (VariableDecls.class.isInstance(p)) {
-                            com.netflix.rewrite.ast.Type t = VariableDecls.class.cast(p).getTypeExpr().getType();
+                        if (p instanceof Empty) {
+                        } else if (p instanceof VariableDecls) {
+                            com.netflix.rewrite.ast.Type t = ((VariableDecls) p).getTypeExpr().getType();
                             sb.append(getSignatureString(t));
                         }
                     });
@@ -132,10 +132,10 @@ System.out.println(diff);
                 /** */
                 String getSignatureString(com.netflix.rewrite.ast.Type t) {
                     String name = null;
-                    if (com.netflix.rewrite.ast.Type.Primitive.class.isInstance(t)) {
-                        name = com.netflix.rewrite.ast.Type.Primitive.class.cast(t).getKeyword();
-                    } else if (com.netflix.rewrite.ast.Type.Class.class.isInstance(t)) {
-                        com.netflix.rewrite.ast.Type.Class c = com.netflix.rewrite.ast.Type.Class.class.cast(t);
+                    if (t instanceof com.netflix.rewrite.ast.Type.Primitive) {
+                        name = ((com.netflix.rewrite.ast.Type.Primitive) t).getKeyword();
+                    } else if (t instanceof com.netflix.rewrite.ast.Type.Class) {
+                        com.netflix.rewrite.ast.Type.Class c = (com.netflix.rewrite.ast.Type.Class) t;
                         name = c.getFullyQualifiedName();
                     } else {
 System.err.println("?2: " + t);

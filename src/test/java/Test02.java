@@ -50,8 +50,8 @@ public class Test02 {
     }
 
     /**
-     * 
-     * @param args
+     *
+     * @param args 0: javadocDir, 1: externalLink, 2: sourceDir, 3: outputDir
      */
     public static void main(String[] args) throws Exception {
 
@@ -110,8 +110,8 @@ System.err.println("RC: " + "CLASS: " + n.getNameAsString());
 //                            System.out.println(w);
 //                        });
 
-                        if (ClassOrInterfaceDeclaration.class.isInstance(n.getParentNode().get())) {
-                            type.getType(ClassOrInterfaceDeclaration.class.cast(n.getParentNode().get()).getNameAsString()).ifPresent(t -> {
+                        if (n.getParentNode().get() instanceof ClassOrInterfaceDeclaration) {
+                            type.getType(((ClassOrInterfaceDeclaration) n.getParentNode().get()).getNameAsString()).ifPresent(t -> {
                                 t.getField(v.getNameAsString()).ifPresent(f -> {
                                     f.getCommentAsString().ifPresent(s -> {
 //                                    System.out.println("--");
@@ -140,8 +140,8 @@ System.err.println("IG: " + "FIELD: " + v.getNameAsString());
 //                        System.out.println(v);
 //                    });
 
-                    if (ClassOrInterfaceDeclaration.class.isInstance(n.getParentNode().get())) {
-                        type.getType(ClassOrInterfaceDeclaration.class.cast(n.getParentNode().get()).getNameAsString()).ifPresent(t -> {
+                    if (n.getParentNode().get() instanceof ClassOrInterfaceDeclaration) {
+                        type.getType(((ClassOrInterfaceDeclaration) n.getParentNode().get()).getNameAsString()).ifPresent(t -> {
 
                             t.getMethod(getSignatureString(n)).ifPresent(m -> {
                                 m.getCommentAsString().ifPresent(s -> {
@@ -172,8 +172,8 @@ System.err.println("IG: " + "METHOD: " + getSignatureString(n));
                 @Override
                 public void visit(ConstructorDeclaration n, Void arg) {
 
-                    if (ClassOrInterfaceDeclaration.class.isInstance(n.getParentNode().get())) {
-                        type.getType(ClassOrInterfaceDeclaration.class.cast(n.getParentNode().get()).getNameAsString()).ifPresent(t -> {
+                    if (n.getParentNode().get() instanceof ClassOrInterfaceDeclaration) {
+                        type.getType(((ClassOrInterfaceDeclaration) n.getParentNode().get()).getNameAsString()).ifPresent(t -> {
 
                             t.getMethod(getSignatureString(n)).ifPresent(m -> {
                                 m.getCommentAsString().ifPresent(s -> {

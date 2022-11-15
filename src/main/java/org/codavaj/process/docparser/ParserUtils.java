@@ -55,7 +55,6 @@ import org.dom4j.io.XMLWriter;
 import org.dom4j.tree.DefaultText;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
-import vavix.io.Streams;
 
 import static com.rainerhahnekamp.sneakythrow.Sneaky.sneaked;
 
@@ -1996,6 +1995,10 @@ logger.info("lang =6: " + rb.getLocale().getLanguage());
             }
 
             Document allClasses = parserUtil.loadHtmlAsDom(getInputSource(allClassesFilename));
+//String x = Paths.get(allClassesFilename).getFileName().toString();
+//BufferedWriter w = Files.newBufferedWriter(Paths.get("tmp/1.9.16", "/input-" + x));
+//w.write(prettyPrint(allClasses));
+//w.flush();
             parserUtil.classes = parserUtil.getAllFqTypenames(allClasses);
 
             parserUtil.javadocDirName = dir;
@@ -2205,7 +2208,7 @@ e.printStackTrace();
      * @param doc source xml
      * @return formatted xml string
      */
-    protected String prettyPrint(Document doc) {
+    protected static String prettyPrint(Document doc) {
         try {
             ByteArrayOutputStream html = new ByteArrayOutputStream();
             OutputFormat outformat = OutputFormat.createPrettyPrint();

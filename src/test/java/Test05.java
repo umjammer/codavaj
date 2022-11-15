@@ -43,8 +43,8 @@ public class Test05 {
     }
 
     /**
-     * 
-     * @param args
+     *
+     * @param args 0: javadocDir, 1: externalLink, 2: sourceDir, 3: outputDir
      */
     public static void main(String[] args) throws Exception {
 
