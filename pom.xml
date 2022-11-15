@@ -23,11 +23,10 @@ TODO
 
   <properties>
     <!-- for netflix rewrite (default) -->
-    <java8.home>/Library/Java/JavaVirtualMachines/jdk1.8.0_291.jdk/Contents/Home</java8.home>
+    <java8.home>/Library/Java/JavaVirtualMachines/jdk1.8.0_341.jdk/Contents/Home</java8.home>
   </properties>
 
   <profiles>
-
     <profile>
       <id>codavaj</id>
       <activation>
@@ -232,7 +231,7 @@ TODO
       <dependency>
         <groupId>org.junit</groupId>
         <artifactId>junit-bom</artifactId>
-        <version>5.8.2</version>
+        <version>5.9.1</version>
         <type>pom</type>
         <scope>import</scope>
       </dependency>
@@ -298,7 +297,7 @@ TODO
     <dependency>
       <groupId>com.github.umjammer</groupId>
       <artifactId>vavi-commons</artifactId>
-      <version>1.1.6</version>
+      <version>1.1.8</version>
     </dependency>
 
     <dependency>
@@ -320,7 +319,7 @@ TODO
     <dependency>
       <groupId>com.github.javaparser</groupId>
       <artifactId>javaparser-symbol-solver-core</artifactId>
-      <version>3.24.4</version>
+      <version>3.24.7</version>
       <scope>test</scope>
     </dependency>
 
@@ -353,7 +352,7 @@ TODO
     <dependency>
       <groupId>fr.inria.gforge.spoon</groupId>
       <artifactId>spoon-core</artifactId>
-      <version>10.1.1</version>
+      <version>10.2.0</version>
       <scope>test</scope>
     </dependency>
   </dependencies>
