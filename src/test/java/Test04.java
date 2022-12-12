@@ -97,16 +97,14 @@ System.err.println("SK: " + sourcePath);
 //                        System.out.println(v);
 //                    });
 
-                    type.getType(n.getName().getIdentifier()).ifPresent(t -> {
-                        t.getCommentAsString().ifPresent(s -> {
+                    type.getType(n.getName().getIdentifier()).ifPresent(t -> t.getCommentAsString().ifPresent(s -> {
 //                            System.out.println("--");
 //                            System.out.println("NEW:");
 //                            System.out.println(s);
 
-                            n.setJavadoc(getJavadoc(t.getInnerCommentAsString().get()));
+                        n.setJavadoc(getJavadoc(t.getInnerCommentAsString().get()));
 System.err.println("RC: " + "CLASS: " + n.getName());
-                        });
-                    });
+                    }));
 
                     return true;
                 }
@@ -117,18 +115,14 @@ System.err.println("RC: " + "CLASS: " + n.getName());
                         VariableDeclarationFragment v = (VariableDeclarationFragment) o;
 
                         if (n.getParent() instanceof TypeDeclaration) {
-                            type.getType(((TypeDeclaration) n.getParent()).getName().getIdentifier()).ifPresent(t -> {
-                                t.getField(v.getName().toString()).ifPresent(f -> {
-                                    f.getCommentAsString().ifPresent(s -> {
+                            type.getType(((TypeDeclaration) n.getParent()).getName().getIdentifier()).flatMap(t -> t.getField(v.getName().toString())).ifPresent(f -> f.getCommentAsString().ifPresent(s -> {
 //                                    System.out.println("--");
 //                                    System.out.println("NEW:");
 //                                    System.out.println(s);
 
-                                        n.setJavadoc(getJavadoc(f.getInnerCommentAsString().get()));
-System.err.println("RC: " + "FIELD: " + v.getName());
-                                    });
-                                });
-                            });
+                                n.setJavadoc(getJavadoc(f.getInnerCommentAsString().get()));
+                                System.err.println("RC: " + "FIELD: " + v.getName());
+                            }));
                         } else {
 System.err.println("IG: " + "FIELD: " + v.getName());
                         }
@@ -148,26 +142,21 @@ System.err.println("IG: " + "FIELD: " + v.getName());
 //                    });
 
                     if (n.getParent() instanceof TypeDeclaration) {
-                        type.getType(((TypeDeclaration) n.getParent()).getName().getIdentifier()).ifPresent(t -> {
-
-                            t.getMethod(getSignatureString(n)).ifPresent(m -> {
-                                m.getCommentAsString().ifPresent(s -> {
+                        type.getType(((TypeDeclaration) n.getParent()).getName().getIdentifier()).flatMap(t -> t.getMethod(getSignatureString(n))).ifPresent(m -> {
+                            m.getCommentAsString().ifPresent(s -> {
 //                                System.out.println("--");
 //                                System.out.println("NEW:");
 //                                System.out.println(s);
 
-                                    n.setJavadoc(getJavadoc(m.getInnerCommentAsString().get()));
-System.err.println("RC: " + "METHOD: " + getSignatureString(n));
-                                });
+                                n.setJavadoc(getJavadoc(m.getInnerCommentAsString().get()));
+                                System.err.println("RC: " + "METHOD: " + getSignatureString(n));
+                            });
 
-                                Streams.zip(m.getParameterList().stream(), ((List<SingleVariableDeclaration>) n.parameters()).stream(),
-                                    (a, b) -> new Pair<>(a, b)
-                                ).filter(p -> {
-                                    return !p.a.getName().equals(p.b.getName().toString());
-                                }).forEach(p -> {
-System.err.println("RN: " + "PARAM: " + p.b.getName() + " -> " + p.a.getName());
-                                    p.b.setName(ast.newSimpleName(p.a.getName())); // TODO this is not refactoring
-                                });
+                            Streams.zip(m.getParameterList().stream(), ((List<SingleVariableDeclaration>) n.parameters()).stream(),
+                                    Pair::new
+                            ).filter(p -> !p.a.getName().equals(p.b.getName().toString())).forEach(p -> {
+                                System.err.println("RN: " + "PARAM: " + p.b.getName() + " -> " + p.a.getName());
+                                p.b.setName(ast.newSimpleName(p.a.getName())); // TODO this is not refactoring
                             });
                         });
                     } else {
@@ -198,9 +187,7 @@ System.err.println("IG: " + "METHOD: " + n.getName());
                 String getSignatureString(MethodDeclaration n) {
                     StringBuilder sb = new StringBuilder(n.getName().getIdentifier());
                     sb.append("(");
-                    n.parameters().forEach(p -> {
-                        sb.append(Type.getSignatureString(tf.getFullyQualifiedName(SingleVariableDeclaration.class.cast(p).getType().toString())));
-                    });
+                    n.parameters().forEach(p -> sb.append(Type.getSignatureString(tf.getFullyQualifiedName(SingleVariableDeclaration.class.cast(p).getType().toString()))));
                     sb.append(")");
                     if (n.getReturnType2() != null) { // constructor
                         sb.append(Type.getSignatureString(tf.getFullyQualifiedName(n.getReturnType2().toString())));

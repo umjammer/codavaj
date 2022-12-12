@@ -96,10 +96,7 @@ logger.info("language: " + System.getProperty("codavaj.language"));
         }
 
         // all subsequent arguments become external javadoc URL references
-        List<String> externalLinks = new ArrayList<>();
-        for( int i = 3; i < args.length; i++) {
-            externalLinks.add(args[i]);
-        }
+        List<String> externalLinks = new ArrayList<>(Arrays.asList(args).subList(3, args.length));
 
         if ("wget".equals(cmd)) {
             Wget wget = new Wget();
@@ -123,8 +120,6 @@ logger.info("language: " + System.getProperty("codavaj.language"));
         } else {
             System.err.println("usage alternatives: \n\t" + usage_wget + "\n\t"
                 + usage_parse);
-
-            return;
         }
     }
 }

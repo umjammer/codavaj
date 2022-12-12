@@ -48,7 +48,7 @@ codavaj.cmd codavaj http://jumpi.sourceforge.net/javadoc/j2se tmp/jumpi/src
 in the javadoc. This leads to compile problems if there are subclasses
 which use the class's default constructor through the implicit super(). 
 
-* hekohtml ~1.19.22
+* nekohtml ~1.19.22
    * https://mvnrepository.com/artifact/net.sourceforge.nekohtml/nekohtml/1.9.22
       * https://mvnrepository.com/artifact/xerces/xercesImpl/2.11.0
    * but 1.19.22 doesn't work with this project currently

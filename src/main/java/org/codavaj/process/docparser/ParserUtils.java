@@ -21,6 +21,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -705,7 +706,7 @@ logger.finer("ignore 1.0: " + before.getText() + node.asXML());
             if (c.parseOn) {
                 if (c.node.getNodeType() == Node.TEXT_NODE) {
                     c.text += c.node.getStringValue();
-                } else if ((c.node.getNodeType() == Node.ELEMENT_NODE) && "A".equals(c.node.getName()) && c.node.getText().length() > 1 && c.node.valueOf("@href").indexOf(c.node.getText()) != -1) {
+                } else if ((c.node.getNodeType() == Node.ELEMENT_NODE) && "A".equals(c.node.getName()) && c.node.getText().length() > 1 && c.node.valueOf("@href").contains(c.node.getText())) {
                     c.text += javadocLinkToTypename(c.node.valueOf("@href"));
                 } else if ((c.node.getNodeType() == Node.ELEMENT_NODE) && "A".equals(c.node.getName())) {
                     c.text += convertNodesToString((Element) c.node);
@@ -781,7 +782,7 @@ logger.finer("ignore 1.0: " + before.getText() + node.asXML());
                 // enum constant
                 ec.setComment(determineComment(type, commentNode));
             } else {
-                Method m = type.lookupMethodByName(name, new ArrayList<Parameter>()); // annotation elements have no params
+                Method m = type.lookupMethodByName(name, new ArrayList<>()); // annotation elements have no params
 
                 if ( m != null ) {
                     // method
@@ -1096,8 +1097,8 @@ if (methodList == null || methodList.isEmpty()) {
 
             // logger.fine( paramNode.getNodeTypeName()+" "+paramNode.getStringValue() );
             // need to combine method description into a single text which can then
-            // be parsed easily. TypeVariables tend to have length 1 ( E, V, K etc ) which can easily match one character of the link to the generic parent
-            if (paramNode.getNodeType() == Node.ELEMENT_NODE && "A".equals(paramNode.getName()) && paramNode.getText().length() > 1 && paramNode.valueOf("@href").indexOf(paramNode.getText()) != -1 ) {
+            // be parsed easily. TypeVariables tend to have length 1 ( E, V, K etc. ) which can easily match one character of the link to the generic parent
+            if (paramNode.getNodeType() == Node.ELEMENT_NODE && "A".equals(paramNode.getName()) && paramNode.getText().length() > 1 && paramNode.valueOf("@href").contains(paramNode.getText())) {
                 // reference to type
                 methodParams.append(javadocLinkToTypename(paramNode.valueOf("@href")));
             } else if (paramNode.getNodeType() == Node.ELEMENT_NODE) {
@@ -1165,7 +1166,7 @@ if (methodList == null || methodList.isEmpty()) {
                     continue;
                 } else if (word.contains("<")) {
                     // parameterized type with type parameter arguments
-                    p.setTypeArgumentList(word.substring(word.indexOf("<"), word.length()));
+                    p.setTypeArgumentList(word.substring(word.indexOf("<")));
                     p.setType(fqnm.toFullyQualifiedName(t, word.substring(0, word.indexOf("<"))));
                 } else {
                     p.setType(fqnm.toFullyQualifiedName(t, word));
@@ -1253,7 +1254,7 @@ if (methodList == null || methodList.isEmpty()) {
     protected String convertNodesToString(Node paramNode) {
         // need to combine method description into a single text which can then
         // be parsed easily. If we link to another type rather than a generic type variable, the name of the link's text matches the classname
-        if (paramNode.getNodeType() == Node.ELEMENT_NODE && "A".equals(paramNode.getName()) && paramNode.getText().length() > 1 && paramNode.valueOf("@href").indexOf(paramNode.getText()) != -1) {
+        if (paramNode.getNodeType() == Node.ELEMENT_NODE && "A".equals(paramNode.getName()) && paramNode.getText().length() > 1 && paramNode.valueOf("@href").contains(paramNode.getText())) {
             // reference to type
             return javadocLinkToTypename(paramNode.valueOf("@href"));
         } else if (paramNode.getNodeType() == Node.ELEMENT_NODE) {
@@ -1414,7 +1415,7 @@ if (methodList == null || methodList.isEmpty()) {
 
     /** annotation elements. */
     protected void determineElements(Type type, Document typeXml, String nameXpath) {
-        final String[] xpaths = getElementsXpaths();
+        String[] xpaths = getElementsXpaths();
         List<Node> methodList = typeXml.selectNodes(xpaths[0]);
 
         for (int i = 0; (methodList != null) && (i < methodList.size()); i++) {
@@ -1872,7 +1873,7 @@ logger.finer("lang: " + rb.getLocale().getLanguage());
     }
 
     /** gets a class name index file name */
-    private static String getFirstIndexFilePath(final String dir) {
+    private static String getFirstIndexFilePath(String dir) {
         ServiceLoader<Parser> loader = ServiceLoader.load(Parser.class);
         for (Parser parser : loader) {
             String file = dir + fileSeparator(dir) + parser.getFirstIndexFileName();
@@ -1884,7 +1885,7 @@ logger.finer("lang: " + rb.getLocale().getLanguage());
     }
 
     /** factory */
-    private static Parser getParser(final String version) {
+    private static Parser getParser(String version) {
         ServiceLoader<Parser> loader = ServiceLoader.load(Parser.class);
         for (Parser parser : loader) {
             if (parser.isSuitableVersion(version)) {
@@ -2218,7 +2219,7 @@ e.printStackTrace();
             writer.write(doc);
             writer.flush();
 
-            return html.toString("UTF-8");
+            return html.toString(StandardCharsets.UTF_8);
         } catch (Exception e) {
            logger.log(Level.WARNING, "Unable to pretty print.", e);
         }

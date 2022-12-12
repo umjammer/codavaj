@@ -12,7 +12,6 @@ import java.util.Map;
 import java.util.function.Function;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.stream.Collectors;
 
 import org.codavaj.type.Type;
 import org.cyberneko.html.filters.ElementRemover;
@@ -268,7 +267,7 @@ logger.log(Level.WARNING, "ignore 5: " + node.asXML());
                             "DIV".equals(n.getName()) ||
                             n.getNodeType() == Node.TEXT_NODE && !n.getText().trim().replace("\r", "").isEmpty() ||
                             n.getNodeType() == Node.ENTITY_REFERENCE_NODE)
-                    .collect(Collectors.toList());
+                    .toList();
 
             StringBuilder combinedText = new StringBuilder();
             for (Node n : nodes) {

@@ -67,7 +67,7 @@ public class LinkUtils {
             return null;
         }
 
-        if (link.indexOf("#") != -1) {
+        if (link.contains("#")) {
             // java/awt/geom/RectangularShape.html#getCenterX() -> java/awt/geom/RectangularShape.html
             link = link.substring(0, link.indexOf("#"));
         }
@@ -129,7 +129,7 @@ public class LinkUtils {
             return null;
         }
 
-        if (link.indexOf("../") != -1) {
+        if (link.contains("../")) {
             logger.fine("cannot handle relative links with ../ - " + link);
 
             return null;
@@ -155,7 +155,7 @@ public class LinkUtils {
             return "";
         }
 
-        if (url.indexOf(URL_SEPARATOR) != -1) {
+        if (url.contains(URL_SEPARATOR)) {
             return url.substring(0, url.lastIndexOf(URL_SEPARATOR) + 1);
         }
 
@@ -174,9 +174,9 @@ public class LinkUtils {
             return null;
         }
 
-        if (url.indexOf(URL_SEPARATOR) != -1) {
-            return url.substring(url.lastIndexOf(URL_SEPARATOR) + 1,
-                url.length());
+        if (url.contains(URL_SEPARATOR)) {
+            return url.substring(url.lastIndexOf(URL_SEPARATOR) + 1
+            );
         }
 
         return url;

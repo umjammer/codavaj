@@ -119,8 +119,6 @@ public class ReflectionUtils {
                 f.setValue(reflectField.get(null));
             } catch (IllegalAccessException iax) {
             }
-
-            ;
         }
     }
 
@@ -163,7 +161,7 @@ public class ReflectionUtils {
 
         p.setType(getTypeName(parameter.getName()));
 
-        // reflection doesnt have the parameter name
+        // reflection doesn't have the parameter name
         p.setName(name);
 
         return p;
@@ -223,7 +221,7 @@ public class ReflectionUtils {
      * @return true if the classname represents an array.
      */
     private static boolean isArray(String classname) {
-        return classname.indexOf("[") != -1;
+        return classname.contains("[");
     }
 
     /**

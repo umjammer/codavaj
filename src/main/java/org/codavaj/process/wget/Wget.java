@@ -218,7 +218,7 @@ public class Wget implements Progressive<Void> {
         throws Exception {
         logger.fine("saving " + relativePath);
 
-        // make sure the directory we want to write to exists
+        // make sure the directory we want to write to exist
         String directoryName = linkUtil.relativeDirectoryOfLink(relativePath);
         String fullDirName = javadocDirName + File.separator
             + directoryName;

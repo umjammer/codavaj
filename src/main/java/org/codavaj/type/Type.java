@@ -81,7 +81,7 @@ public class Type extends Modifiable implements Commentable {
             if (typeName != null) {
                 if (typeName.lastIndexOf(".") != -1) {
                     return typeName.substring(typeName.lastIndexOf(".")
-                        + 1, typeName.length());
+                        + 1);
                 } else {
                     return typeName;
                 }
@@ -97,7 +97,7 @@ public class Type extends Modifiable implements Commentable {
      * @return the package name of the type, "" if in default package
      */
     public String getPackageName() {
-        if ((typeName != null) && (typeName.indexOf(".") != -1)) {
+        if ((typeName != null) && (typeName.contains("."))) {
             return typeName.substring(0, typeName.lastIndexOf("."));
         }
 
@@ -135,7 +135,7 @@ public class Type extends Modifiable implements Commentable {
      * @return the enclosing typename - a.b.D$E returns a.b.D
      */
     public String getEnclosingType() {
-        if (typeName.indexOf("$") != -1) {
+        if (typeName.contains("$")) {
             // it is an inner class
             return typeName.substring(0, typeName.lastIndexOf("$"));
         }
@@ -192,7 +192,7 @@ public class Type extends Modifiable implements Commentable {
         Method method = new Method();
 
         if (isInterface() || isAnnotation()) {
-            // interface methods are automatically abstract - and javadoc doesnt
+            // interface methods are automatically abstract - and javadoc doesn't
             // have this info
             method.setAbstract(true);
         }
@@ -432,7 +432,7 @@ logger.finer(methodList.toString());
 
     /** */
     public boolean isTypeParameter(String typeParameter) {
-        return typeParameters == null ? false : Arrays.asList(typeParameters.split("[\\s,<>]")).stream().anyMatch(tp -> typeParameter.equals(tp));
+        return typeParameters == null ? false : Arrays.stream(typeParameters.split("[\\s,<>]")).anyMatch(typeParameter::equals);
     }
 
     /**
@@ -509,11 +509,7 @@ logger.finer(methodList.toString());
     /** */
     private static String getPrefix(int degree, String prefix) {
         if (degree > 0) {
-            StringBuilder sb = new StringBuilder();
-            for (int i = 0; i < degree; i++) {
-                sb.append("[");
-            }
-            return prefix + sb.toString();
+            return prefix + "[".repeat(degree);
         } else {
             return prefix;
         }

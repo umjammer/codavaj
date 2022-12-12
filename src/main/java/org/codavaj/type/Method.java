@@ -173,9 +173,7 @@ public class Method extends Modifiable implements Commentable {
     public String getSignatureString() {
         StringBuilder sb = new StringBuilder(name);
         sb.append("(");
-        parameterList.forEach(p -> {
-            sb.append(p.getSignatureString());
-        });
+        parameterList.forEach(p -> sb.append(p.getSignatureString()));
         sb.append(")");
         if (returnParameter != null) {
             // constructor

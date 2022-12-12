@@ -16,10 +16,14 @@
 
 package org.codavaj;
 
+import java.io.Serial;
+
+
 /**
  * DOCUMENT ME!
  */
 public class ProcessException extends Exception {
+    @Serial
     private static final long serialVersionUID = 2949538686794102085L;
 
     /**

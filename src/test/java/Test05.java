@@ -79,15 +79,11 @@ System.err.println("SK: " + sourcePath);
                     if (element.getParent() instanceof CtClassImpl) {
                         type.getType(((CtClassImpl<?>) element.getParent()).getSimpleName()).ifPresent(t -> {
 System.err.println("CM: METHOD: " + getSignatureString(element));
-                            t.getMethod(getSignatureString(element)).ifPresent(m -> {
-                                Streams.zip(m.getParameterList().stream(), element.getParameters().stream(), Pair::new)
-                                .filter(p -> {
-                                    return !p.getFirst().getName().equals(p.getSecond().getSimpleName());
-                                }).forEach(p -> {
+                            t.getMethod(getSignatureString(element)).ifPresent(m -> Streams.zip(m.getParameterList().stream(), element.getParameters().stream(), Pair::new)
+                            .filter(p -> !p.getFirst().getName().equals(p.getSecond().getSimpleName())).forEach(p -> {
 System.err.println("RN: " + "PARAM: " + p.getSecond().getSimpleName() + " -> " + p.getFirst().getName() + " \t\t/ " + getSignatureString(element));
-                                    p.getSecond().setSimpleName(p.getFirst().getName()); // TODO this is not refactoring
-                                });
-                            });
+                                p.getSecond().setSimpleName(p.getFirst().getName()); // TODO this is not refactoring
+                            }));
                         });
                     }
                 }
@@ -96,9 +92,7 @@ System.err.println("RN: " + "PARAM: " + p.getSecond().getSimpleName() + " -> " +
                 String getSignatureString(CtMethod<?> n) {
                     StringBuilder sb = new StringBuilder(n.getSimpleName());
                     sb.append("(");
-                    n.getParameters().forEach(p -> {
-                        sb.append(Type.getSignatureString(tf.getFullyQualifiedName(p.getType().toString())));
-                    });
+                    n.getParameters().forEach(p -> sb.append(Type.getSignatureString(tf.getFullyQualifiedName(p.getType().toString()))));
                     sb.append(")");
                     sb.append(Type.getSignatureString(tf.getFullyQualifiedName(n.getType().toString())));
 //System.err.println("SG: "+ sb.toString());
@@ -111,13 +105,11 @@ System.err.println("RN: " + "PARAM: " + p.getSecond().getSimpleName() + " -> " +
                     if (element.getParent() instanceof CtClassImpl) {
                         type.getType(((CtClassImpl<?>) element.getParent()).getSimpleName()).ifPresent(t -> {
 System.err.println("CM: CONSTRUCTOR: " + getSignatureString(element));
-                            t.getMethod(getSignatureString(element)).ifPresent(m -> {
-                                Streams.zip(m.getParameterList().stream(), element.getParameters().stream(), Pair::new)
-                                .filter(p -> !p.getFirst().getName().equals(p.getSecond().getSimpleName())).forEach(p -> {
+                            t.getMethod(getSignatureString(element)).ifPresent(m -> Streams.zip(m.getParameterList().stream(), element.getParameters().stream(), Pair::new)
+                            .filter(p -> !p.getFirst().getName().equals(p.getSecond().getSimpleName())).forEach(p -> {
 System.err.println("RN: " + "PARAM: " + p.getSecond().getSimpleName() + " -> " + p.getFirst().getName() + " \t\t/ " + getSignatureString(element));
-                                    p.getSecond().setSimpleName(p.getFirst().getName()); // TODO this is not refactoring
-                                });
-                            });
+                                p.getSecond().setSimpleName(p.getFirst().getName()); // TODO this is not refactoring
+                            }));
                         });
                     }
                 }
@@ -126,9 +118,7 @@ System.err.println("RN: " + "PARAM: " + p.getSecond().getSimpleName() + " -> " +
                 String getSignatureString(CtConstructor<?> n) {
                     StringBuilder sb = new StringBuilder(((CtClassImpl<?>) n.getParent()).getSimpleName());
                     sb.append("(");
-                    n.getParameters().forEach(p -> {
-                        sb.append(Type.getSignatureString(tf.getFullyQualifiedName(p.getType().toString())));
-                    });
+                    n.getParameters().forEach(p -> sb.append(Type.getSignatureString(tf.getFullyQualifiedName(p.getType().toString()))));
                     sb.append(")");
 //System.err.println("sg: "+ sb.toString());
                     return sb.toString();

@@ -42,7 +42,7 @@ public class JarLoader implements Progressive<Void> {
     }
 
     /**
-     * Process a jar file by listing it's contents and loading each
+     * Process a jar file by listing its contents and loading each
      * Class and Interface into a TypeFactory.
      *
      * @throws ProcessException failure to process.

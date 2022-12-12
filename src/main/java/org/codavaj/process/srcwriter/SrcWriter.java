@@ -71,7 +71,7 @@ public class SrcWriter implements Progressive<Void> {
 
             try {
                 if (type.getEnclosingType() != null) {
-                    continue; // dont write inner types into own files
+                    continue; // don't write inner types into own files
                 }
                 String packageName = type.getPackage().getName();
 

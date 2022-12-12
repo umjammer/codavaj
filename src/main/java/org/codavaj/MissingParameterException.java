@@ -16,10 +16,14 @@
 
 package org.codavaj;
 
+import java.io.Serial;
+
+
 /**
  * DOCUMENT ME!
  */
 public class MissingParameterException extends ProcessException {
+    @Serial
     private static final long serialVersionUID = -7654967901729855056L;
 
     /**

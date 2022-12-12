@@ -75,41 +75,38 @@ System.err.println("SK: " + sourcePath);
 
             CompilationUnit unit = parser.parse(new String(Files.readAllBytes(sourcePath)));
 
-            new AstVisitor<Void>(Void.class.cast(null)) {
+            new AstVisitor<Void>((Void) null) {
 
                 @Override
                 public Void visitMethod(MethodDecl n) {
 
-                        type.getMethod(getSignatureString(n)).ifPresent(m -> {
-
-                            Streams.zip(m.getParameterList().stream(), n.getParams().getParams().stream(),
-                                (a, b) -> new Pair<>(a, b)
-                            ).filter(p -> {
-                                if (p.b instanceof Empty) {
-                                    return false;
-                                } else if (p.b instanceof VariableDecls) {
-                                    // parameter must have one variable
-                                    String name = ((VariableDecls) p.b).getVars().get(0).getSimpleName().toString();
-                                    return !p.a.getName().equals(name);
-                                } else {
-System.err.println("?1: " + p.b);
-                                    return false;
-                                }
-                            }).forEach(p -> {
+                        type.getMethod(getSignatureString(n)).ifPresent(m -> Streams.zip(m.getParameterList().stream(), n.getParams().getParams().stream(),
+                            (a, b) -> new Pair<>(a, b)
+                        ).filter(p -> {
+                            if (p.b instanceof Empty) {
+                                return false;
+                            } else if (p.b instanceof VariableDecls) {
+                                // parameter must have one variable
                                 String name = ((VariableDecls) p.b).getVars().get(0).getSimpleName().toString();
+                                return !p.a.getName().equals(name);
+                            } else {
+System.err.println("?1: " + p.b);
+                                return false;
+                            }
+                        }).forEach(p -> {
+                            String name = ((VariableDecls) p.b).getVars().get(0).getSimpleName().toString();
 System.err.println("RN: " + "PARAM: " + name + " -> " + p.a.getName() + " \t\t/ " + getSignatureString(n));
-                                // TODO this only rename a parameter name...
-                                String diff = unit.refactor().changeFieldName((VariableDecls) p.b, p.a.getName()).diff();
+                            // TODO this only rename a parameter name...
+                            String diff = unit.refactor().changeFieldName((VariableDecls) p.b, p.a.getName()).diff();
 System.out.println(diff);
-                            });
-                        });
+                        }));
 
                     return null;
                 }
 
                 /** */
                 String getSignatureString(MethodDecl n) {
-                    StringBuilder sb = new StringBuilder(n.getName().getSimpleName().toString());
+                    StringBuilder sb = new StringBuilder(n.getName().getSimpleName());
                     sb.append("(");
                     n.getParams().getParams().forEach(p -> {
 //System.err.println("MP: "+ p);
@@ -134,8 +131,7 @@ System.out.println(diff);
                     String name = null;
                     if (t instanceof com.netflix.rewrite.ast.Type.Primitive) {
                         name = ((com.netflix.rewrite.ast.Type.Primitive) t).getKeyword();
-                    } else if (t instanceof com.netflix.rewrite.ast.Type.Class) {
-                        com.netflix.rewrite.ast.Type.Class c = (com.netflix.rewrite.ast.Type.Class) t;
+                    } else if (t instanceof com.netflix.rewrite.ast.Type.Class c) {
                         name = c.getFullyQualifiedName();
                     } else {
 System.err.println("?2: " + t);

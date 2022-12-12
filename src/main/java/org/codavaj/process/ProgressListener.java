@@ -27,5 +27,5 @@ public interface ProgressListener {
      *
      * @param event DOCUMENT ME!
      */
-    public void notify(ProgressEvent event);
+    void notify(ProgressEvent event);
 }

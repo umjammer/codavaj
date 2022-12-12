@@ -31,7 +31,7 @@ import org.codavaj.type.TypeFactory;
 
 /**
  * Read an entire javadoc file tree and construct a reflection-like
- * representation of all it's constituent parts ( Classes, Interfaces ... ) in
+ * representation of all its constituent parts ( Classes, Interfaces ... ) in
  * a TypeFactory.
  */
 public class DocParser implements Progressive<TypeFactory> {
@@ -97,14 +97,14 @@ errors.put(type, e);
             }
         }
 
-errors.entrySet().forEach(e -> {
- System.err.println("******************: " + e.getKey().getShortName());
- e.getValue().printStackTrace();
- System.err.println(e.getValue().getMessage());
+errors.forEach((key, value) -> {
+    System.err.println("******************: " + key.getShortName());
+    value.printStackTrace();
+    System.err.println(value.getMessage());
 });
 
         try {
-            // try and determine all constants
+            // try and determine all constants'
             //info( parserUtil.prettyPrint(allconstants));
             parserUtil.processConstant(typeFactory.getTypeMap(), javadocClassName != null);
         } catch (Exception e) {
