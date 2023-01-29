@@ -4,6 +4,8 @@
  * Programmed by Naohide Sano
  */
 
+package commentator;
+
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -27,12 +29,12 @@ import com.github.javaparser.ast.visitor.VoidVisitorAdapter;
 
 
 /**
- * Test01. using java parser (replace comment)
+ * commentator prototype using java parser (replace comment)
  *
  * @author <a href="mailto:umjammer@gmail.com">Naohide Sano</a> (umjammer)
  * @version 0.00 2019/05/10 umjammer initial version <br>
  */
-public class Test01 {
+public class JavaParserCommentatorPrototype {
 
     /**
      * Derive a reflection-like API from a javadoc source tree. Resolve any type names
@@ -69,7 +71,7 @@ public class Test01 {
         List<String> el = new ArrayList<>();
         el.add(externalLink);
 
-        Test01 app = new Test01();
+        JavaParserCommentatorPrototype app = new JavaParserCommentatorPrototype();
         TypeFactory tf = app.analyze(javadocDir, el);
 
         for (Type type : tf.getTypes()) {

@@ -4,11 +4,14 @@
  * Programmed by Naohide Sano
  */
 
+package commentator;
+
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import org.antlr.v4.runtime.misc.Pair;
@@ -32,20 +35,22 @@ import org.eclipse.jface.text.Document;
 import org.eclipse.text.edits.TextEdit;
 
 import com.google.common.collect.Streams;
+import vavi.util.Debug;
 
 
 /**
- * Test04. using eclipse jdt (replace comment, refactoring parameter name: failed)
+ * commentator using eclipse jdt (replace comment, refactoring parameter name: failed)
  *
  * @author <a href="mailto:umjammer@gmail.com">Naohide Sano</a> (umjammer)
  * @version 0.00 2019/05/10 umjammer initial version <br>
  */
-public class Test04 {
+public class JdtCommentator {
 
     /** */
     public TypeFactory analyze(String javadocdir, List<String> externalLinks) throws Exception {
+Debug.println("analyze start: " + packageFilter);
         DocParser dp = new DocParser();
-        dp.setJavadocClassName("quicktime\\.[A-Z]\\w+$");
+        dp.setJavadocClassName(packageFilter + "(\\.[\\w]+)*\\.[A-Z]\\w+$");
         dp.setJavadocDirName(javadocdir);
         dp.setExternalLinks(externalLinks);
         dp.addProgressListener(System.err::println);
@@ -53,22 +58,31 @@ public class Test04 {
         return dp.process();
     }
 
+    /** regex */
+    String packageFilter;
+
     /**
      *
      * @param args 0: javadocDir, 1: externalLink, 2: sourceDir, 3: outputDir
      */
     public static void main(String[] args) throws Exception {
+Debug.println("JdtCommentator: " + args[0]);
+        JdtCommentator app = new JdtCommentator();
+        app.packageFilter = args[4];
+        app.exec(args[0], args[1], args[2], args[3]);
+    }
 
-        String javadocDir = args[0];
-        String externalLink = args[1];
-        String sourceDir = args[2];
-        String outputDir = args[3];
+    /** */
+    void exec(String javadocDir, String externalLink, String sourceDir, String outputDir) throws Exception {
+        List<String> el;
+        if (externalLink != null && !externalLink.isEmpty()) {
+            el = new ArrayList<>();
+            el.add(externalLink);
+        } else {
+            el = Collections.emptyList();
+        }
 
-        List<String> el = new ArrayList<>();
-        el.add(externalLink);
-
-        Test04 app = new Test04();
-        TypeFactory tf = app.analyze(javadocDir, el);
+        TypeFactory tf = analyze(javadocDir, el);
 
         for (Type type : tf.getTypes()) {
 
@@ -79,7 +93,7 @@ System.err.println("SK: " + sourcePath);
                 continue;
             }
 
-            ASTParser parser = ASTParser.newParser(AST.JLS11);
+            ASTParser parser = ASTParser.newParser(AST.JLS17);
             String sourceString = new String(Files.readAllBytes(sourcePath));
             parser.setSource(sourceString.toCharArray());
             CompilationUnit unit = (CompilationUnit) parser.createAST(new NullProgressMonitor());
@@ -132,6 +146,7 @@ System.err.println("IG: " + "FIELD: " + v.getName());
                 }
 
                 // TODO native not comes
+                @SuppressWarnings("unchecked")
                 @Override
                 public boolean visit(MethodDeclaration n) {
 //                    System.out.println("----");
@@ -167,6 +182,7 @@ System.err.println("IG: " + "METHOD: " + n.getName());
                 }
 
                 /** TODO \n is not handled well */
+                @SuppressWarnings("unchecked")
                 Javadoc getJavadoc(String t) {
                     Javadoc c = ast.newJavadoc();
                     List<TagElement> tags = c.tags();
@@ -184,6 +200,7 @@ System.err.println("IG: " + "METHOD: " + n.getName());
                 }
 
                 /** */
+                @SuppressWarnings("unchecked")
                 String getSignatureString(MethodDeclaration n) {
                     StringBuilder sb = new StringBuilder(n.getName().getIdentifier());
                     sb.append("(");
