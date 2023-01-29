@@ -20,6 +20,7 @@ package org.codavaj.process;
  * DOCUMENT ME!
  */
 public class ProgressEvent {
+
     private int done;
     private int todo;
     private String message;

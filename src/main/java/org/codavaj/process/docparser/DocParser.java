@@ -29,6 +29,7 @@ import org.codavaj.process.Progressive;
 import org.codavaj.type.Type;
 import org.codavaj.type.TypeFactory;
 
+
 /**
  * Read an entire javadoc file tree and construct a reflection-like
  * representation of all its constituent parts ( Classes, Interfaces ... ) in
@@ -44,7 +45,7 @@ public class DocParser implements Progressive<TypeFactory> {
     private String javadocDirName;
 
     /**
-     *  javadocClassName used by Tests to parse single classes instead of all docs
+     * javadocClassName used by Tests to parse single classes instead of all docs
      */
     private Pattern javadocClassName;
     private List<String> externalLinks;
@@ -61,7 +62,7 @@ public class DocParser implements Progressive<TypeFactory> {
 
         ParserUtils parserUtil;
 
-Map<Type, Exception> errors = new HashMap<>();
+        Map<Type, Exception> errors = new HashMap<>();
 
         try {
             // load and then process the list of all classes javadoc

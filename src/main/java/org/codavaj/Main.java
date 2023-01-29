@@ -17,6 +17,7 @@
 package org.codavaj;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.logging.Logger;
 
@@ -24,6 +25,7 @@ import org.codavaj.process.docparser.DocParser;
 import org.codavaj.process.srcwriter.SrcWriter;
 import org.codavaj.process.wget.Wget;
 import org.codavaj.type.TypeFactory;
+
 
 /**
  * The program entry point.
@@ -46,13 +48,12 @@ public class Main {
      * to external javadoc links. External links to Sun's JDK javadoc apis are
      * automatically resolved ( i.e. http://java.sun.com/j2se/X/docs/api/ )
      *
-     * @param javadocdir the javadoc tree root
+     * @param javadocdir    the javadoc tree root
      * @param externalLinks a list of 'http://..' strings representing external javadoc refs.
-     *
      * @return a TypeFactory handle on the resulting api
      * @throws ProcessException any problem.
      */
-    public static TypeFactory analyze( String javadocdir, List<String> externalLinks ) throws ProcessException {
+    public static TypeFactory analyze(String javadocdir, List<String> externalLinks) throws ProcessException {
 
         DocParser dp = new DocParser();
         dp.setJavadocDirName(javadocdir);
@@ -67,12 +68,12 @@ public class Main {
      * <p>
      * command is "wget" or "codavaj".
      * </p>
+     *
      * @param args 0: command, 1: source url, 2: output dir, [3: encoding], [4: language]
      */
     public static void main(String[] args) throws Exception {
         if (args.length < 3) {
-            System.err.println("usage alternatives: \n\t" + usage_wget + "\n\t"
-                + usage_parse);
+            System.err.println("usage alternatives: \n\t" + usage_wget + "\n\t" + usage_parse);
 
             return;
         }
@@ -85,14 +86,14 @@ public class Main {
             // "exec-maven-plugin" doesn't have "fork" option.
             // usually, use a jvmarg like "-Dcodavaj.file.encoding=MS932"
             System.setProperty("codavaj.file.encoding", args[3]);
-logger.info("encoding: " + System.getProperty("codavaj.file.encoding"));
+            logger.info("encoding: " + System.getProperty("codavaj.file.encoding"));
         }
         if (args.length > 4) {
             // reluctantly, cause "exec-maven-plugin" cannot pass system properties as jvm arguments.
             // "exec-maven-plugin" doesn't have "fork" option.
             // usually, use a jvmarg like "-Dcodavaj.language=JAPANESE"
             System.setProperty("codavaj.language", args[4]);
-logger.info("language: " + System.getProperty("codavaj.language"));
+            logger.info("language: " + System.getProperty("codavaj.language"));
         }
 
         // all subsequent arguments become external javadoc URL references
@@ -118,8 +119,7 @@ logger.info("language: " + System.getProperty("codavaj.language"));
             sw.addProgressListener(System.err::println);
             sw.process();
         } else {
-            System.err.println("usage alternatives: \n\t" + usage_wget + "\n\t"
-                + usage_parse);
+            System.err.println("usage alternatives: \n\t" + usage_wget + "\n\t" + usage_parse);
         }
     }
 }

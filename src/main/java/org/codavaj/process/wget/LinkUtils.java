@@ -74,11 +74,11 @@ public class LinkUtils {
 
         String path = "";
 
-        //String basename = "";
+//        String basename = "";
         if (url.lastIndexOf(URL_SEPARATOR) != -1) {
             path = url.substring(0, url.lastIndexOf(URL_SEPARATOR) + 1);
 
-            //basename = url.substring(url.lastIndexOf(URL_SEPARATOR)+1);
+//            basename = url.substring(url.lastIndexOf(URL_SEPARATOR)+1);
         }
 
         // Basis for calculating a "normalized" URL for the link
@@ -97,23 +97,21 @@ public class LinkUtils {
             return null;
         }
 
-        while (link.endsWith(URL_SEPARATOR)) { // strip trailing /
+        while (link.endsWith(URL_SEPARATOR)) { // strip trailing "/"
             link = link.substring(0, link.length() - 1);
         }
 
-        while (link.startsWith("." + URL_SEPARATOR)) { // strip leading ./
+        while (link.startsWith("." + URL_SEPARATOR)) { // strip leading "./"
             link = link.substring(2);
         }
 
         // TODO - strip directories back off url for ../
 
-        /*
-        info( "rooturl          :" + rootUrl );
-        info( "url              :" + url );
-        info( "path             :" + path );
-        info( "basename         :" + basename);
-        info( "            link :" + link);
-        */
+//        info( "rooturl          :" + rootUrl );
+//        info( "url              :" + url );
+//        info( "path             :" + path );
+//        info( "basename         :" + basename);
+//        info( "            link :" + link);
         if (link.startsWith(path)) { // a
 
             String rel = link.substring(path.length());
@@ -121,8 +119,7 @@ public class LinkUtils {
             link = rel;
         }
 
-        if (link.startsWith("http") || link.startsWith("ftp")
-                || link.startsWith("email")) {
+        if (link.startsWith("http") || link.startsWith("ftp") || link.startsWith("email")) {
             // link is not relative
             logger.fine("link " + link + " is not relative - skipping.");
 

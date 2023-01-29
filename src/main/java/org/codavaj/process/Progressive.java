@@ -27,6 +27,7 @@ import org.codavaj.ProcessException;
  * DOCUMENT ME!
  */
 public interface Progressive<T> {
+
     // TODO should be protected
     Map<Progressive<?>, List<ProgressListener>> listeners = new HashMap<>();
 

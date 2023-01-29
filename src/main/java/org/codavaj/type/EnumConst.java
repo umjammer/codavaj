@@ -30,20 +30,12 @@ public class EnumConst implements Commentable {
     EnumConst() {
     }
 
-    /**
-     * DOCUMENT ME!
-     *
-     * @return DOCUMENT ME!
-     */
+    @Override
     public List<String> getComment() {
         return comment;
     }
 
-    /**
-     * DOCUMENT ME!
-     *
-     * @param comment DOCUMENT ME!
-     */
+    @Override
     public void setComment(List<String> comment) {
         this.comment = comment;
     }
@@ -66,7 +58,7 @@ public class EnumConst implements Commentable {
         this.name = name;
     }
 
-    /* */
+    @Override
     public String toString() {
         return name;
     }

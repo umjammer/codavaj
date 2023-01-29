@@ -22,6 +22,7 @@ package org.codavaj.process;
  */
 @FunctionalInterface
 public interface ProgressListener {
+
     /**
      * DOCUMENT ME!
      *
