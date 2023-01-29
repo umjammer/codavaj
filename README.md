@@ -35,12 +35,12 @@ codavaj.cmd codavaj http://jumpi.sourceforge.net/javadoc/j2se tmp/jumpi/src
 
 ## Cooperate with Java Parser
 
-| **parser** | **set javadoc to decompiled source** | **rename argument names as javadoc documented** | **code** |
-|:-----------|:------------------------------------:|:-----------------------------------------------:|----------|
-| [JavaParser](https://github.com/javaparser/javaparser) | ✅ | 🚫 | [📄](https://github.com/umjammer/codavaj/blob/master/src/test/java/Test02.java) |
-| [rewrite](https://github.com/Netflix-Skunkworks/rewrite) | ✅ | 🚧 | [📄](https://github.com/umjammer/codavaj/blob/master/src/test/java/Test03.java) |
-| [JDT](https://www.eclipse.org/jdt/) | ✅ | 🚫 | [📄](https://github.com/umjammer/codavaj/blob/master/src/test/java/Test04.java) |
-| [spoon](https://github.com/INRIA/spoon) | ✅ | 🚫 | [📄](https://github.com/umjammer/codavaj/blob/master/src/test/java/Test05.java) |
+| **parser** | **set javadoc to (decompiled) source** | **rename argument names as javadoc documented** | **code**                                                                                                   |            **output**            |
+|:-----------|:--------------------------------------:|:-----------------------------------------------:|------------------------------------------------------------------------------------------------------------|:--------------------------------:|
+| [JavaParser](https://github.com/javaparser/javaparser) |                   ✅                    | 🚫 | [📄](https://github.com/umjammer/codavaj/blob/master/src/test/java/commentator/JavaParserCommentator.java) |                👑                |
+| [rewrite](https://github.com/Netflix-Skunkworks/rewrite) |          jdk version problem?          | 🚧 | [📄](https://github.com/umjammer/codavaj/blob/master/src/test/java/commentator/RewriteCommentator.java)    |                                  |
+| [JDT](https://www.eclipse.org/jdt/) |                   ✅                    | 🚫 | [📄](https://github.com/umjammer/codavaj/blob/master/src/test/java/commentator/JgtCommentator.java)        | little bit worse than JavaParser |
+| [spoon](https://github.com/INRIA/spoon) |                   ✅                    | 🚫 | [📄](https://github.com/umjammer/codavaj/blob/master/src/test/java/commentator/SpoonCommentator.java)     |         formats are gone         |
 
 ## known issues
 
@@ -48,7 +48,7 @@ codavaj.cmd codavaj http://jumpi.sourceforge.net/javadoc/j2se tmp/jumpi/src
 in the javadoc. This leads to compile problems if there are subclasses
 which use the class's default constructor through the implicit super(). 
 
-* hekohtml ~1.19.22
+* nekohtml ~1.19.22
    * https://mvnrepository.com/artifact/net.sourceforge.nekohtml/nekohtml/1.9.22
       * https://mvnrepository.com/artifact/xerces/xercesImpl/2.11.0
    * but 1.19.22 doesn't work with this project currently

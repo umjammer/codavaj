@@ -8,7 +8,8 @@ import java.util.jar.JarFile;
 import java.util.zip.ZipEntry;
 
 public class SingleJarClassLoader extends ClassLoader {
-    JarFile jarFile = null;
+
+    JarFile jarFile;
 
     public SingleJarClassLoader(JarFile jarFile) {
         this.jarFile = jarFile;
@@ -19,6 +20,7 @@ public class SingleJarClassLoader extends ClassLoader {
         this.jarFile = jarFile;
     }
 
+    @Override
     protected Class<?> findClass(String name) throws ClassNotFoundException {
         System.out.println("findclass: " + name);
 

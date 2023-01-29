@@ -81,7 +81,7 @@ public class TypeFactory {
     }
 
     /**
-     * Create a Type given it's name in the TypeFactory. The Type name
+     * Create a Type given its name in the TypeFactory. The Type name
      * should use '.' for the package separator and '$' for inner class
      * separation. The Type is automatically linked to it's containing
      * Package.
@@ -157,7 +157,7 @@ public class TypeFactory {
      */
     public void link() {
         // need to go through each type, determine if it is an inner type and
-        // if it is, add it to it's outer type
+        // if it is, add it to its outer type
         List<Type> allTypes = getTypes();
 
         for (int i = 0; (allTypes != null) && (i < allTypes.size()); i++) {
@@ -203,7 +203,7 @@ public class TypeFactory {
             String filename = entry.getName();
 
             String classname = filename.replace('/','.');
-            if (classname.indexOf(".class") == -1) {
+            if (!classname.contains(".class")) {
                 continue; // not a .class file
             }
 

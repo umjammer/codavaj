@@ -4,10 +4,13 @@
  * Programmed by Naohide Sano
  */
 
+package commentator;
+
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import org.antlr.v4.runtime.misc.Pair;
@@ -23,22 +26,25 @@ import com.netflix.rewrite.ast.Tr.VariableDecls;
 import com.netflix.rewrite.ast.visitor.AstVisitor;
 import com.netflix.rewrite.parse.OracleJdkParser;
 import com.netflix.rewrite.parse.Parser;
+import vavi.util.Debug;
 
 
 /**
- * Test03. using netflix rewrite (replace comment, refactoring parameter name: wip)
+ * commentator using netflix rewrite (replace comment, refactoring parameter name: wip)
  *
  * <li> netflix rewrite cannot handle comments???
+ * <li> jdk version conflict?</li>
  *
  * @author <a href="mailto:umjammer@gmail.com">Naohide Sano</a> (umjammer)
  * @version 0.00 2019/05/10 umjammer initial version <br>
  */
-public class Test03 {
+public class RewriteCommentator {
 
     /** */
     public TypeFactory analyze(String javadocdir, List<String> externalLinks) throws Exception {
+Debug.println("analyze start: " + packageFilter);
         DocParser dp = new DocParser();
-        dp.setJavadocClassName("quicktime\\.[A-Z]\\w+$");
+        dp.setJavadocClassName(packageFilter + "(\\.[\\w]+)*\\.[A-Z]\\w+$");
         dp.setJavadocDirName(javadocdir);
         dp.setExternalLinks(externalLinks);
         dp.addProgressListener(System.err::println);
@@ -46,22 +52,31 @@ public class Test03 {
         return dp.process();
     }
 
+    /** regex */
+    String packageFilter;
+
     /**
-     * 
-     * @param args
+     *
+     * @param args 0: javadocDir, 1: externalLink, 2: sourceDir, 3: outputDir, 4: packageFilter
      */
     public static void main(String[] args) throws Exception {
+Debug.println("RewriteCommentator: " + args[0]);
+        RewriteCommentator app = new RewriteCommentator();
+        app.packageFilter = args[4];
+        app.exec(args[0], args[1], args[2], args[3]);
+    }
 
-        String javadocDir = args[0];
-        String externalLink = args[1];
-        String sourceDir = args[2];
-        String outputDir = args[3];
+    /** */
+    void exec(String javadocDir, String externalLink, String sourceDir, String outputDir) throws Exception {
+        List<String> el;
+        if (externalLink != null && !externalLink.isEmpty()) {
+            el = new ArrayList<>();
+            el.add(externalLink);
+        } else {
+            el = Collections.emptyList();
+        }
 
-        List<String> el = new ArrayList<>();
-        el.add(externalLink);
-
-        Test03 app = new Test03();
-        TypeFactory tf = app.analyze(javadocDir, el);
+        TypeFactory tf = analyze(javadocDir, el);
 
         Parser parser = new OracleJdkParser();
 
@@ -75,47 +90,44 @@ System.err.println("SK: " + sourcePath);
 
             CompilationUnit unit = parser.parse(new String(Files.readAllBytes(sourcePath)));
 
-            new AstVisitor<Void>(Void.class.cast(null)) {
+            new AstVisitor<Void>((Void) null) {
 
                 @Override
                 public Void visitMethod(MethodDecl n) {
 
-                        type.getMethod(getSignatureString(n)).ifPresent(m -> {
-
-                            Streams.zip(m.getParameterList().stream(), n.getParams().getParams().stream(),
-                                (a, b) -> new Pair<>(a, b)
-                            ).filter(p -> {
-                                if (Empty.class.isInstance(p.b)) {
-                                    return false;
-                                } else if (VariableDecls.class.isInstance(p.b)) {
-                                    // parameter must have one variable
-                                    String name = VariableDecls.class.cast(p.b).getVars().get(0).getSimpleName().toString();
-                                    return !p.a.getName().equals(name);
-                                } else {
+                        type.getMethod(getSignatureString(n)).ifPresent(m -> Streams.zip(m.getParameterList().stream(), n.getParams().getParams().stream(),
+                                Pair::new
+                        ).filter(p -> {
+                            if (p.b instanceof Empty) {
+                                return false;
+                            } else if (p.b instanceof VariableDecls) {
+                                // parameter must have one variable
+                                String name = ((VariableDecls) p.b).getVars().get(0).getSimpleName();
+                                return !p.a.getName().equals(name);
+                            } else {
 System.err.println("?1: " + p.b);
-                                    return false;
-                                }
-                            }).forEach(p -> {
-                                String name = VariableDecls.class.cast(p.b).getVars().get(0).getSimpleName().toString();
+                                return false;
+                            }
+                        }).forEach(p -> {
+                            String name = ((VariableDecls) p.b).getVars().get(0).getSimpleName();
 System.err.println("RN: " + "PARAM: " + name + " -> " + p.a.getName() + " \t\t/ " + getSignatureString(n));
-                                // TODO this only rename a parameter name...
-                                String diff = unit.refactor().changeFieldName(VariableDecls.class.cast(p.b), p.a.getName()).diff();
+                            // TODO this only rename a parameter name...
+                            String diff = unit.refactor().changeFieldName((VariableDecls) p.b, p.a.getName()).diff();
 System.out.println(diff);
-                            });
-                        });
+                        }));
 
                     return null;
                 }
 
                 /** */
                 String getSignatureString(MethodDecl n) {
-                    StringBuilder sb = new StringBuilder(n.getName().getSimpleName().toString());
+                    StringBuilder sb = new StringBuilder(n.getName().getSimpleName());
                     sb.append("(");
                     n.getParams().getParams().forEach(p -> {
 //System.err.println("MP: "+ p);
-                        if (Empty.class.isInstance(p)) {
-                        } else if (VariableDecls.class.isInstance(p)) {
-                            com.netflix.rewrite.ast.Type t = VariableDecls.class.cast(p).getTypeExpr().getType();
+                        if (p instanceof Empty) {
+                        } else if (p instanceof VariableDecls) {
+                            com.netflix.rewrite.ast.Type t = ((VariableDecls) p).getTypeExpr().getType();
                             sb.append(getSignatureString(t));
                         }
                     });
@@ -132,10 +144,9 @@ System.out.println(diff);
                 /** */
                 String getSignatureString(com.netflix.rewrite.ast.Type t) {
                     String name = null;
-                    if (com.netflix.rewrite.ast.Type.Primitive.class.isInstance(t)) {
-                        name = com.netflix.rewrite.ast.Type.Primitive.class.cast(t).getKeyword();
-                    } else if (com.netflix.rewrite.ast.Type.Class.class.isInstance(t)) {
-                        com.netflix.rewrite.ast.Type.Class c = com.netflix.rewrite.ast.Type.Class.class.cast(t);
+                    if (t instanceof com.netflix.rewrite.ast.Type.Primitive) {
+                        name = ((com.netflix.rewrite.ast.Type.Primitive) t).getKeyword();
+                    } else if (t instanceof com.netflix.rewrite.ast.Type.Class c) {
                         name = c.getFullyQualifiedName();
                     } else {
 System.err.println("?2: " + t);

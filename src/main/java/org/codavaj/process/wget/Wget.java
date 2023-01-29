@@ -70,8 +70,7 @@ public class Wget implements Progressive<Void> {
             javadocDir.mkdirs();
         }
         if (!javadocDir.isDirectory()) {
-            throw new ProcessException("" + javadocDir
-                + " must be a directory.");
+            throw new ProcessException(javadocDir + " must be a directory.");
         }
 
         if (!rootUrl.startsWith("http://") && !rootUrl.startsWith("https://")) {
@@ -111,8 +110,7 @@ public class Wget implements Progressive<Void> {
         got.push(relativePath);
 
         String url = rootUrl + relativePath;
-        notifyListeners(new ProgressEvent(got.size(),
-                got.size() + fetch.size(), url));
+        notifyListeners(new ProgressEvent(got.size(), got.size() + fetch.size(), url));
 
         try {
             WebResponse response = fetchPage(wc, url);
@@ -137,8 +135,7 @@ public class Wget implements Progressive<Void> {
 
                     HTMLElement[] frame = response.getElementsWithName(framename);
 
-                    for (int j = 0; (frame.length != 0) && (j < frame.length);
-                            j++) {
+                    for (int j = 0; (frame.length != 0) && (j < frame.length); j++) {
                         HTMLElement f = frame[j];
                         String src = f.getAttribute(HTTP_SRC_ATTRIBUTE);
                         addRelativeUrl(url, src, got, fetch);
@@ -218,7 +215,7 @@ public class Wget implements Progressive<Void> {
         throws Exception {
         logger.fine("saving " + relativePath);
 
-        // make sure the directory we want to write to exists
+        // make sure the directory we want to write to exist
         String directoryName = linkUtil.relativeDirectoryOfLink(relativePath);
         String fullDirName = javadocDirName + File.separator
             + directoryName;

@@ -22,10 +22,11 @@ package org.codavaj.process;
  */
 @FunctionalInterface
 public interface ProgressListener {
+
     /**
      * DOCUMENT ME!
      *
      * @param event DOCUMENT ME!
      */
-    public void notify(ProgressEvent event);
+    void notify(ProgressEvent event);
 }

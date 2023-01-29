@@ -27,6 +27,7 @@ import org.codavaj.type.Type;
  * DOCUMENT ME!
  */
 public class ReflectionUtils {
+
     /**
      * DOCUMENT ME!
      *
@@ -54,8 +55,7 @@ public class ReflectionUtils {
 
         Class<?>[] implementsList = clazz.getInterfaces();
 
-        for (int i = 0;
-                (implementsList != null) && (i < implementsList.length); i++) {
+        for (int i = 0; (implementsList != null) && (i < implementsList.length); i++) {
             t.addImplementsType(getTypeName(implementsList[i].getName()));
         }
 
@@ -119,8 +119,6 @@ public class ReflectionUtils {
                 f.setValue(reflectField.get(null));
             } catch (IllegalAccessException iax) {
             }
-
-            ;
         }
     }
 
@@ -141,8 +139,7 @@ public class ReflectionUtils {
         setModifiers(m, reflectMethod.getModifiers());
         setMethodParameters(reflectMethod.getParameterTypes(), m);
         setThrowsList(reflectMethod.getExceptionTypes(), m);
-        m.setReturnParameter(getParameter(reflectMethod.getReturnType(),
-                "return"));
+        m.setReturnParameter(getParameter(reflectMethod.getReturnType(), "return"));
     }
 
     /**
@@ -163,7 +160,7 @@ public class ReflectionUtils {
 
         p.setType(getTypeName(parameter.getName()));
 
-        // reflection doesnt have the parameter name
+        // reflection doesn't have the parameter name
         p.setName(name);
 
         return p;
@@ -203,12 +200,10 @@ public class ReflectionUtils {
      */
     private static void setModifiers(Modifiable m, int reflectionModifiers) {
         m.setPrivate(java.lang.reflect.Modifier.isPrivate(reflectionModifiers));
-        m.setProtected(java.lang.reflect.Modifier.isProtected(
-                reflectionModifiers));
+        m.setProtected(java.lang.reflect.Modifier.isProtected(reflectionModifiers));
         m.setPublic(java.lang.reflect.Modifier.isPublic(reflectionModifiers));
         m.setAbstract(java.lang.reflect.Modifier.isAbstract(reflectionModifiers));
-        m.setInterface(java.lang.reflect.Modifier.isInterface(
-                reflectionModifiers));
+        m.setInterface(java.lang.reflect.Modifier.isInterface(reflectionModifiers));
         m.setFinal(java.lang.reflect.Modifier.isFinal(reflectionModifiers));
         m.setStatic(java.lang.reflect.Modifier.isStatic(reflectionModifiers));
         m.setStrictFp(java.lang.reflect.Modifier.isStrict(reflectionModifiers));
@@ -223,7 +218,7 @@ public class ReflectionUtils {
      * @return true if the classname represents an array.
      */
     private static boolean isArray(String classname) {
-        return classname.indexOf("[") != -1;
+        return classname.contains("[");
     }
 
     /**
@@ -258,35 +253,25 @@ public class ReflectionUtils {
             return classname;
         }
 
-        String strippedClassname = classname.substring(classname.lastIndexOf(
-                    "[") + 1);
+        String strippedClassname = classname.substring(classname.lastIndexOf("[") + 1);
 
         switch (strippedClassname.charAt(0)) {
         case 'L':
-            return strippedClassname.substring(1, strippedClassname.length()
-                - 1); // cut ; off end
-
+            return strippedClassname.substring(1, strippedClassname.length() - 1); // cut ; off end
         case 'Z':
             return "boolean";
-
         case 'B':
             return "byte";
-
         case 'C':
             return "char";
-
         case 'D':
             return "double";
-
         case 'F':
             return "float";
-
         case 'I':
             return "int";
-
         case 'J':
             return "long";
-
         case 'S':
             return "short";
         }

@@ -67,18 +67,18 @@ public class LinkUtils {
             return null;
         }
 
-        if (link.indexOf("#") != -1) {
+        if (link.contains("#")) {
             // java/awt/geom/RectangularShape.html#getCenterX() -> java/awt/geom/RectangularShape.html
             link = link.substring(0, link.indexOf("#"));
         }
 
         String path = "";
 
-        //String basename = "";
+//        String basename = "";
         if (url.lastIndexOf(URL_SEPARATOR) != -1) {
             path = url.substring(0, url.lastIndexOf(URL_SEPARATOR) + 1);
 
-            //basename = url.substring(url.lastIndexOf(URL_SEPARATOR)+1);
+//            basename = url.substring(url.lastIndexOf(URL_SEPARATOR)+1);
         }
 
         // Basis for calculating a "normalized" URL for the link
@@ -97,23 +97,21 @@ public class LinkUtils {
             return null;
         }
 
-        while (link.endsWith(URL_SEPARATOR)) { // strip trailing /
+        while (link.endsWith(URL_SEPARATOR)) { // strip trailing "/"
             link = link.substring(0, link.length() - 1);
         }
 
-        while (link.startsWith("." + URL_SEPARATOR)) { // strip leading ./
+        while (link.startsWith("." + URL_SEPARATOR)) { // strip leading "./"
             link = link.substring(2);
         }
 
         // TODO - strip directories back off url for ../
 
-        /*
-        info( "rooturl          :" + rootUrl );
-        info( "url              :" + url );
-        info( "path             :" + path );
-        info( "basename         :" + basename);
-        info( "            link :" + link);
-        */
+//        info( "rooturl          :" + rootUrl );
+//        info( "url              :" + url );
+//        info( "path             :" + path );
+//        info( "basename         :" + basename);
+//        info( "            link :" + link);
         if (link.startsWith(path)) { // a
 
             String rel = link.substring(path.length());
@@ -121,15 +119,14 @@ public class LinkUtils {
             link = rel;
         }
 
-        if (link.startsWith("http") || link.startsWith("ftp")
-                || link.startsWith("email")) {
+        if (link.startsWith("http") || link.startsWith("ftp") || link.startsWith("email")) {
             // link is not relative
             logger.fine("link " + link + " is not relative - skipping.");
 
             return null;
         }
 
-        if (link.indexOf("../") != -1) {
+        if (link.contains("../")) {
             logger.fine("cannot handle relative links with ../ - " + link);
 
             return null;
@@ -155,7 +152,7 @@ public class LinkUtils {
             return "";
         }
 
-        if (url.indexOf(URL_SEPARATOR) != -1) {
+        if (url.contains(URL_SEPARATOR)) {
             return url.substring(0, url.lastIndexOf(URL_SEPARATOR) + 1);
         }
 
@@ -174,9 +171,9 @@ public class LinkUtils {
             return null;
         }
 
-        if (url.indexOf(URL_SEPARATOR) != -1) {
-            return url.substring(url.lastIndexOf(URL_SEPARATOR) + 1,
-                url.length());
+        if (url.contains(URL_SEPARATOR)) {
+            return url.substring(url.lastIndexOf(URL_SEPARATOR) + 1
+            );
         }
 
         return url;

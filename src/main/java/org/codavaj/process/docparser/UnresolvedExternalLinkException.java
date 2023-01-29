@@ -16,11 +16,15 @@
 
 package org.codavaj.process.docparser;
 
+import java.io.Serial;
+
+
 /**
  * Unresolved external references to javadocs prohibit correct
  * type name determination.
  */
 public class UnresolvedExternalLinkException extends ParseException {
+    @Serial
     private static final long serialVersionUID = 6822744609916808575L;
 
     /**

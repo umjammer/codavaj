@@ -17,7 +17,6 @@
 package org.codavaj.process;
 
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -28,8 +27,9 @@ import org.codavaj.ProcessException;
  * DOCUMENT ME!
  */
 public interface Progressive<T> {
+
     // TODO should be protected
-    static Map<Progressive<?>, List<ProgressListener>> listeners = new HashMap<>();
+    Map<Progressive<?>, List<ProgressListener>> listeners = new HashMap<>();
 
     /**
      * DOCUMENT ME!
@@ -37,11 +37,7 @@ public interface Progressive<T> {
      * @param lstnr DOCUMENT ME!
      */
     default void addProgressListener(ProgressListener lstnr) {
-        List<ProgressListener> l = listeners.get(this);
-        if (l == null) {
-            l = new LinkedList<>();
-            listeners.put(this, l);
-        }
+        List<ProgressListener> l = listeners.computeIfAbsent(this, k -> new LinkedList<>());
         l.add(lstnr);
     }
 
@@ -61,10 +57,8 @@ public interface Progressive<T> {
     default void notifyListeners(ProgressEvent event) {
         List<ProgressListener> ll = listeners.get(this);
         if (ll != null) {
-            Iterator<ProgressListener> it = ll.iterator();
 
-            while (it.hasNext()) {
-                ProgressListener l = it.next();
+            for (ProgressListener l : ll) {
                 l.notify(event);
             }
         }

@@ -55,7 +55,7 @@ public class FullyQualifiedNameMap extends HashMap<String, String> {
         if (containsKey(typeName)) {
             return get(typeName);
         } else {
-            if (typeName.indexOf(".") != -1) {
+            if (typeName.contains(".")) {
                 add(typeName);
                 return typeName;
             } else {
@@ -63,7 +63,7 @@ public class FullyQualifiedNameMap extends HashMap<String, String> {
 //System.err.println("0: " + typeName);
                     return typeName;
                 } else {
-                    String className = (type.getPackageName() != "" ? type.getPackageName() + "." : "") + typeName;
+                    String className = (!type.getPackageName().isEmpty() ? type.getPackageName() + "." : "") + typeName;
                     if (containsKey(className)) {
 //System.err.println("3: " + typeName + ", " + className);
                         put(typeName, className);

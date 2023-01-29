@@ -3,7 +3,7 @@
 
   <groupId>org.codavaj</groupId>
   <artifactId>codavaj</artifactId>
-  <version>1.4.5-SNAPSHOT</version>
+  <version>1.4.6</version>
 
   <description>
 TODO
@@ -23,11 +23,10 @@ TODO
 
   <properties>
     <!-- for netflix rewrite (default) -->
-    <java8.home>/Library/Java/JavaVirtualMachines/jdk1.8.0_291.jdk/Contents/Home</java8.home>
+    <java8.home>/Library/Java/JavaVirtualMachines/jdk1.8.0_341.jdk/Contents/Home</java8.home>
   </properties>
 
   <profiles>
-
     <profile>
       <id>codavaj</id>
       <activation>
@@ -159,6 +158,71 @@ TODO
         </dependency>
       </dependencies>
     </profile>
+
+    <profile>
+      <id>comment</id>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-antrun-plugin</artifactId>
+            <version>3.1.0</version>
+            <executions>
+              <execution>
+                <id>spoon</id>
+                <goals>
+                  <goal>run</goal>
+                </goals>
+                <configuration>
+                  <target>
+                    <java classname="commentator.SpoonCommentator" fork="true">
+                      <classpath>
+                        <path refid="maven.compile.classpath"/>
+                        <path refid="maven.test.classpath"/>
+                      </classpath>
+                      <jvmarg value="-Djava.util.logging.config.file=${project.build.testOutputDirectory}/logging.properties" />
+                      <jvmarg line="--add-exports jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED" />
+                      <jvmarg line="--add-exports jdk.compiler/com.sun.tools.javac.file=ALL-UNNAMED" />
+                      <jvmarg line="--add-exports jdk.compiler/com.sun.tools.javac.main=ALL-UNNAMED" />
+                      <jvmarg line="--add-exports jdk.compiler/com.sun.tools.javac.comp=ALL-UNNAMED" />
+                      <jvmarg line="--add-exports jdk.compiler/com.sun.tools.javac.tree=ALL-UNNAMED" />
+                      <arg value="${user.home}/src/java/jsapi/tmp/javadoc" /> <!-- javadocDir -->
+                      <arg value="https://docs.oracle.com/javase/jp/8/docs/api/" /> <!-- externalLink -->
+                      <arg value="${user.home}/src/java/jsapi/src/main/java" /> <!-- sourceDir -->
+                      <arg value="${user.home}/src/java/jsapi/tmp/src" /> <!-- outputDir -->
+                      <arg value="javax\.speech" /> <!-- packageFilter -->
+                    </java>
+                  </target>
+                </configuration>
+              </execution>
+              <execution>
+                <id>javaParser</id>
+                <goals>
+                  <goal>run</goal>
+                </goals>
+                <configuration>
+                  <target>
+                    <java classname="commentator.JavaParserCommentator" fork="true">
+                      <classpath>
+                        <path refid="maven.compile.classpath"/>
+                        <path refid="maven.test.classpath"/>
+                      </classpath>
+                      <jvmarg value="-Djava.util.logging.config.file=${project.build.testOutputDirectory}/logging.properties" />
+                      <arg value="${user.home}/src/java/jsapi/tmp/javadoc" /> <!-- javadocDir -->
+                      <arg value="https://docs.oracle.com/javase/jp/8/docs/api/" /> <!-- externalLink -->
+                      <arg value="${user.home}/src/java/jsapi/src/main/java" /> <!-- sourceDir -->
+                      <arg value="${user.home}/src/java/jsapi/tmp/src" /> <!-- outputDir -->
+                      <arg value="javax\.speech" /> <!-- packageFilter -->
+                    </java>
+                  </target>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+
   </profiles>
 
   <build>
@@ -232,7 +296,7 @@ TODO
       <dependency>
         <groupId>org.junit</groupId>
         <artifactId>junit-bom</artifactId>
-        <version>5.8.2</version>
+        <version>5.9.1</version>
         <type>pom</type>
         <scope>import</scope>
       </dependency>
@@ -298,7 +362,7 @@ TODO
     <dependency>
       <groupId>com.github.umjammer</groupId>
       <artifactId>vavi-commons</artifactId>
-      <version>1.1.6</version>
+      <version>1.1.8</version>
     </dependency>
 
     <dependency>
@@ -320,7 +384,7 @@ TODO
     <dependency>
       <groupId>com.github.javaparser</groupId>
       <artifactId>javaparser-symbol-solver-core</artifactId>
-      <version>3.24.4</version>
+      <version>3.24.7</version>
       <scope>test</scope>
     </dependency>
 
@@ -333,6 +397,10 @@ TODO
         <exclusion>
           <groupId>com.fasterxml.jackson.core</groupId>
           <artifactId>jackson-annotations</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>org.slf4j</groupId>
+          <artifactId>slf4j-api</artifactId>
         </exclusion>
       </exclusions>
     </dependency>
@@ -353,7 +421,7 @@ TODO
     <dependency>
       <groupId>fr.inria.gforge.spoon</groupId>
       <artifactId>spoon-core</artifactId>
-      <version>10.1.1</version>
+      <version>10.2.0</version>
       <scope>test</scope>
     </dependency>
   </dependencies>

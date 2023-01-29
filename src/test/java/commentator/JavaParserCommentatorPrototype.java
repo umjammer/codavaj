@@ -4,6 +4,8 @@
  * Programmed by Naohide Sano
  */
 
+package commentator;
+
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -27,12 +29,12 @@ import com.github.javaparser.ast.visitor.VoidVisitorAdapter;
 
 
 /**
- * Test01. using java parser (replace comment)
+ * commentator prototype using java parser (replace comment)
  *
  * @author <a href="mailto:umjammer@gmail.com">Naohide Sano</a> (umjammer)
  * @version 0.00 2019/05/10 umjammer initial version <br>
  */
-public class Test01 {
+public class JavaParserCommentatorPrototype {
 
     /**
      * Derive a reflection-like API from a javadoc source tree. Resolve any type names
@@ -57,7 +59,7 @@ public class Test01 {
 
     /**
      * 
-     * @param args
+     * @param args 0: javadocDir, 1: externalLink, 2: sourceDir, 3: outputDir
      */
     public static void main(String[] args) throws Exception {
 
@@ -69,7 +71,7 @@ public class Test01 {
         List<String> el = new ArrayList<>();
         el.add(externalLink);
 
-        Test01 app = new Test01();
+        JavaParserCommentatorPrototype app = new JavaParserCommentatorPrototype();
         TypeFactory tf = app.analyze(javadocDir, el);
 
         for (Type type : tf.getTypes()) {
@@ -93,16 +95,14 @@ System.err.println("SK: " + source);
 //                        System.out.println(v);
 //                    });
 
-                    type.getType(n.getNameAsString()).ifPresent(t -> {
-                        t.getCommentAsString().ifPresent(s -> {
+                    type.getType(n.getNameAsString()).ifPresent(t -> t.getCommentAsString().ifPresent(s -> {
 //                            System.out.println("--");
 //                            System.out.println("NEW:");
 //                            System.out.println(s);
 
-                            n.setComment(new JavadocComment(t.getInnerCommentAsString().get()));
+                        n.setComment(new JavadocComment(t.getInnerCommentAsString().get()));
 System.err.println("RC: " + "CLASS: " + n.getNameAsString());
-                        });
-                    });
+                    }));
                     super.visit(n, arg);
                 }
 
@@ -116,33 +116,25 @@ System.err.println("RC: " + "CLASS: " + n.getNameAsString());
 //                            System.out.println(w);
 //                        });
 
-                        if (ClassOrInterfaceDeclaration.class.isInstance(n.getParentNode().get())) {
-                            type.getType(ClassOrInterfaceDeclaration.class.cast(n.getParentNode().get()).getNameAsString()).ifPresent(t -> {
-                                t.getField(v.getNameAsString()).ifPresent(f -> {
-                                    f.getCommentAsString().ifPresent(s -> {
+                        if (n.getParentNode().get() instanceof ClassOrInterfaceDeclaration) {
+                            type.getType(((ClassOrInterfaceDeclaration) n.getParentNode().get()).getNameAsString()).flatMap(t -> t.getField(v.getNameAsString())).ifPresent(f -> f.getCommentAsString().ifPresent(s -> {
 //                                    System.out.println("--");
 //                                    System.out.println("NEW:");
 //                                    System.out.println(s);
 
-                                        n.setComment(new JavadocComment(f.getInnerCommentAsString().get()));
-System.err.println("RC: " + "FIELD: " + v.getName());
-                                    });
-                                });
-                            });
-                        } else if (EnumDeclaration.class.isInstance(n.getParentNode().get())) {
+                                n.setComment(new JavadocComment(f.getInnerCommentAsString().get()));
+                                System.err.println("RC: " + "FIELD: " + v.getName());
+                            }));
+                        } else if (n.getParentNode().get() instanceof EnumDeclaration) {
 
-                            type.getType(EnumDeclaration.class.cast(n.getParentNode().get()).getNameAsString()).ifPresent(t -> {
-                                t.getField(v.getNameAsString()).ifPresent(f -> {
-                                    f.getCommentAsString().ifPresent(s -> {
+                            type.getType(((EnumDeclaration) n.getParentNode().get()).getNameAsString()).flatMap(t -> t.getField(v.getNameAsString())).ifPresent(f -> f.getCommentAsString().ifPresent(s -> {
 //                                    System.out.println("--");
 //                                    System.out.println("NEW:");
 //                                    System.out.println(s);
 
-                                        n.setComment(new JavadocComment(f.getInnerCommentAsString().get()));
-System.err.println("RC: " + "ENUM: " + v.getName());
-                                    });
-                                });
-                            });
+                                n.setComment(new JavadocComment(f.getInnerCommentAsString().get()));
+                                System.err.println("RC: " + "ENUM: " + v.getName());
+                            }));
                         }
                     }
 
@@ -158,34 +150,24 @@ System.err.println("RC: " + "ENUM: " + v.getName());
 //                        System.out.println(v);
 //                    });
 
-                    if (ClassOrInterfaceDeclaration.class.isInstance(n.getParentNode().get())) {
-                        type.getType(ClassOrInterfaceDeclaration.class.cast(n.getParentNode().get()).getNameAsString()).ifPresent(t -> {
-
-                            t.getMethod(getSignatureString(n)).ifPresent(m -> {
-                                m.getCommentAsString().ifPresent(s -> {
+                    if (n.getParentNode().get() instanceof ClassOrInterfaceDeclaration) {
+                        type.getType(((ClassOrInterfaceDeclaration) n.getParentNode().get()).getNameAsString()).flatMap(t -> t.getMethod(getSignatureString(n))).ifPresent(m -> m.getCommentAsString().ifPresent(s -> {
 //                                System.out.println("--");
 //                                System.out.println("NEW:");
 //                                System.out.println(s);
 
-                                    n.setComment(new JavadocComment(m.getInnerCommentAsString().get()));
-System.err.println("RC: " + "METHOD: " + getSignatureString(n));
-                                });
-                            });
-                        });
-                    } else if (EnumDeclaration.class.isInstance(n.getParentNode().get())) {
-                        type.getType(EnumDeclaration.class.cast(n.getParentNode().get()).getNameAsString()).ifPresent(t -> {
-
-                            t.getMethod(getSignatureString(n)).ifPresent(m -> {
-                                m.getCommentAsString().ifPresent(s -> {
+                            n.setComment(new JavadocComment(m.getInnerCommentAsString().get()));
+                            System.err.println("RC: " + "METHOD: " + getSignatureString(n));
+                        }));
+                    } else if (n.getParentNode().get() instanceof EnumDeclaration) {
+                        type.getType(((EnumDeclaration) n.getParentNode().get()).getNameAsString()).flatMap(t -> t.getMethod(getSignatureString(n))).ifPresent(m -> m.getCommentAsString().ifPresent(s -> {
 //                                System.out.println("--");
 //                                System.out.println("NEW:");
 //                                System.out.println(s);
 
-                                    n.setComment(new JavadocComment(m.getInnerCommentAsString().get()));
-System.err.println("RC: " + "METHOD: " + getSignatureString(n));
-                                });
-                            });
-                        });
+                            n.setComment(new JavadocComment(m.getInnerCommentAsString().get()));
+                            System.err.println("RC: " + "METHOD: " + getSignatureString(n));
+                        }));
                     }
 
                     super.visit(n, arg);
@@ -200,34 +182,24 @@ System.err.println("RC: " + "METHOD: " + getSignatureString(n));
 //                        System.out.println(v);
 //                    });
 
-                    if (ClassOrInterfaceDeclaration.class.isInstance(n.getParentNode().get())) {
-                        type.getType(ClassOrInterfaceDeclaration.class.cast(n.getParentNode().get()).getNameAsString()).ifPresent(t -> {
-
-                            t.getMethod(getSignatureString(n)).ifPresent(m -> {
-                                m.getCommentAsString().ifPresent(s -> {
+                    if (n.getParentNode().get() instanceof ClassOrInterfaceDeclaration) {
+                        type.getType(((ClassOrInterfaceDeclaration) n.getParentNode().get()).getNameAsString()).flatMap(t -> t.getMethod(getSignatureString(n))).ifPresent(m -> m.getCommentAsString().ifPresent(s -> {
 //                                System.out.println("--");
 //                                System.out.println("NEW:");
 //                                System.out.println(s);
 
-                                    n.setComment(new JavadocComment(m.getInnerCommentAsString().get()));
-System.err.println("RC: " + "CONSTRUCTOR: " + getSignatureString(n));
-                                });
-                            });
-                        });
-                    } else if (EnumDeclaration.class.isInstance(n.getParentNode().get())) {
-                        type.getType(EnumDeclaration.class.cast(n.getParentNode().get()).getNameAsString()).ifPresent(t -> {
-
-                            t.getMethod(getSignatureString(n)).ifPresent(m -> {
-                                m.getCommentAsString().ifPresent(s -> {
+                            n.setComment(new JavadocComment(m.getInnerCommentAsString().get()));
+                            System.err.println("RC: " + "CONSTRUCTOR: " + getSignatureString(n));
+                        }));
+                    } else if (n.getParentNode().get() instanceof EnumDeclaration) {
+                        type.getType(((EnumDeclaration) n.getParentNode().get()).getNameAsString()).flatMap(t -> t.getMethod(getSignatureString(n))).ifPresent(m -> m.getCommentAsString().ifPresent(s -> {
 //                                System.out.println("--");
 //                                System.out.println("NEW:");
 //                                System.out.println(s);
 
-                                    n.setComment(new JavadocComment(m.getInnerCommentAsString().get()));
-System.err.println("RC: " + "CONSTRUCTOR: " + getSignatureString(n));
-                                });
-                            });
-                        });
+                            n.setComment(new JavadocComment(m.getInnerCommentAsString().get()));
+                            System.err.println("RC: " + "CONSTRUCTOR: " + getSignatureString(n));
+                        }));
                     }
 
                     super.visit(n, arg);
@@ -237,9 +209,7 @@ System.err.println("RC: " + "CONSTRUCTOR: " + getSignatureString(n));
                 String getSignatureString(MethodDeclaration n) {
                     StringBuilder sb = new StringBuilder(n.getNameAsString());
                     sb.append("(");
-                    n.getParameters().forEach(p -> {
-                        sb.append(Type.getSignatureString(tf.getFullyQualifiedName(p.getType().toString())));
-                    });
+                    n.getParameters().forEach(p -> sb.append(Type.getSignatureString(tf.getFullyQualifiedName(p.getType().toString()))));
                     sb.append(")");
                     sb.append(Type.getSignatureString(tf.getFullyQualifiedName(n.getType().toString())));
                     return sb.toString();
@@ -249,9 +219,7 @@ System.err.println("RC: " + "CONSTRUCTOR: " + getSignatureString(n));
                 String getSignatureString(ConstructorDeclaration n) {
                     StringBuilder sb = new StringBuilder(n.getNameAsString());
                     sb.append("(");
-                    n.getParameters().forEach(p -> {
-                        sb.append(Type.getSignatureString(tf.getFullyQualifiedName(p.getType().toString())));
-                    });
+                    n.getParameters().forEach(p -> sb.append(Type.getSignatureString(tf.getFullyQualifiedName(p.getType().toString()))));
                     sb.append(")");
                     return sb.toString();
                 }

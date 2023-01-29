@@ -4,10 +4,13 @@
  * Programmed by Naohide Sano
  */
 
+package commentator;
+
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import org.codavaj.process.docparser.DocParser;
@@ -25,10 +28,11 @@ import com.github.javaparser.ast.comments.JavadocComment;
 import com.github.javaparser.ast.visitor.VoidVisitorAdapter;
 import com.github.javaparser.utils.Pair;
 import com.google.common.collect.Streams;
+import vavi.util.Debug;
 
 
 /**
- * Test02. using java parser (replace comment, refactoring parameter name: failed)
+ * commentator using java parser (replace comment, refactoring parameter name: failed)
  *
  * <li> java parser doesn't handle fully qualified name
  * <li> refactoring is not easy
@@ -36,12 +40,13 @@ import com.google.common.collect.Streams;
  * @author <a href="mailto:umjammer@gmail.com">Naohide Sano</a> (umjammer)
  * @version 0.00 2019/05/10 umjammer initial version <br>
  */
-public class Test02 {
+public class JavaParserCommentator {
 
     /** */
     public TypeFactory analyze(String javadocdir, List<String> externalLinks) throws Exception {
+Debug.println("analyze start: " + packageFilter);
         DocParser dp = new DocParser();
-//        dp.setJavadocClassName("quicktime\\.[A-Z]\\w+$");
+        dp.setJavadocClassName(packageFilter + "(\\.[\\w]+)*\\.[A-Z]\\w+$");
         dp.setJavadocDirName(javadocdir);
         dp.setExternalLinks(externalLinks);
         dp.addProgressListener(System.err::println);
@@ -49,22 +54,31 @@ public class Test02 {
         return dp.process();
     }
 
+    /** regex */
+    String packageFilter;
+
     /**
-     * 
-     * @param args
+     *
+     * @param args 0: javadocDir, 1: externalLink, 2: sourceDir, 3: outputDir
      */
     public static void main(String[] args) throws Exception {
+Debug.println("JavaParserCommentator: " + args[0]);
+        JavaParserCommentator app = new JavaParserCommentator();
+        app.packageFilter = args[4];
+        app.exec(args[0], args[1], args[2], args[3]);
+    }
 
-        String javadocDir = args[0];
-        String externalLink = args[1];
-        String sourceDir = args[2];
-        String outputDir = args[3];
+    /** */
+    void exec(String javadocDir, String externalLink, String sourceDir, String outputDir) throws Exception {
+        List<String> el;
+        if (externalLink != null && !externalLink.isEmpty()) {
+            el = new ArrayList<>();
+            el.add(externalLink);
+        } else {
+            el = Collections.emptyList();
+        }
 
-        List<String> el = new ArrayList<>();
-        el.add(externalLink);
-
-        Test02 app = new Test02();
-        TypeFactory tf = app.analyze(javadocDir, el);
+        TypeFactory tf = analyze(javadocDir, el);
 
         for (Type type : tf.getTypes()) {
 
@@ -87,16 +101,14 @@ System.err.println("SK: " + source);
 //                        System.out.println(v);
 //                    });
 
-                    type.getType(n.getNameAsString()).ifPresent(t -> {
-                        t.getCommentAsString().ifPresent(s -> {
+                    type.getType(n.getNameAsString()).ifPresent(t -> t.getCommentAsString().ifPresent(s -> {
 //                            System.out.println("--");
 //                            System.out.println("NEW:");
 //                            System.out.println(s);
 
-                            n.setComment(new JavadocComment(t.getInnerCommentAsString().get()));
+                        n.setComment(new JavadocComment(t.getInnerCommentAsString().get()));
 System.err.println("RC: " + "CLASS: " + n.getNameAsString());
-                        });
-                    });
+                    }));
                     super.visit(n, arg);
                 }
 
@@ -110,19 +122,15 @@ System.err.println("RC: " + "CLASS: " + n.getNameAsString());
 //                            System.out.println(w);
 //                        });
 
-                        if (ClassOrInterfaceDeclaration.class.isInstance(n.getParentNode().get())) {
-                            type.getType(ClassOrInterfaceDeclaration.class.cast(n.getParentNode().get()).getNameAsString()).ifPresent(t -> {
-                                t.getField(v.getNameAsString()).ifPresent(f -> {
-                                    f.getCommentAsString().ifPresent(s -> {
+                        if (n.getParentNode().get() instanceof ClassOrInterfaceDeclaration) {
+                            type.getType(((ClassOrInterfaceDeclaration) n.getParentNode().get()).getNameAsString()).flatMap(t -> t.getField(v.getNameAsString())).ifPresent(f -> f.getCommentAsString().ifPresent(s -> {
 //                                    System.out.println("--");
 //                                    System.out.println("NEW:");
 //                                    System.out.println(s);
 
-                                        n.setComment(new JavadocComment(f.getInnerCommentAsString().get()));
-System.err.println("RC: " + "FIELD: " + v.getNameAsString());
-                                    });
-                                });
-                            });
+                                n.setComment(new JavadocComment(f.getInnerCommentAsString().get()));
+                                System.err.println("RC: " + "FIELD: " + v.getNameAsString());
+                            }));
                         } else {
 System.err.println("IG: " + "FIELD: " + v.getNameAsString());
                         }
@@ -140,26 +148,23 @@ System.err.println("IG: " + "FIELD: " + v.getNameAsString());
 //                        System.out.println(v);
 //                    });
 
-                    if (ClassOrInterfaceDeclaration.class.isInstance(n.getParentNode().get())) {
-                        type.getType(ClassOrInterfaceDeclaration.class.cast(n.getParentNode().get()).getNameAsString()).ifPresent(t -> {
-
-                            t.getMethod(getSignatureString(n)).ifPresent(m -> {
-                                m.getCommentAsString().ifPresent(s -> {
+                    if (n.getParentNode().get() instanceof ClassOrInterfaceDeclaration) {
+                        type.getType(((ClassOrInterfaceDeclaration) n.getParentNode().get()).getNameAsString()).flatMap(t -> t.getMethod(getSignatureString(n))).ifPresent(m -> {
+                            m.getCommentAsString().ifPresent(s -> {
 //                                System.out.println("--");
 //                                System.out.println("NEW:");
 //                                System.out.println(s);
 
-                                    n.setComment(new JavadocComment(m.getInnerCommentAsString().get()));
-System.err.println("RC: " + "METHOD: " + getSignatureString(n));
-                                });
+                                n.setComment(new JavadocComment(m.getInnerCommentAsString().get()));
+                                System.err.println("RC: " + "METHOD: " + getSignatureString(n));
+                            });
 
-                                // fix parameter names (only names at declaration)
-                                Streams.zip(m.getParameterList().stream(), n.getParameters().stream(),
-                                    (a, b) -> new Pair<>(a, b)
-                                ).filter(p -> !p.a.getName().equals(p.b.getNameAsString())).forEach(p -> {
-System.err.println("RN: " + "PARAM: " + p.b.getNameAsString() + " -> " + p.a.getName());
+                            // fix parameter names (only names at declaration)
+                            Streams.zip(m.getParameterList().stream(), n.getParameters().stream(),
+                                    Pair::new
+                            ).filter(p -> !p.a.getName().equals(p.b.getNameAsString())).forEach(p -> {
+                                System.err.println("RN: " + "PARAM: " + p.b.getNameAsString() + " -> " + p.a.getName());
 //                                    p.b.setName(p.a.getName()); // TODO currently OFF
-                                });
                             });
                         });
                     } else {
@@ -172,23 +177,20 @@ System.err.println("IG: " + "METHOD: " + getSignatureString(n));
                 @Override
                 public void visit(ConstructorDeclaration n, Void arg) {
 
-                    if (ClassOrInterfaceDeclaration.class.isInstance(n.getParentNode().get())) {
-                        type.getType(ClassOrInterfaceDeclaration.class.cast(n.getParentNode().get()).getNameAsString()).ifPresent(t -> {
+                    if (n.getParentNode().get() instanceof ClassOrInterfaceDeclaration) {
+                        type.getType(((ClassOrInterfaceDeclaration) n.getParentNode().get()).getNameAsString()).flatMap(t -> t.getMethod(getSignatureString(n))).ifPresent(m -> {
+                            m.getCommentAsString().ifPresent(s -> {
 
-                            t.getMethod(getSignatureString(n)).ifPresent(m -> {
-                                m.getCommentAsString().ifPresent(s -> {
+                                n.setComment(new JavadocComment(m.getInnerCommentAsString().get()));
+                                System.err.println("RC: " + "CONSTRUCTOR: " + getSignatureString(n));
+                            });
 
-                                    n.setComment(new JavadocComment(m.getInnerCommentAsString().get()));
-System.err.println("RC: " + "CONSTRUCTOR: " + getSignatureString(n));
-                                });
-
-                                // fix parameter names (only names at declaration)
-                                Streams.zip(m.getParameterList().stream(), n.getParameters().stream(),
-                                    (a, b) -> new Pair<>(a, b)
-                                ).filter(p -> !p.a.getName().equals(p.b.getNameAsString())).forEach(p -> {
-System.err.println("RN: " + "PARAM: " + p.b.getNameAsString() + " -> " + p.a.getName());
+                            // fix parameter names (only names at declaration)
+                            Streams.zip(m.getParameterList().stream(), n.getParameters().stream(),
+                                    Pair::new
+                            ).filter(p -> !p.a.getName().equals(p.b.getNameAsString())).forEach(p -> {
+                                System.err.println("RN: " + "PARAM: " + p.b.getNameAsString() + " -> " + p.a.getName());
 //                                    p.b.setName(p.a.getName()); // TODO
-                                });
                             });
                         });
                     } else {
@@ -202,9 +204,7 @@ System.err.println("IG: " + "CONSTRUCTOR: " + getSignatureString(n));
                 String getSignatureString(MethodDeclaration n) {
                     StringBuilder sb = new StringBuilder(n.getNameAsString());
                     sb.append("(");
-                    n.getParameters().forEach(p -> {
-                        sb.append(Type.getSignatureString(tf.getFullyQualifiedName(p.getType().toString())));
-                    });
+                    n.getParameters().forEach(p -> sb.append(Type.getSignatureString(tf.getFullyQualifiedName(p.getType().toString()))));
                     sb.append(")");
 //System.err.println("RT: " + n.getType());
                     sb.append(Type.getSignatureString(tf.getFullyQualifiedName(n.getType().toString())));
@@ -216,9 +216,7 @@ System.err.println("IG: " + "CONSTRUCTOR: " + getSignatureString(n));
                 String getSignatureString(ConstructorDeclaration n) {
                     StringBuilder sb = new StringBuilder(n.getNameAsString());
                     sb.append("(");
-                    n.getParameters().forEach(p -> {
-                        sb.append(Type.getSignatureString(tf.getFullyQualifiedName(p.getType().toString())));
-                    });
+                    n.getParameters().forEach(p -> sb.append(Type.getSignatureString(tf.getFullyQualifiedName(p.getType().toString()))));
                     sb.append(")");
 //System.err.println("SG: " + sb.toString());
                     return sb.toString();

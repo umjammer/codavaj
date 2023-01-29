@@ -64,19 +64,15 @@ public class Package {
     }
 
     void addType(Type type) {
-        if (types.get(type.getTypeName()) == null) {
-            types.put(type.getTypeName(), type);
-        }
+        types.putIfAbsent(type.getTypeName(), type);
     }
 
     void addPackage(Package pckg) {
-        if (packages.get(pckg.getName()) == null) {
-            packages.put(pckg.getName(), pckg);
-        }
+        packages.putIfAbsent(pckg.getName(), pckg);
     }
 
     String getParentPackageName() {
-        if (name.indexOf(".") != -1) {
+        if (name.contains(".")) {
             // there is a parent package if there is a package separator in the name
             return name.substring(0, name.lastIndexOf("."));
         }

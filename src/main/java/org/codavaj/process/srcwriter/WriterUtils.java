@@ -147,10 +147,10 @@ public class WriterUtils {
         w.write("/**");
         printLineFeed();
 
-        for (int i = 0; i < commentText.size(); i++) {
+        for (String s : commentText) {
             printIndentation(indentation);
             w.write(" * ");
-            w.write(commentText.get(i));
+            w.write(s);
             printLineFeed();
         }
 
@@ -234,7 +234,7 @@ public class WriterUtils {
         } else if (value instanceof Long) {
             w.write("" + value + "l");
         } else if (value instanceof Character) {
-            char c = ((Character)value).charValue();
+            char c = (Character) value;
             w.write("(char)" + (int)c );
         } else {
             w.write("" + value);
